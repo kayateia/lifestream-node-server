@@ -25,19 +25,12 @@ router.post("/create", function(req, res, next) {
 	console.log("Create user",login,name,pwd);
 	console.log("Would create with hash",crypto.encrypt(pwd));
 
-	var db = dbmod.get();
-
-	var stmt = db.prepare("insert into user(login, pwhash, name) values (?,?,?)");
-	stmt.run(login, pwd, name);
-	stmt.finalize();
-
-	db.each("select rowid as id, login, name, pwhash from user", function(err, row) {
-		console.log(row.id, row.login, row.name, row.pwhash);
+	dbmod.userCreate(login, pwd, name, function(err) {
+		if (err)
+			res.json(models.error(err));
+		else
+			res.json(models.success());
 	});
-
-	db.close();
-	
-	return res.json(models.success());
 });
 
 module.exports = router;
