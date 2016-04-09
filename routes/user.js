@@ -23,9 +23,10 @@ router.post("/create", function(req, res, next) {
 	if (!pwd)
 		return res.json(models.error("Missing 'password'"));
 	console.log("Create user",login,name,pwd);
-	console.log("Would create with hash",crypto.encrypt(pwd));
+	var pwdhash = crypto.hash(pwd);
+	console.log("Would create with hash",pwdhash);
 
-	dbmod.userCreate(login, pwd, name, function(err) {
+	dbmod.userCreate(login, pwdhash, name, function(err) {
 		if (err)
 			res.json(models.error(err));
 		else
