@@ -34,4 +34,25 @@ router.post("/create", function(req, res, next) {
 	});
 });
 
+// Log in to the web site and get a bearer token.
+router.post("/login", function(req, res, next) {
+	var login = req.body.login;
+	if (!login)
+		return res.json(models.error("Missing 'login'"));
+	var pwd = req.body.password;
+	if (!pwd)
+		return res.json(models.error("Missing 'password'"));
+	var pwhash = crypto.hash(pwd);
+	console.log("Logging in user", login, pwhash);
+
+	dbmod.userLogin(login, pwhash, function(id, err) {
+		if (err)
+			res.json(models.error(err));
+		else {
+			var response = crypto.makeToken(id, login);
+			res.json(models.loginResponse(response));
+		}
+	});
+});
+
 module.exports = router;
