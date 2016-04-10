@@ -8,11 +8,19 @@
 var express = require("express");
 var router = express.Router();
 var dbmod = require("./../lib/db");
-var crypto = require("./../lib/crypto");
+var lscrypto = require("./../lib/crypto");
 var models = require("./../lib/models");
 
 // Add a user
 router.post("/create", function(req, res, next) {
+	var token = req.body.token;
+	if (!token)
+		return res.json(models.error("Missing 'token'"));
+
+	var tokenContents = lscrypto.validateToken(token);
+	if (!tokenContents)
+		return res.json(models.error("Token is invalid"));
+
 	var login = req.body.login;
 	if (!login)
 		return res.json(models.error("Missing 'login'"));
@@ -23,7 +31,7 @@ router.post("/create", function(req, res, next) {
 	if (!pwd)
 		return res.json(models.error("Missing 'password'"));
 	console.log("Create user",login,name,pwd);
-	var pwdhash = crypto.hash(pwd);
+	var pwdhash = lscrypto.hash(pwd);
 	console.log("Would create with hash",pwdhash);
 
 	dbmod.userCreate(login, pwdhash, name, function(err) {
@@ -42,14 +50,14 @@ router.post("/login", function(req, res, next) {
 	var pwd = req.body.password;
 	if (!pwd)
 		return res.json(models.error("Missing 'password'"));
-	var pwhash = crypto.hash(pwd);
+	var pwhash = lscrypto.hash(pwd);
 	console.log("Logging in user", login, pwhash);
 
 	dbmod.userLogin(login, pwhash, function(id, err) {
 		if (err)
 			res.json(models.error(err));
 		else {
-			var response = crypto.makeToken(id, login);
+			var response = lscrypto.makeToken(id, login);
 			res.json(models.loginResponse(response));
 		}
 	});
