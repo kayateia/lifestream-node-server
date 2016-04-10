@@ -13,6 +13,7 @@ var fs = require("fs");
 var dbmod = require("./../lib/db");
 var models = require("./../lib/models");
 var lscrypto = require("./../lib/crypto");
+var security = require("./../lib/security");
 
 /*var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
