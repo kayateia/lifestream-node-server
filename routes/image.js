@@ -60,7 +60,7 @@ router.post("/post", function(req, res, next) {
 
 		console.log(req.files);
 
-		if (!(/^[A-Za-z0-9_-]+\.[A-Za-z]+$/.test(req.files[0].originalname))) {
+		if (!(/^([A-Za-z0-9_-]+\.)+[A-Za-z]+$/.test(req.files[0].originalname))) {
 			return res.json(models.error("File name was invalid"));
 		}
 
