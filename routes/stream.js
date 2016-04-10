@@ -23,8 +23,29 @@ router.post("/list", function(req, res, next) {
 
 	dbmod.streamList(tokenContents.id, function(streams, err) {
 		if (err)
-			res.json(model.error(err));
+			res.json(models.error(err));
 		res.json(streams);
+	});
+});
+
+// Get the contents of a stream, sorted in reverse order by time,
+// and with the specified limit. The maximum limit is 1000.
+router.post("/:id/contents", function(req, res, next) {
+	var token = req.body.token;
+	if (!token)
+		return res.json(models.error("Missing 'token'"));
+
+	var tokenContents = lscrypto.validateToken(token);
+	if (!tokenContents)
+		return res.json(models.error("Token is invalid"));
+
+	// TODO: Check for stream access here.
+
+	dbmod.streamContents(req.params.id, 0, function(rows, err) {
+		if (err)
+			res.json(models.error(err));
+		else
+			res.json(models.streamContents(rows));
 	});
 });
 
