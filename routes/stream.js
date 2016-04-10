@@ -7,18 +7,25 @@
 
 var express = require("express");
 var router = express.Router();
+var models = require("./../lib/models");
 var dbmod = require("./../lib/db");
+var lscrypto = require("./../lib/crypto");
 
-/* GET users listing. */
-router.get("/:id", function(req, res, next) {
-	console.log("db is",dbmod);
-	var db = dbmod.get();	
-	db.close();
+// Get the list of available streams.
+router.post("/list", function(req, res, next) {
+	var token = req.body.token;
+	if (!token)
+		return res.json(models.error("Missing 'token'"));
 
-	var result = [];
-	for (var i = 0; i < req.params.id; ++i)
-		result.push({test: 'foo', bar: 'baz'});
-	res.json(result);
+	var tokenContents = lscrypto.validateToken(token);
+	if (!tokenContents)
+		return res.json(models.error("Token is invalid"));
+
+	dbmod.streamList(tokenContents.id, function(streams, err) {
+		if (err)
+			res.json(model.error(err));
+		res.json(streams);
+	});
 });
 
 module.exports = router;
