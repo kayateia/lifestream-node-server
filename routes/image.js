@@ -86,4 +86,21 @@ router.post("/post", function(req, res, next) {
 	});
 });
 
+router.post("/get/:id", function(req, res, next) {
+	var token = req.body.token;
+	if (!token)
+		return res.json(models.error("Missing 'token'"));
+
+	var tokenContents = lscrypto.validateToken(token);
+	if (!tokenContents)
+		return res.json(models.error("Token is invalid"));
+
+	dbmod.imageGet(req.params.id, function(img, err) {
+		if (err)
+			return res.json(models.error(err));
+
+		res.sendFile(process.cwd() + "/uploads/" + img.userid + "/" + img.fn);
+	});
+});
+
 module.exports = router;
