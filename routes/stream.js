@@ -10,6 +10,7 @@ var router = express.Router();
 var models = require("./../lib/models");
 var dbmod = require("./../lib/db");
 var lscrypto = require("./../lib/crypto");
+var security = require("./../lib/security");
 
 // Get the list of available streams.
 router.get("/list", function(req, res, next) {
