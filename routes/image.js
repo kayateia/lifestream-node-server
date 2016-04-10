@@ -38,13 +38,9 @@ router.post("/post", function(req, res, next) {
 			return res.end("error uploading"+err);
 		}
 
-		var token = req.body.token;
-		if (!token)
-			return res.json(models.error("Missing 'token'"));
-
-		var tokenContents = lscrypto.validateToken(token);
+		var tokenContents = security.validateToken(req, res);
 		if (!tokenContents)
-			return res.json(models.error("Token is invalid"));
+			return;
 
 		var streamid = req.body.streamid;
 		if (!streamid)
@@ -86,14 +82,9 @@ router.post("/post", function(req, res, next) {
 	});
 });
 
-router.post("/get/:id", function(req, res, next) {
-	var token = req.body.token;
-	if (!token)
-		return res.json(models.error("Missing 'token'"));
-
-	var tokenContents = lscrypto.validateToken(token);
-	if (!tokenContents)
-		return res.json(models.error("Token is invalid"));
+router.get("/get/:id", function(req, res, next) {
+	if (!security.validateToken(req, res))
+		return;
 
 	dbmod.imageGet(req.params.id, function(img, err) {
 		if (err)

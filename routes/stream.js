@@ -12,14 +12,9 @@ var dbmod = require("./../lib/db");
 var lscrypto = require("./../lib/crypto");
 
 // Get the list of available streams.
-router.post("/list", function(req, res, next) {
-	var token = req.body.token;
-	if (!token)
-		return res.json(models.error("Missing 'token'"));
-
-	var tokenContents = lscrypto.validateToken(token);
-	if (!tokenContents)
-		return res.json(models.error("Token is invalid"));
+router.get("/list", function(req, res, next) {
+	if (!security.validateToken(req, res))
+		return;
 
 	dbmod.streamList(tokenContents.id, function(streams, err) {
 		if (err)
@@ -30,14 +25,9 @@ router.post("/list", function(req, res, next) {
 
 // Get the contents of a stream, sorted in reverse order by time,
 // and with the specified limit. The maximum limit is 1000.
-router.post("/:id/contents", function(req, res, next) {
-	var token = req.body.token;
-	if (!token)
-		return res.json(models.error("Missing 'token'"));
-
-	var tokenContents = lscrypto.validateToken(token);
-	if (!tokenContents)
-		return res.json(models.error("Token is invalid"));
+router.get("/:id/contents", function(req, res, next) {
+	if (!security.validateToken(req, res))
+		return;
 
 	// TODO: Check for stream access here.
 

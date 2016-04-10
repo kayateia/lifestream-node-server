@@ -10,16 +10,12 @@ var router = express.Router();
 var dbmod = require("./../lib/db");
 var lscrypto = require("./../lib/crypto");
 var models = require("./../lib/models");
+var security = require("./../lib/security");
 
 // Add a user
 router.post("/create", function(req, res, next) {
-	var token = req.body.token;
-	if (!token)
-		return res.json(models.error("Missing 'token'"));
-
-	var tokenContents = lscrypto.validateToken(token);
-	if (!tokenContents)
-		return res.json(models.error("Token is invalid"));
+	if (!security.validateToken(req, res))
+		return;
 
 	var login = req.body.login;
 	if (!login)
