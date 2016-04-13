@@ -39,59 +39,66 @@ router.post("/post", function(req, res, next) {
 			return res.end("error uploading"+err);
 		}
 
-		var tokenContents = security.validateLogin(req, res);
-		if (!tokenContents)
-			return;
+		security.validateLogin(req, res, function(err, tokenContents) {
+			if (err) {
+				return res.json(models.error(err));
+			}
 
-		var streamid = req.body.streamid;
-		if (!streamid)
-			return res.json(models.error("Missing 'streamid'"));
+			var streamid = req.body.streamid;
+			if (!streamid)
+				return res.json(models.error("Missing 'streamid'"));
 
-		// This one is optional.
-		var comment = req.body.comment;
-		if (!comment)
-			comment = "";
+			// This one is optional.
+			var comment = req.body.comment;
+			if (!comment)
+				comment = "";
 
-		if (!req.files || req.files.length != 1)
-			return res.json(models.error("Must be exactly one file present"));
+			if (!req.files || req.files.length != 1)
+				return res.json(models.error("Must be exactly one file present"));
 
-		console.log(req.files);
+			console.log(req.files);
 
-		if (!(/^([A-Za-z0-9_-]+\.)+[A-Za-z]+$/.test(req.files[0].originalname))) {
-			return res.json(models.error("File name was invalid"));
-		}
+			if (!(/^([A-Za-z0-9_-]+\.)+[A-Za-z]+$/.test(req.files[0].originalname))) {
+				return res.json(models.error("File name was invalid"));
+			}
 
-		try {
-			fs.accessSync("./uploads", fs.F_OK);
-		} catch (e) {
-			fs.mkdirSync("./uploads");
-		}
+			try {
+				fs.accessSync("./uploads", fs.F_OK);
+			} catch (e) {
+				fs.mkdirSync("./uploads");
+			}
 
-		var uploadPath = "./uploads/" + tokenContents.id;
-		try {
-			fs.accessSync(uploadPath, fs.F_OK);
-		} catch (e) {
-			fs.mkdirSync(uploadPath);
-		}
+			var uploadPath = "./uploads/" + tokenContents.id;
+			try {
+				fs.accessSync(uploadPath, fs.F_OK);
+			} catch (e) {
+				fs.mkdirSync(uploadPath);
+			}
 
-		fs.writeFileSync("./uploads/" + tokenContents.id + "/" + req.files[0].originalname,
-			req.files[0].buffer);
+			fs.writeFileSync("./uploads/" + tokenContents.id + "/" + req.files[0].originalname,
+				req.files[0].buffer);
 
-		dbmod.imageAdd(tokenContents.id, streamid, req.files[0].originalname, comment, function() {});
+			dbmod.imageAdd(tokenContents.id, streamid, req.files[0].originalname, comment, function() {});
 
-		return res.json(models.success());
+			return res.json(models.success());
+		});
+
 	});
 });
 
 router.get("/get/:id", function(req, res, next) {
-	if (!security.validateLogin(req, res))
-		return;
-
-	dbmod.imageGet(req.params.id, function(err, img) {
-		if (err)
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
 			return res.json(models.error(err));
+		}
 
-		res.sendFile(process.cwd() + "/uploads/" + img.userid + "/" + img.fn);
+		dbmod.imageGet(req.params.id, function(err, img) {
+			if (err) {
+				return res.json(models.error(err));
+			}
+
+			res.sendFile(process.cwd() + "/uploads/" + img.userid + "/" + img.fn);
+		});
 	});
 });
 
