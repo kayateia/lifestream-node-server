@@ -12,7 +12,7 @@ var fs = require("fs");
 
 var dbmod = require("./../lib/db");
 var models = require("./../lib/models");
-var lscrypto = require("./../lib/crypto");
+var lscrypto = require("./../lib/lscrypto");
 var security = require("./../lib/security");
 
 /*var storage = multer.diskStorage({
@@ -39,7 +39,7 @@ router.post("/post", function(req, res, next) {
 			return res.end("error uploading"+err);
 		}
 
-		var tokenContents = security.validateToken(req, res);
+		var tokenContents = security.validateLogin(req, res);
 		if (!tokenContents)
 			return;
 

@@ -8,13 +8,13 @@
 var express = require("express");
 var router = express.Router();
 var dbmod = require("./../lib/db");
-var lscrypto = require("./../lib/crypto");
+var lscrypto = require("./../lib/lscrypto");
 var models = require("./../lib/models");
 var security = require("./../lib/security");
 
 // Add a user
 router.post("/create", function(req, res, next) {
-	if (!security.validateToken(req, res))
+	if (!security.validateLogin(req, res))
 		return;
 
 	var login = req.body.login;
@@ -49,11 +49,11 @@ router.post("/login", function(req, res, next) {
 	var pwhash = lscrypto.hash(pwd);
 	console.log("Logging in user", login, pwhash);
 
-	dbmod.userLogin(login, pwhash, function(id, err) {
+	dbmod.userLogin(login, pwhash, function(err, id) {
 		if (err)
 			res.json(models.error(err));
 		else {
-			var response = lscrypto.makeToken(id, login);
+			var response = security.makeToken(id, login, pwhash);
 			res.json(models.loginResponse(response));
 		}
 	});

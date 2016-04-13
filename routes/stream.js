@@ -9,12 +9,12 @@ var express = require("express");
 var router = express.Router();
 var models = require("./../lib/models");
 var dbmod = require("./../lib/db");
-var lscrypto = require("./../lib/crypto");
+var lscrypto = require("./../lib/lscrypto");
 var security = require("./../lib/security");
 
 // Get the list of available streams.
 router.get("/list", function(req, res, next) {
-	if (!security.validateToken(req, res))
+	if (!security.validateLogin(req, res))
 		return;
 
 	dbmod.streamList(tokenContents.id, function(streams, err) {
@@ -27,7 +27,7 @@ router.get("/list", function(req, res, next) {
 // Get the contents of a stream, sorted in reverse order by time,
 // and with the specified limit. The maximum limit is 1000.
 router.get("/:id/contents", function(req, res, next) {
-	if (!security.validateToken(req, res))
+	if (!security.validateLogin(req, res))
 		return;
 
 	// TODO: Check for stream access here.
