@@ -32,7 +32,7 @@ router.get("/:id/contents", function(req, res, next) {
 
 	// TODO: Check for stream access here.
 
-	dbmod.streamContents(req.params.id, 0, function(rows, err) {
+	dbmod.streamContents(req.params.id, 50, function(err, rows) {
 		if (err)
 			res.json(models.error(err));
 		else
