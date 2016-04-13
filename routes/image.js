@@ -84,7 +84,7 @@ router.post("/post", function(req, res, next) {
 });
 
 router.get("/get/:id", function(req, res, next) {
-	if (!security.validateToken(req, res))
+	if (!security.validateLogin(req, res))
 		return;
 
 	dbmod.imageGet(req.params.id, function(err, img) {
