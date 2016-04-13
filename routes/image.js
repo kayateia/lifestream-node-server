@@ -87,7 +87,7 @@ router.get("/get/:id", function(req, res, next) {
 	if (!security.validateToken(req, res))
 		return;
 
-	dbmod.imageGet(req.params.id, function(img, err) {
+	dbmod.imageGet(req.params.id, function(err, img) {
 		if (err)
 			return res.json(models.error(err));
 
