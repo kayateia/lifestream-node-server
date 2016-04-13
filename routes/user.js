@@ -38,6 +38,21 @@ router.post("/create", function(req, res, next) {
 	});
 });
 
+// Exchange an existing token for a new one with an extended expiration time.
+router.get("/new-token", function(req, res, next) {
+	var token = security.validateLogin(req, res);
+	if (!token)
+		return;
+
+	dbmod.userGet(token.id, function(err, login, hash, name) {
+		if (err)
+			res.json(models.error(err));
+		else {
+			res.json(models.loginResponse(security.makeToken(token.id, login, hash)));
+		}
+	});
+});
+
 // Log in to the web site and get a bearer token.
 router.post("/login", function(req, res, next) {
 	var login = req.body.login;
