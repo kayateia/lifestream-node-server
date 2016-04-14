@@ -42,7 +42,11 @@ router.get("/:id/contents", function(req, res, next) {
 				return res.json(models.error(err));
 			}
 
-			res.json(models.streamContents(rows));
+			var images = [];
+			for (var i=0; i<rows.length; ++i)
+				images.push(models.image(rows[i].id, rows[i].fn, rows[i].userLogin, rows[i].uploadtime, rows[i].comment));
+
+			res.json(models.streamContents(images));
 		});
 	});
 });
