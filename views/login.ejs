@@ -1,0 +1,28 @@
+<% include header %>
+
+<% if (message) { %>
+	<div class="alert alert-<%= message.type %>">
+		<span class="glyphicon glyphicon-exclamation-sign"></span>
+		<span class="sr-only">Notification:</span>
+		<%= message.text %>
+	</div>
+<% } %>
+
+<div class="col-sm-offset-4 col-sm-4">
+	<h2 class="text-center">Sign in</h2>
+	<form ng-controller="LoginController as loginController" ng-submit="loginController.login()" id="loginForm">
+		<div class="form-group">
+			<label for="username" class="sr-only">Username</label>
+			<input id="username" ng-model="loginController.username" class="form-control" type="text" placeholder="Username" />
+		</div>
+		<div class="form-group">
+			<label for="password" class="sr-only">Password</label>
+			<input id="password" ng-model="loginController.password" class="form-control" type="password" placeholder="Password" />
+		</div>
+		<div class="text-center">
+			<button type="submit" class="btn btn-default">Sign in</button>
+		</div>
+	</form>
+</div>
+
+<% include footer %>
