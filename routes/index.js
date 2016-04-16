@@ -28,19 +28,25 @@ router.get("/login", function(req, res, next) {
 				templateVars.message = {
 					type: "danger",
 					text: req.query.detail
-				}
+				};
+				break;
+			case "logout":
+				templateVars.message = {
+					type: "info",
+					text: "You have logged out of this device. If other LifeStream clients are logged in to your account, they will remain logged in."
+				};
 				break;
 			case "session_timeout":
 				templateVars.message = {
 					type: "danger",
 					text: "Your session has expired. To continue using LifeStream, you will need to sign in again."
-				}
+				};
 				break;
 			case "successful_login":
 				templateVars.message = {
 					type: "success",
 					text: "You have logged in successfully."
-				}
+				};
 		}
 
 		// Redirect user to the URL they were trying to access before they
