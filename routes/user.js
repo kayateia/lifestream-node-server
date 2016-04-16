@@ -49,12 +49,12 @@ router.get("/new-token", function(req, res, next) {
 			return res.json(models.error(err));
 		}
 
-		dbmod.userGet(token.id, function(err, login, hash, name) {
+		dbmod.userGet(tokenContents.id, function(err, login, hash, name) {
 			if (err) {
 				return res.json(models.error(err));
 			}
 
-			res.json(models.loginResponse(security.makeToken(token.id, login, hash)));
+			res.json(models.loginResponse(security.makeToken(tokenContents.id, login, hash)));
 		});
 	});
 });
