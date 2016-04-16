@@ -3,5 +3,5 @@ lsApp.controller("LoginController", [ "lsSession", function(session) {
 
 		loginController.login = function() {
 			session.login(loginController.username, loginController.password);
-		}
+		};
 	}]);

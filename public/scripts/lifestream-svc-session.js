@@ -21,12 +21,12 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 					$window.alert("login failed: " + JSON.stringify(response.data));
 				}
 			);
-		}
+		};
 
 		session.logout = function() {
 			$cookies.remove("authorization");
 			$window.location.replace("/login?reason=logout");
-		}
+		};
 
 		session.refresh = function() {
 			$http.get("/api/user/new-token").then(
@@ -40,7 +40,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 					$window.alert("new-token request failed: " + JSON.stringify(response.data));
 				}
 			);
-		}
+		};
 
 		return session;
 	}]);

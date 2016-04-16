@@ -6,21 +6,21 @@ angular.module("LifeStreamKeepAlive", [ "LifeStreamSession" ])
 		keepalive.pinged = false; // has there been user activity recently?
 
 		keepalive.begin = function() {
-			if (keepalive.interval == undefined) {
+			if (keepalive.interval === undefined) {
 				keepalive.interval = $interval(keepalive.pingCheck, 3000);
 			}
-		}
+		};
 
 		keepalive.end = function() {
-			if (keepalive.interval != undefined) {
+			if (keepalive.interval !== undefined) {
 				keepalive.interval.cancel();
 				keepalive.interval = undefined;
 			}
-		}
+		};
 
 		keepalive.ping = function() {
 			keepalive.pinged = true;
-		}
+		};
 
 		keepalive.pingCheck = function() {
 			if (keepalive.pinged) {
@@ -28,7 +28,7 @@ angular.module("LifeStreamKeepAlive", [ "LifeStreamSession" ])
 				session.refresh();
 				keepalive.pinged = false;
 			}
-		}
+		};
 
 		return keepalive;
 	}]);
