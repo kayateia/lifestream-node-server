@@ -80,4 +80,27 @@ router.post("/login", function(req, res, next) {
 	});
 });
 
+// Check whether a user exists.
+router.get("/info/:login", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(models.error(err));
+		}
+
+		dbmod.userGetByLogin(req.params.login, function(err, row) {
+			if (err) {
+				return res.json(models.error(err));
+			}
+
+			res.json(models.userInfo({
+				id: row.id,
+				login: req.params.login,
+				name: row.name,
+				email: row.email,
+				isadmin: row.isadmin
+			}));
+		});
+	});
+});
+
 module.exports = router;
