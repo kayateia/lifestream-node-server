@@ -4,3 +4,6 @@ lifestream.db
 uploads/
 public/components/
 
+# Local changes only
+config.js
+

@@ -1,4 +1,6 @@
-LifeSharp - Instant Photo Sharing ... in C#
-Copyright (C) 2015-2016 Kayateia
+LifeStream - Instant Photo Sharing ... in NodeJS
+Copyright (C) 2016 Kayateia and Deciare
 
 Please see the GPLv3 under notes for license info.
+
+When installing, copy config.template.js to config.js and edit the values therein.
