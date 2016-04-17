@@ -51,7 +51,7 @@ router.get("/new-token", function(req, res, next) {
 
 		dbmod.userGetById(tokenContents.id, function(err, row) {
 			if (err) {
-				return res.json("Server database error", models.error(err));
+				return res.json(models.error("Server database error", err));
 			}
 
 			res.json(models.loginResponse(security.makeToken(tokenContents.id, row.login, row.pwhash)));
@@ -72,7 +72,7 @@ router.post("/login", function(req, res, next) {
 
 	dbmod.userLogin(login, pwhash, function(err, id) {
 		if (err)
-			res.json("Server database error", models.error(err));
+			res.json(models.error("Server datbase error", err));
 		else {
 			var response = security.makeToken(id, login, pwhash);
 			res.json(models.loginResponse(response));
@@ -89,7 +89,7 @@ router.get("/info/:login", function(req, res, next) {
 
 		dbmod.userGetByLogin(req.params.login, function(err, row) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(models.error("Server database error", err));
 			}
 
 			res.json(models.userInfo({
