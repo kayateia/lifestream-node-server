@@ -33,7 +33,6 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 				function done(response) {
 					if (response.data.success) {
 						$cookies.put("authorization", "Bearer " + response.data.token);
-						$window.alert("new-token request successful; new cookie set");
 					}
 				},
 				function fail(response) {

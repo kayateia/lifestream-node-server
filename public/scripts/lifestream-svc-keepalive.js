@@ -7,7 +7,7 @@ angular.module("LifeStreamKeepAlive", [ "LifeStreamSession" ])
 
 		keepalive.begin = function() {
 			if (keepalive.interval === undefined) {
-				keepalive.interval = $interval(keepalive.pingCheck, 3000);
+				keepalive.interval = $interval(keepalive.pingCheck, 300000);
 			}
 		};
 
@@ -24,7 +24,6 @@ angular.module("LifeStreamKeepAlive", [ "LifeStreamSession" ])
 
 		keepalive.pingCheck = function() {
 			if (keepalive.pinged) {
-				alert('User activity was present; refreshing session');
 				session.refresh();
 				keepalive.pinged = false;
 			}
