@@ -80,6 +80,33 @@ router.post("/login", function(req, res, next) {
 	});
 });
 
+// Register a device for push notifications. Parameters:
+// id: a string uniquely identifying the device
+// type: a string specifying the cloud service type (google, apple, microsoft)
+// token: a string containing a token to be used when identifying the device to the push service
+router.post("/register-device", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(models.error(err));
+		}
+
+		var serviceType = req.body.type;
+		console.log(serviceType);
+		console.log(dbmod.pushServiceTypes);
+		var serviceEnum = dbmod.pushServiceTypes[serviceType];
+		if (serviceEnum === undefined)
+			return res.json(models.error("Invalid service type", serviceType));
+
+		dbmod.registerDevice(tokenContents.id, req.body.id, serviceType, req.body.token, function(err) {
+			if (err) {
+				return res.json(models.error(err));
+			}
+
+			res.json(models.success());
+		});
+	});
+});
+
 // Check whether a user exists.
 router.get("/info/:login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
