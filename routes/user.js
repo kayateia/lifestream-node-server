@@ -107,7 +107,7 @@ router.post("/register-device", function(req, res, next) {
 	});
 });
 
-// Check whether a user exists.
+// Retrieve information about a user.
 router.get("/info/:login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {

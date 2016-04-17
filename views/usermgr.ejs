@@ -1,0 +1,14 @@
+<% include header %>
+
+<script src="/scripts/lifestream-app-usermgr.js"></script>
+
+<h1>User manager</h1>
+<div ng-controller="LifeStreamUserManager as usermgr">
+	<ul class="nav nav-pills nav-justified" role="navigation">
+		<li ng-repeat="op in usermgr.operations" ng-class="{ active: op.active }"><a href="#{{op.url}}">{{op.desc}}</a></li>
+	</ul>
+	<div ng-repeat="message in usermgr.messages" class="alert alert-{{message.type}}" role="alert">{{message.text}}</div>
+	<div ng-view></div>
+</div>
+
+<% include footer %>

@@ -58,6 +58,11 @@ router.get("/login", function(req, res, next) {
 
 	res.render("login", templateVars);
 });
+router.get("/usermgr", function(req, res, next) {
+	res.render("usermgr", {
+		title: "LifeStream - User manager"
+	});
+});
 router.get("/test", function(req, res, next) {
 	res.cookie("authorization", "Bearer " + security.makeToken(2, "deciare", lscrypto.hash("pass")));
 	res.render("index", { title: "LifeStream" });
