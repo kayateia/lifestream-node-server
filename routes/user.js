@@ -116,11 +116,42 @@ router.post("/info/:login", function(req, res, next) {
 		var pwd = req.body.password;
 		if (!pwd)
 			return res.json(models.error("Missing 'password'"));
+		var email = req.body.email ? req.body.email : "";
+		var isadmin = req.body.isadmin ? 1 : 0;
 		console.log("Create user",login,name,pwd);
 		var pwdhash = lscrypto.hash(pwd);
 		console.log("Would create with hash",pwdhash);
 
-		dbmod.userCreate(login, pwdhash, name, function(err) {
+		dbmod.userCreate(login, pwdhash, name, email, isadmin, function(err) {
+			if (err) {
+				return res.json(models.error(err));
+			}
+
+			res.json(models.success());
+		});
+	});
+});
+
+// Modify a user.
+router.put("/info/:login", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(models.error(err));
+		}
+
+		var login = req.params.login;
+		if (!login)
+			return res.json(models.error("Missing 'login'"));
+		var name = req.body.name;
+		if (!name)
+			return res.json(models.error("Missing 'name'"));
+		var pwd = req.body.password; // optional; leave password unchanged if blank
+		var pwdhash = pwd ? lscrypto.hash(pwd) : null;
+		var email = req.body.email ? req.body.email : "";
+		var isadmin = req.body.isadmin ? 1 : 0;
+		console.log("Would create with hash",pwdhash);
+
+		dbmod.userUpdate(login, pwdhash, name, email, isadmin, function(err) {
 			if (err) {
 				return res.json(models.error(err));
 			}
