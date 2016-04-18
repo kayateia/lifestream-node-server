@@ -3,8 +3,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 		var session = this;
 
 		session.login = function(username, password) {
-			$http.post("/api/user/login", {
-				login: username,
+			$http.post("/api/user/login/" + username, {
 				password: password
 			}).then(
 				function done(response) {

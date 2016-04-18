@@ -170,8 +170,7 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 	];
 
 	formCtrl.submit = function() {
-		$http.post("/api/user/create", {
-			login: formCtrl.login,
+		$http.post("/api/user/info/" + formCtrl.login, {
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email
