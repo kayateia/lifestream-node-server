@@ -67,7 +67,7 @@ router.post("/register-device", function(req, res, next) {
 		if (serviceEnum === undefined)
 			return res.json(models.error("Invalid service type", serviceType));
 
-		dbmod.registerDevice(tokenContents.id, req.body.id, serviceType, req.body.token, function(err) {
+		dbmod.deviceRegister(tokenContents.id, req.body.id, serviceEnum, req.body.token, function(err) {
 			if (err) {
 				return res.json(models.error(err));
 			}

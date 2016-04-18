@@ -14,6 +14,7 @@ var dbmod = require("./../lib/db");
 var models = require("./../lib/models");
 var lscrypto = require("./../lib/lscrypto");
 var security = require("./../lib/security");
+var device = require("./../lib/device");
 
 /*var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
@@ -83,7 +84,10 @@ router.post("/post", function(req, res, next) {
 					if (err)
 						res.json(models.error("Error adding image", err));
 					else {
-						res.json(models.success());
+						// Notify the appropriate push services of new messages available.
+						device.notify([streamid], function(err) {
+							res.json(models.success());
+						});
 					}
 				}
 			);

@@ -3,7 +3,7 @@ module.exports = {
 	tokenPassword: "thisisapassword!",
 
 	// Google GCM API key
-	apiKey: "xx",
+	googleApiKey: "xx",
 
 	// Default admin user login
 	adminLogin: "admin",
