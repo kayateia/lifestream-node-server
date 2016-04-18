@@ -102,9 +102,13 @@ router.get("/info/:login", function(req, res, next) {
 
 // Add a user
 router.post("/info/:login", function(req, res, next) {
-	security.validateLogin(req, res, function(err, tokenContents) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		if (err) {
 			return res.json(models.error(err));
+		}
+
+		if (!isAdmin) {
+			return res.json(models.error("Permission denied"));
 		}
 
 		var login = req.params.login;
@@ -134,9 +138,13 @@ router.post("/info/:login", function(req, res, next) {
 
 // Modify a user.
 router.put("/info/:login", function(req, res, next) {
-	security.validateLogin(req, res, function(err, tokenContents) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		if (err) {
 			return res.json(models.error(err));
+		}
+
+		if (!isAdmin) {
+			return res.json(models.error("Permission denied"));
 		}
 
 		var login = req.params.login;
@@ -162,9 +170,13 @@ router.put("/info/:login", function(req, res, next) {
 });
 
 router.delete("/info/:login", function(req, res, next) {
-	security.validateLogin(req, res, function(err, tokenContents) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		if (err) {
 			return res.json(models.error(err));
+		}
+
+		if (!isAdmin) {
+			return res.json(models.error("Permission denied"));
 		}
 
 		var login = req.params.login;

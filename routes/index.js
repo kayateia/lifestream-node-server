@@ -7,6 +7,7 @@
 
 var express = require("express");
 var router = express.Router();
+var models = require("./../lib/models");
 var lscrypto = require("./../lib/lscrypto");
 var security = require("./../lib/security");
 
@@ -59,8 +60,14 @@ router.get("/login", function(req, res, next) {
 	res.render("login", templateVars);
 });
 router.get("/usermgr", function(req, res, next) {
-	res.render("usermgr", {
-		title: "LifeStream - User manager"
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (!isAdmin) {
+			res.json(models.error("Permission denied"));
+		}
+
+		res.render("usermgr", {
+			title: "LifeStream - User manager"
+		});
 	});
 });
 router.get("/test", function(req, res, next) {
