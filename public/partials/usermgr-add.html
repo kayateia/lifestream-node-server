@@ -4,8 +4,9 @@
 			<div ng-class="[ 'form-group has-feedback', { 'has-success': usermgrForm[field.id].$touched && usermgrForm[field.id].$valid, 'has-error': usermgrForm[field.id].$touched && usermgrForm[field.id].$invalid } ]">
 				<label for="{{field.id}}" class="col-sm-3">{{field.label}}</label>
 				<div class="col-sm-9">
-					<input id="{{field.id}}" name="{{field.id}}" ng-model="formCtrl[field.id]" ng-blur="field.validator(usermgrForm[field.id])" type="{{field.type}}" class="form-control" ng-required="field.required" />
+					<input id="{{field.id}}" name="{{field.id}}" ng-model="formCtrl[field.id]" ng-blur="field.validator(usermgrForm[field.id])" type="{{field.type}}" class="form-control" ng-required="field.required" aria-describedby="{{field.id}}Help" />
 					<span ng-class="[ 'form-control-feedback glyphicon', { 'glyphicon-ok': usermgrForm[field.id].$touched && usermgrForm[field.id].$valid, 'glyphicon-remove': usermgrForm[field.id].$touched && usermgrForm[field.id].$invalid } ]" aria-hidden="true" />
+					<span ng-show="field.help" id="{{field.id}}Help" class="help-block">{{field.help}}</span>
 				</div>
 			</div>
 		</div>

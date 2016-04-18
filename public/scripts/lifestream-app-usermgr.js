@@ -76,7 +76,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 						if (response.data.success) {
 							usermgr.messages.validateLoginIsNew = {
 								type: "danger",
-								text: "User already exists."
+								text: "User " + login.$viewValue + " already exists."
 							}
 							login.$setValidity("exists", false);
 						}
@@ -102,6 +102,49 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 		}
 
 		return login.$valid;
+	};
+	// Optional callback argument is for passing data from the server
+	// response for further processing.
+	usermgr.validateLoginExists = function(login, callback) {
+		// If local validation passes, check whether the user already exists
+		// on the server side.
+		if (login.$viewValue) {
+			$http.get("/api/user/info/" + login.$viewValue)
+				.then(
+					function done(response) {
+						if (response.data.success) {
+							delete usermgr.messages.validateLoginIsNew;
+							login.$setValidity("exists", true);
+
+							if (callback) {
+								callback(response.data);
+							}
+						}
+						else {
+							usermgr.messages.validateLoginIsNew = {
+								type: "danger",
+								text: "User " + login.$viewValue + " doesn't exist."
+							}
+							login.$setValidity("exists", false);
+						}
+					},
+					function fail(response) {
+						usermgr.messages.validateLoginIsNew = {
+							type: "danger",
+							text: "Server error: " + response.status + " " + response.statusText
+						}
+						login.$setValidity("server", false);
+					}
+				);
+		}
+		else {
+			usermgr.messages.validateLoginIsNew = {
+				type: "danger",
+				text: "Username is required."
+			}
+		}
+
+		return login.$valid
 	};
 	usermgr.validatePassword = function(password) {
 		if (password.$invalid) {
@@ -141,6 +184,7 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 	formCtrl.fields = [
 		{
 			id: "login",
+			help: "User must not currently exist.",
 			label: "Login",
 			required: true,
 			type: "text",
@@ -166,6 +210,12 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 			required: false,
 			type: "email",
 			validator: usermgr.validateEmail
+		},
+		{
+			id: "isadmin",
+			label: "Is admin?",
+			required: false,
+			type: "checkbox"
 		}
 	];
 
@@ -173,7 +223,8 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 		$http.post("/api/user/info/" + formCtrl.login, {
 			password: formCtrl.password,
 			name: formCtrl.name,
-			email: formCtrl.email
+			email: formCtrl.email,
+			isadmin: formCtrl.isadmin
 		}).then(
 			function done(response) {
 				if (response.data.success) {
@@ -199,15 +250,89 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 	};
 }]);
 
-lsApp.controller("UserEditController", ["$scope", function($scope) {
+lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 
 	usermgr.activateTab("edit");
 
-	formCtrl.validate = function() {
-		alert("Edit form validation");
-	}
+	formCtrl.autofillForm = function(login) {
+		usermgr.validateLoginExists(login, function(data) {
+			// Prefill edit form info based on user info from server.
+			formCtrl.name = data.name;
+			formCtrl.email = data.email;
+			formCtrl.isadmin = data.isadmin ? true : false;
+		});
+	};
+
+	formCtrl.fields = [
+		{
+			id: "login",
+			help: "User must already exist.",
+			label: "Login",
+			required: true,
+			type: "text",
+			validator: formCtrl.autofillForm
+		},
+		{
+			id: "password",
+			help: "Leave blank to keep the current password.",
+			label: "Password",
+			required: false,
+			type: "password",
+			validator: usermgr.validatePassword
+		},
+		{
+			id: "name",
+			label: "Name",
+			required: true,
+			type: "text",
+			validator: usermgr.validateName
+		},
+		{
+			id: "email",
+			label: "Email address",
+			required: false,
+			type: "email",
+			validator: usermgr.validateEmail
+		},
+		{
+			id: "isadmin",
+			label: "Is admin?",
+			required: false,
+			type: "checkbox"
+		}
+	];
+
+	formCtrl.submit = function() {
+		$http.put("/api/user/info/" + formCtrl.login, {
+			password: formCtrl.password,
+			name: formCtrl.name,
+			email: formCtrl.email,
+			isadmin: formCtrl.isadmin
+		}).then(
+			function done(response) {
+				if (response.data.success) {
+					usermgr.messages.submitAdd = {
+						type: "success",
+						text: "User " + formCtrl.login + " successfully updated."
+					};
+				}
+				else {
+					usermgr.messages.submitAdd = {
+						type: "danger",
+						text: "User " + formCtrl.login + " could not be created: " + response.data.error
+					}
+				}
+			},
+			function fail(response) {
+				usermgr.messages.submitAdd = {
+					type: "danger",
+					text: "Server error: " + response.status + " " + response.statusText
+				}
+			}
+		);
+	};
 }]);
 
 lsApp.controller("UserDelController", [ "$scope", function($scope) {
