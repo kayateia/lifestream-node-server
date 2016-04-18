@@ -168,7 +168,10 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 		return email.$valid;
 	};
 
-	usermgr.activateTab("add");
+	// Default to the add user tab if one wasn't specified in the URL.
+	if (!$location.path()) {
+		usermgr.activateTab("add");
+	}
 
 	$scope.$on("$destroy", function() {
 		keepalive.end();
@@ -178,9 +181,22 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
+	// Make this controller instance available to the template.
+	$scope.formCtrl = formCtrl;
+	// Reference to the form.FormController instance, to be initialised by
+	// the template.
+	formCtrl.modelCtrl = undefined;
 
 	usermgr.activateTab("add");
 
+	// Form properties definition
+	$scope.formCtrl.form = {
+		id: "usermgrForm",
+		name: "usermgrForm",
+		submitButtonText: "Create user"
+	};
+
+	// Form fields definition
 	formCtrl.fields = [
 		{
 			id: "login",
@@ -253,6 +269,11 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
+	// Make this controller instance available to the template.
+	$scope.formCtrl = formCtrl;
+	// Reference to the form.FormController instance, to be initialised by
+	// the template.
+	formCtrl.modelCtrl = undefined;
 
 	usermgr.activateTab("edit");
 
@@ -265,6 +286,14 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 		});
 	};
 
+	// Form properties definition
+	$scope.formCtrl.form = {
+		id: "usermgrForm",
+		name: "usermgrForm",
+		submitButtonText: "Edit user"
+	};
+
+	// Form fields definition
 	formCtrl.fields = [
 		{
 			id: "login",
@@ -338,8 +367,22 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
+	// Make this controller instance available to the template.
+	$scope.formCtrl = formCtrl;
+	// Reference to the form.FormController instance, to be initialised by
+	// the template.
+	formCtrl.modelCtrl = undefined;
 
 	usermgr.activateTab("del");
+
+	// Form properties definition
+	$scope.formCtrl.form = {
+		id: "usermgrForm",
+		name: "usermgrForm",
+		submitButtonText: "Delete user"
+	};
+
+	// Form fields definition
 	formCtrl.fields = [
 		{
 			id: "login",
@@ -380,12 +423,15 @@ lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $htt
 lsApp.config([ "$routeProvider", function($routeProvider) {
 	$routeProvider
 		.when("/user/add", {
-			templateUrl: "./partials/usermgr-add.html"
+			controller: "UserAddController",
+			templateUrl: "./partials/horizontal-form.html"
 		})
 		.when("/user/edit", {
-			templateUrl: "./partials/usermgr-edit.html"
+			controller: "UserEditController",
+			templateUrl: "./partials/horizontal-form.html"
 		})
 		.when("/user/del", {
-			templateUrl: "./partials/usermgr-del.html"
+			controller: "UserDelController",
+			templateUrl: "./partials/horizontal-form.html"
 		});
 }]);

@@ -8,7 +8,9 @@
 		<li ng-repeat="op in usermgr.operations" ng-class="{ active: op.active }"><a href="#{{op.url}}">{{op.desc}}</a></li>
 	</ul>
 	<div ng-repeat="message in usermgr.messages" class="alert alert-{{message.type}}" role="alert">{{message.text}}</div>
-	<div ng-view></div>
+	<div class="col-sm-offset-2 col-sm-8">
+		<div ng-view></div>
+	</div>
 </div>
 
 <% include footer %>
