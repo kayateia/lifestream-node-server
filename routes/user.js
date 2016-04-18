@@ -161,4 +161,24 @@ router.put("/info/:login", function(req, res, next) {
 	});
 });
 
+router.delete("/info/:login", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(models.error(err));
+		}
+
+		var login = req.params.login;
+		if (!login)
+			return res.json(models.error("Missing 'login'"));
+
+		dbmod.userDelete(login, function(err) {
+			if (err) {
+				return res.json(models.error(err));
+			}
+
+			res.json(models.success());
+		});
+	});
+});
+
 module.exports = router;

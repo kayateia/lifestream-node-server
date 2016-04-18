@@ -228,20 +228,20 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.messages.submitAdd = {
+					usermgr.messages.submitFunc = {
 						type: "success",
 						text: "User " + formCtrl.login + " successfully created."
 					};
 				}
 				else {
-					usermgr.messages.submitAdd = {
+					usermgr.messages.submitFunc = {
 						type: "danger",
 						text: "User " + formCtrl.login + " could not be created: " + response.data.error
 					}
 				}
 			},
 			function fail(response) {
-				usermgr.messages.submitAdd = {
+				usermgr.messages.submitFunc = {
 					type: "danger",
 					text: "Server error: " + response.status + " " + response.statusText
 				}
@@ -313,20 +313,20 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.messages.submitAdd = {
+					usermgr.messages.submitFunc = {
 						type: "success",
 						text: "User " + formCtrl.login + " successfully updated."
 					};
 				}
 				else {
-					usermgr.messages.submitAdd = {
+					usermgr.messages.submitFunc = {
 						type: "danger",
 						text: "User " + formCtrl.login + " could not be created: " + response.data.error
 					}
 				}
 			},
 			function fail(response) {
-				usermgr.messages.submitAdd = {
+				usermgr.messages.submitFunc = {
 					type: "danger",
 					text: "Server error: " + response.status + " " + response.statusText
 				}
@@ -335,15 +335,46 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 	};
 }]);
 
-lsApp.controller("UserDelController", [ "$scope", function($scope) {
+lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 
 	usermgr.activateTab("del");
+	formCtrl.fields = [
+		{
+			id: "login",
+			help: "User must already exist.",
+			label: "Login",
+			required: true,
+			type: "text",
+			validator: usermgr.validateLoginExists
+		}
+	];
 
-	formCtrl.validate = function() {
-		alert("Delete form validation");
-	}
+	formCtrl.submit = function() {
+		$http.delete("/api/user/info/" + formCtrl.login, {}).then(
+			function done(response) {
+				if (response.data.success) {
+					usermgr.messages.submitFunc = {
+						type: "success",
+						text: "User " + formCtrl.login + " successfully deleted."
+					};
+				}
+				else {
+					usermgr.messages.submitFunc = {
+						type: "danger",
+						text: "User " + formCtrl.login + " could not be deleted: " + response.data.error
+					}
+				}
+			},
+			function fail(response) {
+				usermgr.messages.submitFunc = {
+					type: "danger",
+					text: "Server error: " + response.status + " " + response.statusText
+				}
+			}
+		);
+	};
 }]);
 
 lsApp.config([ "$routeProvider", function($routeProvider) {
