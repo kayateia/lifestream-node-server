@@ -78,9 +78,15 @@ router.post("/post", function(req, res, next) {
 			fs.writeFileSync("./uploads/" + tokenContents.id + "/" + req.files[0].originalname,
 				req.files[0].buffer);
 
-			dbmod.imageAdd(tokenContents.id, streamid, req.files[0].originalname, comment, function() {});
-
-			return res.json(models.success());
+			dbmod.imageAdd(tokenContents.id, [streamid], req.files[0].originalname, comment,
+				function(err) {
+					if (err)
+						res.json(models.error("Error adding image", err));
+					else {
+						res.json(models.success());
+					}
+				}
+			);
 		});
 
 	});
