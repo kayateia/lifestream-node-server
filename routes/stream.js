@@ -16,12 +16,12 @@ var security = require("./../lib/security");
 router.get("/list", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		dbmod.streamList(tokenContents.id, function(streams, err) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 			res.json(streams);
 		});
@@ -33,13 +33,13 @@ router.get("/list", function(req, res, next) {
 router.get("/:id/contents", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 		// TODO: Check for stream access here.
 
 		dbmod.streamContents(req.params.id, 50, function(err, rows) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 
 			var images = [];
