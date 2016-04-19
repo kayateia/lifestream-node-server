@@ -16,12 +16,12 @@ var security = require("./../lib/security");
 router.get("/new-token", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		dbmod.userGetById(tokenContents.id, function(err, row) {
 			if (err) {
-				return res.json(models.error("Server database error", err));
+				return res.json(err);
 			}
 
 			res.json(models.loginResponse(security.makeToken(tokenContents.id, row.login, row.pwhash)));
@@ -42,7 +42,7 @@ router.post("/login/:login", function(req, res, next) {
 
 	dbmod.userLogin(login, pwhash, function(err, id) {
 		if (err)
-			res.json(models.error("Server datbase error", err));
+			res.json(err);
 		else {
 			var response = security.makeToken(id, login, pwhash);
 			res.json(models.loginResponse(response));
@@ -57,7 +57,7 @@ router.post("/login/:login", function(req, res, next) {
 router.post("/register-device", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		var serviceType = req.body.type;
@@ -69,7 +69,7 @@ router.post("/register-device", function(req, res, next) {
 
 		dbmod.deviceRegister(tokenContents.id, req.body.id, serviceEnum, req.body.token, function(err) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 
 			res.json(models.success());
@@ -81,12 +81,12 @@ router.post("/register-device", function(req, res, next) {
 router.get("/info/:login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		dbmod.userGetByLogin(req.params.login, function(err, row) {
 			if (err) {
-				return res.json(models.error("Server database error", err));
+				return res.json(err);
 			}
 
 			res.json(models.userInfo({
@@ -104,7 +104,7 @@ router.get("/info/:login", function(req, res, next) {
 router.post("/info/:login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		var login = req.params.login;
@@ -124,7 +124,7 @@ router.post("/info/:login", function(req, res, next) {
 
 		dbmod.userCreate(login, pwdhash, name, email, isadmin, function(err) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 
 			res.json(models.success());
@@ -136,7 +136,7 @@ router.post("/info/:login", function(req, res, next) {
 router.put("/info/:login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		var login = req.params.login;
@@ -153,7 +153,7 @@ router.put("/info/:login", function(req, res, next) {
 
 		dbmod.userUpdate(login, pwdhash, name, email, isadmin, function(err) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 
 			res.json(models.success());
@@ -164,7 +164,7 @@ router.put("/info/:login", function(req, res, next) {
 router.delete("/info/:login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		var login = req.params.login;
@@ -173,7 +173,7 @@ router.delete("/info/:login", function(req, res, next) {
 
 		dbmod.userDelete(login, function(err) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 
 			res.json(models.success());

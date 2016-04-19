@@ -37,12 +37,12 @@ router.post("/post", function(req, res, next) {
 	upload(req, res, function(err) {
 		if (err) {
 			console.log("error is",err);
-			return res.end("error uploading"+err);
+			return res.json(models.error("Error uploading", err));
 		}
 
 		security.validateLogin(req, res, function(err, tokenContents) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 
 			var streamid = req.body.streamid;
@@ -82,7 +82,7 @@ router.post("/post", function(req, res, next) {
 			dbmod.imageAdd(tokenContents.id, [streamid], req.files[0].originalname, comment,
 				function(err) {
 					if (err)
-						res.json(models.error("Error adding image", err));
+						res.json(err);
 					else {
 						// Notify the appropriate push services of new messages available.
 						device.notify([streamid], function(err) {
@@ -99,12 +99,12 @@ router.post("/post", function(req, res, next) {
 router.get("/get/:id", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
-			return res.json(models.error(err));
+			return res.json(err);
 		}
 
 		dbmod.imageGet(req.params.id, function(err, img) {
 			if (err) {
-				return res.json(models.error(err));
+				return res.json(err);
 			}
 
 			res.sendFile(process.cwd() + "/uploads/" + img.userid + "/" + img.fn);
