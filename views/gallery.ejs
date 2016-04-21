@@ -1,0 +1,25 @@
+<% include header %>
+
+<script src="/scripts/lifestream-app-gallery.js"></script>
+
+<div ng-controller="LifeStreamGalleryController as gallery">
+	<div class="gallery-section">
+		<h2>Your uploads <small><a ng-click="gallery.expandMyImages()" href="#">More »</a></small></h2>
+		<div ng-repeat="image in gallery.images.mine" class="inline">
+			<div class="gallery-tile" style="background-image: url('{{image.url}}')">
+				<ul>
+					<li>{{image.uploader}}</li>
+					<li>{{image.uploadTime * 1000 | date : "medium"}}</li>
+					<li><span ng-show="image.comment" class="glyphicon glyphicon-comment" /></li>
+				</ul>
+			</div>
+		</div>
+	</div>
+	<div>
+		<h2>Streams you follow <small><a ng-click="gallery.expandStreamImages()" href="#">More »</a></small></h2>
+		<div ng-repeat="image in gallery.images.others">
+		</div>
+	</div>
+</div>
+
+<% include footer %>

@@ -17,6 +17,19 @@ router.get("/", function(req, res, next) {
 		title: "LifeStream"
 	});
 });
+router.get("/gallery", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		var templateVars = {
+			title: "LifeStream - Gallery"
+		}
+
+		if (isAdmin) {
+			templateVars.isAdmin = true;
+		}
+
+		res.render("gallery", templateVars);
+	});
+});
 router.get("/login", function(req, res, next) {
 	var templateVars = {
 		message: null,
