@@ -1,24 +1,59 @@
 <% include header %>
 
+<script>
+	// Template variables from server
+	var userLogin = '<%= userLogin %>';
+</script>
 <script src="/scripts/lifestream-app-gallery.js"></script>
+
+<!-- Testing navbar nesting -->
+<!--
+<nav class="navbar navbar-default navbar-fixed-top">
+	<div class="container">
+		<a class="navbar-brand" href="#">LifeStream</a>
+		<ul class="nav navbar-nav">
+			<li class="active"><a href="#">Link</a></li>
+			<li><a href="#">Link</a></li>
+		</ul>
+	</div>
+</nav>
+<div class="navbar navbar-inverse navbar-fixed-bottom">
+	<div class="container">
+		<ul class="nav navbar-nav">
+			<li><a href="#">Link</a></li>
+		</ul>
+	</div>
+</div>
+-->
 
 <div ng-controller="LifeStreamGalleryController as gallery">
 	<div class="gallery-section">
-		<h2>Your uploads <small><a ng-click="gallery.expandMyImages()" href="#">More »</a></small></h2>
-		<div ng-repeat="image in gallery.images.mine" class="inline">
-			<div class="gallery-tile" style="background-image: url('{{image.url}}')">
-				<ul>
-					<li>{{image.uploader}}</li>
-					<li>{{image.uploadTime * 1000 | date : "medium"}}</li>
-					<li><span ng-show="image.comment" class="glyphicon glyphicon-comment" /></li>
-				</ul>
+		<h2>Your uploads
+			<small>
+				<a ng-click="gallery.expandGrid(gallery.images.mine, gallery.myStreams)" ng-show="!gallery.images.mine.expanded" href="#">More »</a>
+				<a ng-click="gallery.collapseGrid(gallery.images.mine)" ng-show="gallery.images.mine.expanded" href="#">Less «</a>
+			</small>
+		</h2>
+		<div ng-class="[ 'gallery-grid', { expanded: gallery.images.mine.expanded } ]">
+			<div ng-repeat="image in gallery.images.mine">
+				<div ng-click="gallery.zoomImage(gallery.images.mine, $index)" class="gallery-tile" ng-style="{ 'background-image': 'url(' + image.thumbUrl + ')' }">
+					<ul>
+						<li>{{image.uploader}}</li>
+						<li>{{image.uploadTime * 1000 | date : "medium"}}</li>
+						<li><span ng-show="image.comment" class="glyphicon glyphicon-comment" /></li>
+					</ul>
+				</div>
 			</div>
 		</div>
 	</div>
-	<div>
+	<div class="gallery-section">
 		<h2>Streams you follow <small><a ng-click="gallery.expandStreamImages()" href="#">More »</a></small></h2>
-		<div ng-repeat="image in gallery.images.others">
+		<div class="gallery-grid">
+			<div ng-repeat="image in gallery.images.others">
+			</div>
 		</div>
+	</div>
+	<div ng-show="gallery.zoomed" class="gallery-zoom">
 	</div>
 </div>
 

@@ -9,16 +9,31 @@ a {
 	color: #00B7FF;
 }
 
+/* Fix for angular-bootstrap: https://angular-ui.github.io/bootstrap/ */
+.nav,
+.pagination,
+.carousel,
+.panel-title a {
+	cursor: pointer;
+}
+
 /* Kludge around the fact that Angular ngRepeat wraps each repetition with the
  * the element to which the ng-repeat tag was attached.
  *
  * A <div ng-repeat="..."> would therefore cause each repetition to be wrapped
  * inside a <div> tag, but gallery tiles should e displayed inline.
  */
-.gallery-section > div {
+.gallery-section div[ng-repeat] {
 	display: inline;
 }
 
+.gallery-grid {
+	overflow: scroll;
+	white-space: nowrap;
+}
+.gallery-grid.expanded {
+	white-space: normal;
+}
 .gallery-tile {
 	background-position: center;
 	background-size: cover;

@@ -127,7 +127,6 @@ router.get("/get/:id", function(req, res, next) {
 					if (err) {
 						res.json(err);
 					}
-					console.log("Sending scaled result...");
 					res.set("Content-Type", "image/" + path.extname(imageFile).substring(1));
 					res.send(buffer);
 				}
