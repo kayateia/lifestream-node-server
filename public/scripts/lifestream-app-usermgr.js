@@ -70,7 +70,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 		// If local validation passes, check whether the user already exists
 		// on the server side.
 		if (login.$viewValue) {
-			$http.get("/api/user/info/" + login.$viewValue)
+			$http.get("api/user/info/" + login.$viewValue)
 				.then(
 					function done(response) {
 						if (response.data.success) {
@@ -109,7 +109,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 		// If local validation passes, check whether the user already exists
 		// on the server side.
 		if (login.$viewValue) {
-			$http.get("/api/user/info/" + login.$viewValue)
+			$http.get("api/user/info/" + login.$viewValue)
 				.then(
 					function done(response) {
 						if (response.data.success) {
@@ -236,7 +236,7 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 	];
 
 	formCtrl.submit = function() {
-		$http.post("/api/user/info/" + formCtrl.login, {
+		$http.post("api/user/info/" + formCtrl.login, {
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email,
@@ -334,7 +334,7 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 	];
 
 	formCtrl.submit = function() {
-		$http.put("/api/user/info/" + formCtrl.login, {
+		$http.put("api/user/info/" + formCtrl.login, {
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email,
@@ -395,7 +395,7 @@ lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $htt
 	];
 
 	formCtrl.submit = function() {
-		$http.delete("/api/user/info/" + formCtrl.login, {}).then(
+		$http.delete("api/user/info/" + formCtrl.login, {}).then(
 			function done(response) {
 				if (response.data.success) {
 					usermgr.messages.submitFunc = {

@@ -39,15 +39,15 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$http", "lsKeepAlive
 	//   fromTime - (optional) UNIX time. Only load images older than this.
 	gallery.loadImages = function(arr, streams, fromTime) {
 		streams.forEach(function(id) {
-			$http.get("/api/stream/" +  id + "/contents?count=" + gallery.numPerLoad + (fromTime ? "&fromTime=" + fromTime : ""))
+			$http.get("api/stream/" +  id + "/contents?count=" + gallery.numPerLoad + (fromTime ? "&fromTime=" + fromTime : ""))
 				.then(
 					function done(response) {
 						if (response.data.success) {
 							response.data.images.forEach(function(image) {
 								// Add this image's info to the target array
 								arr.push({
-									thumbUrl: "/api/image/get/" + image.id + "?scaleTo=192&scaleMode=cover",
-									url: "/api/image/get/" + image.id,
+									thumbUrl: "api/image/get/" + image.id + "?scaleTo=192&scaleMode=cover",
+									url: "api/image/get/" + image.id,
 									uploader: image.userLogin,
 									uploadTime: image.uploadTime,
 									comment: image.comment

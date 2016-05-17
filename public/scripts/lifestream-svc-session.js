@@ -3,39 +3,39 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 		var session = this;
 
 		session.login = function(username, password) {
-			$http.post("/api/user/login/" + username, {
+			$http.post("api/user/login/" + username, {
 				password: password
 			}).then(
 				function done(response) {
 					if (response.data.success) {
 						$cookies.put("authorization", "Bearer " + response.data.token);
-						$window.location.replace("/login?reason=successful_login");
+						$window.location.replace("login?reason=successful_login");
 					}
 					else {
 						$cookies.remove("authorization");
-						$window.location.replace("/login?reason=failed_login&detail=" + encodeURIComponent(response.data.error));
+						$window.location.replace("login?reason=failed_login&detail=" + encodeURIComponent(response.data.error));
 					}
 				},
 				function fail(response) {
-					$window.alert("login failed: " + JSON.stringify(response.data));
+					$window.alert("login failed: " + response.status + " " + response.statusText);
 				}
 			);
 		};
 
 		session.logout = function() {
 			$cookies.remove("authorization");
-			$window.location.replace("/login?reason=logout");
+			$window.location.replace("login?reason=logout");
 		};
 
 		session.refresh = function() {
-			$http.get("/api/user/new-token").then(
+			$http.get("api/user/new-token").then(
 				function done(response) {
 					if (response.data.success) {
 						$cookies.put("authorization", "Bearer " + response.data.token);
 					}
 				},
 				function fail(response) {
-					$window.alert("new-token request failed: " + JSON.stringify(response.data));
+					$window.alert("new-token request failed: " + response.status + " " + response.statusText);
 				}
 			);
 		};
