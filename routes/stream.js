@@ -37,7 +37,17 @@ router.get("/:id/contents", function(req, res, next) {
 		}
 		// TODO: Check for stream access here.
 
-		dbmod.streamContents(req.params.id, 50, function(err, rows) {
+		// Return the number of images requested. The maximum limit is 1000.
+		// If an invalid number is specified, return 10 by default.
+		var count = Number(req.query.count);
+		if (!Number.isInteger(count) || count < 1) {
+			count = 10;
+		}
+		else if (count > 1000) {
+			count = 1000;
+		}
+
+		dbmod.streamContents(req.params.id, count, function(err, rows) {
 			if (err) {
 				return res.json(err);
 			}
