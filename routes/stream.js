@@ -47,7 +47,14 @@ router.get("/:id/contents", function(req, res, next) {
 			count = 1000;
 		}
 
-		dbmod.streamContents(req.params.id, count, function(err, rows) {
+		// Return images starting from the specified time. Images newer than
+		// the specified time will be ignored.
+		var olderThan = Number(req.query.olderThan);
+		if (!Number.isInteger(olderThan) || olderThan < 1) {
+			olderThan = null;
+		}
+
+		dbmod.streamContents(req.params.id, count, olderThan, function(err, rows) {
 			if (err) {
 				return res.json(err);
 			}
