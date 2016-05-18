@@ -1,7 +1,7 @@
 lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsKeepAlive", function($scope, $location, $http, keepalive) {
 	var usermgr = this;
 
-	usermgr.messages = {};
+	usermgr.alerts = {};
 	usermgr.operations = [
 		{
 			name: "add",
@@ -43,8 +43,8 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 			}
 		});
 
-		// Clear status messages from the previous tab.
-		usermgr.messages = {};
+		// Clear status alerts from the previous tab.
+		usermgr.alerts = {};
 	};
 
 	// Each validation function accepts a single argument from the template
@@ -74,30 +74,30 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 				.then(
 					function done(response) {
 						if (response.data.success) {
-							usermgr.messages.validateLoginIsNew = {
+							usermgr.alerts.validateLoginIsNew = {
 								type: "danger",
-								text: "User " + login.$viewValue + " already exists."
+								msg: "User " + login.$viewValue + " already exists."
 							}
 							login.$setValidity("exists", false);
 						}
 						else {
-							delete usermgr.messages.validateLoginIsNew;
+							delete usermgr.alerts.validateLoginIsNew;
 							login.$setValidity("exists", true);
 						}
 					},
 					function fail(response) {
-						usermgr.messages.validateLoginIsNew = {
+						usermgr.alerts.validateLoginIsNew = {
 							type: "danger",
-							text: "Server error: " + response.status + " " + response.statusText
+							msg: "Server error: " + response.status + " " + response.statusText
 						}
 						login.$setValidity("server", false);
 					}
 				);
 		}
 		else {
-			usermgr.messages.validateLoginIsNew = {
+			usermgr.alerts.validateLoginIsNew = {
 				type: "danger",
-				text: "Username is required."
+				msg: "Username is required."
 			}
 		}
 
@@ -113,7 +113,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 				.then(
 					function done(response) {
 						if (response.data.success) {
-							delete usermgr.messages.validateLoginIsNew;
+							delete usermgr.alerts.validateLoginIsNew;
 							login.$setValidity("exists", true);
 
 							if (callback) {
@@ -121,26 +121,26 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 							}
 						}
 						else {
-							usermgr.messages.validateLoginIsNew = {
+							usermgr.alerts.validateLoginIsNew = {
 								type: "danger",
-								text: "User " + login.$viewValue + " doesn't exist."
+								msg: "User " + login.$viewValue + " doesn't exist."
 							}
 							login.$setValidity("exists", false);
 						}
 					},
 					function fail(response) {
-						usermgr.messages.validateLoginIsNew = {
+						usermgr.alerts.validateLoginIsNew = {
 							type: "danger",
-							text: "Server error: " + response.status + " " + response.statusText
+							msg: "Server error: " + response.status + " " + response.statusText
 						}
 						login.$setValidity("server", false);
 					}
 				);
 		}
 		else {
-			usermgr.messages.validateLoginIsNew = {
+			usermgr.alerts.validateLoginIsNew = {
 				type: "danger",
-				text: "Username is required."
+				msg: "Username is required."
 			}
 		}
 
@@ -149,14 +149,14 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 	usermgr.validatePassword = function(password) {
 		if (password.$invalid) {
 		 	if (password.$error.required) {
-				usermgr.messages.validatePassword = {
+				usermgr.alerts.validatePassword = {
 					type: "danger",
-					text: "Password is required."
+					msg: "Password is required."
 				}
 			}
 		}
 		else {
-			delete usermgr.messages.validatePassword;
+			delete usermgr.alerts.validatePassword;
 		}
 
 		return password.$valid;
@@ -193,7 +193,7 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 	$scope.formCtrl.form = {
 		id: "usermgrForm",
 		name: "usermgrForm",
-		submitButtonText: "Create user"
+		submitButtonmsg: "Create user"
 	};
 
 	// Form fields definition
@@ -244,22 +244,22 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.messages.submitFunc = {
+					usermgr.alerts.submitFunc = {
 						type: "success",
-						text: "User " + formCtrl.login + " successfully created."
+						msg: "User " + formCtrl.login + " successfully created."
 					};
 				}
 				else {
-					usermgr.messages.submitFunc = {
+					usermgr.alerts.submitFunc = {
 						type: "danger",
-						text: "User " + formCtrl.login + " could not be created: " + response.data.error
+						msg: "User " + formCtrl.login + " could not be created: " + response.data.error
 					}
 				}
 			},
 			function fail(response) {
-				usermgr.messages.submitFunc = {
+				usermgr.alerts.submitFunc = {
 					type: "danger",
-					text: "Server error: " + response.status + " " + response.statusText
+					msg: "Server error: " + response.status + " " + response.statusText
 				}
 			}
 		);
@@ -290,7 +290,7 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 	$scope.formCtrl.form = {
 		id: "usermgrForm",
 		name: "usermgrForm",
-		submitButtonText: "Edit user"
+		submitButtonmsg: "Edit user"
 	};
 
 	// Form fields definition
@@ -342,22 +342,22 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.messages.submitFunc = {
+					usermgr.alerts.submitFunc = {
 						type: "success",
-						text: "User " + formCtrl.login + " successfully updated."
+						msg: "User " + formCtrl.login + " successfully updated."
 					};
 				}
 				else {
-					usermgr.messages.submitFunc = {
+					usermgr.alerts.submitFunc = {
 						type: "danger",
-						text: "User " + formCtrl.login + " could not be created: " + response.data.error
+						msg: "User " + formCtrl.login + " could not be created: " + response.data.error
 					}
 				}
 			},
 			function fail(response) {
-				usermgr.messages.submitFunc = {
+				usermgr.alerts.submitFunc = {
 					type: "danger",
-					text: "Server error: " + response.status + " " + response.statusText
+					msg: "Server error: " + response.status + " " + response.statusText
 				}
 			}
 		);
@@ -379,7 +379,7 @@ lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $htt
 	$scope.formCtrl.form = {
 		id: "usermgrForm",
 		name: "usermgrForm",
-		submitButtonText: "Delete user"
+		submitButtonmsg: "Delete user"
 	};
 
 	// Form fields definition
@@ -398,22 +398,22 @@ lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $htt
 		$http.delete("api/user/info/" + formCtrl.login, {}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.messages.submitFunc = {
+					usermgr.alerts.submitFunc = {
 						type: "success",
-						text: "User " + formCtrl.login + " successfully deleted."
+						msg: "User " + formCtrl.login + " successfully deleted."
 					};
 				}
 				else {
-					usermgr.messages.submitFunc = {
+					usermgr.alerts.submitFunc = {
 						type: "danger",
-						text: "User " + formCtrl.login + " could not be deleted: " + response.data.error
+						msg: "User " + formCtrl.login + " could not be deleted: " + response.data.error
 					}
 				}
 			},
 			function fail(response) {
-				usermgr.messages.submitFunc = {
+				usermgr.alerts.submitFunc = {
 					type: "danger",
-					text: "Server error: " + response.status + " " + response.statusText
+					msg: "Server error: " + response.status + " " + response.statusText
 				}
 			}
 		);
