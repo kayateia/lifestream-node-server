@@ -24,7 +24,8 @@ a {
  * inside a <div> tag, but gallery tiles should e displayed inline.
  */
 .gallery-section div[ng-repeat] {
-	display: inline;
+	display: inline-block;
+	margin-right: 4px;
 }
 
 .gallery-grid {
@@ -41,6 +42,9 @@ a {
 	height: 192px;
 	width: 192px;
 	vertical-align: bottom;
+}
+.gallery-tile.placeholder {
+	height: 1px;
 }
 .gallery-tile > ul {
 	background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
