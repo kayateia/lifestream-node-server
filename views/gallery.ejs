@@ -28,10 +28,18 @@
 
 <div ng-controller="LifeStreamGalleryController as gallery">
 	<div class="gallery-section">
-		<h2>Your uploads
+		<!-- Show the unaffixed header when the gallery is collapsed -->
+		<h2 ng-hide="gallery.images.mine.expanded">
+			Your uploads
 			<small>
-				<a ng-click="gallery.expandGrid(gallery.images.mine, gallery.myStreams)" ng-show="!gallery.images.mine.expanded" href="#">More »</a>
-				<a ng-click="gallery.collapseGrid(gallery.images.mine)" ng-show="gallery.images.mine.expanded" href="#">Less «</a>
+				<a ng-click="gallery.expandGrid(gallery.images.mine, gallery.myStreams)" href="#">More »</a>
+			</small>
+		</h2>
+		<!-- Show the affixed header when the gallery is expanded -->
+		<h2 data-spy="affix" data-offset-top="1" ng-show="gallery.images.mine.expanded">
+			Your uploads
+			<small>
+				<a ng-click="gallery.collapseGrid(gallery.images.mine)" href="#">Less «</a>
 			</small>
 		</h2>
 		<div ng-class="[ 'gallery-grid', { expanded: gallery.images.mine.expanded } ]" in-view-container>

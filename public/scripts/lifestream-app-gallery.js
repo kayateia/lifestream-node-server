@@ -80,6 +80,20 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 		});
 	};
 
+	// gallery.unloadImages()
+	//
+	//   Removes images from the end of a gallery.images array.
+	//
+	// Parameters:
+	//   arr - An array object under gallery.images
+	//   count - Number of images to unload
+	gallery.unloadImages = function(arr, count) {
+		for (var i = 0; i < count; i++) {
+			arr.pop();
+			arr.ids.pop();
+		}
+	};
+
 	// gallery.loadMoreImages()
 	//
 	//   Load one more row of images into an expanded gallery. This should be
@@ -138,9 +152,7 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 		// displayed images won't fit in the new width, unload the images
 		// that won't fit.
 		if (!arr.expanded) {
-			for (var i = arr.length; i > gallery.numImagesPerRow; i--) {
-				arr.pop();
-			}
+			gallery.unloadImages(arr, arr.length - gallery.numImagesPerRow);
 		}
 
 	}
