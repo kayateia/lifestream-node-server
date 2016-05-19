@@ -1,10 +1,10 @@
-lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsKeepAlive", "lsSession", "$timeout", "$window", function($scope, $element, $http, keepalive, session, $timeout, $window) {
+// Define the gallery controller
+lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsLightbox", "lsKeepAlive", "lsSession", "$timeout", "$window", function($scope, $element, $http, lsLightbox, keepalive, session, $timeout, $window) {
 	var gallery = this;
 
 	gallery.numImagesPerRow = 0; // Number of images that would fit on each row in the gallery, taking into account the width of the grid, the size of each thumbnail, and the margin between each thumbnail
 	gallery.myStreams = [ 1 ]; // TODO: replace with array of stream IDs owned by user. Generally, the array should contain a single element specifying the user's auto-upload stream; otherwise, the same image may appear multiple times in the gallery if it's referenced from multiple streams
 	gallery.subscribedStreams = [ 1 ]; //TODO: replace with array of stream IDs to which user is subscribed
-	gallery.zoomed = false; // true after user clicks on in image in the grid
 
 	// Each property under gallery.images is an array object. These array
 	// objects are intended to be populated by gallery.loadImages().
@@ -102,7 +102,9 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	//
 	// Parameters:
 	//   arr - An array object under gallery.images
-	gallery.loadMoreImages = function(arr) {
+	//   callback - (optional) Function to be called when server response has
+	//     been successfully processed.
+	gallery.loadMoreImages = function(arr, callback) {
 		// Only load more images if the gallery is expanded
 		if (!arr.expanded) {
 			return;
@@ -123,6 +125,10 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 			$timeout(function() {
 				angular.element(document).scroll();
 			}, 50);
+
+			if (callback) {
+				callback();
+			}
 		});
 	}
 
@@ -175,8 +181,8 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	//   arr - An array object populated by loadImages()
 	//   index - The index of the image within the array
 	gallery.zoomImage = function(arr, index) {
-		gallery.zoomed;
-		$window.location.href = arr[index].url;
+		lsLightbox.setGallery(gallery);
+		lsLightbox.openModal(arr, index);
 	};
 
 	// Watch the size of the gallery grid's element. We use this to calculate
