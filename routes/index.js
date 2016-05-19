@@ -13,14 +13,26 @@ var security = require("./../lib/security");
 
 /* GET home page. */
 router.get("/", function(req, res, next) {
-	res.render("index", {
-		title: "LifeStream"
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		var templateVars = {
+			isAdmin: isAdmin ? true: false,
+			userLogin: tokenContents ? tokenContents.login : null,
+			title: "LifeStream"
+		}
+		res.render("index", templateVars);
 	});
 });
 router.get("/gallery", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
+			isAdmin : isAdmin ? true: false,
+			userLogin: tokenContents ? tokenContents.login : null,
 			title: "LifeStream - Gallery"
+		}
+
+		// Not logged in; redirect to login page
+		if (!tokenContents) {
+			return res.redirect(302, "login?reason=session_timeout&fromUrl=" + encodeURIComponent(req.originalUrl));
 		}
 
 		if (isAdmin) {
@@ -31,61 +43,77 @@ router.get("/gallery", function(req, res, next) {
 	});
 });
 router.get("/login", function(req, res, next) {
-	var templateVars = {
-		message: null,
-		title: "LifeStream - Sign in"
-	};
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		var templateVars = {
+			fromUrl: req.query.fromUrl,
+			isAdmin: isAdmin ? true : false,
+			message: null,
+			userLogin: tokenContents ? tokenContents.login : null,
+			title: "LifeStream - Sign in"
+		};
 
-	if (req.query.reason) {
-		switch (req.query.reason) {
-			case "failed_login":
-				templateVars.message = {
-					type: "danger",
-					text: req.query.detail
-				};
-				break;
-			case "logout":
-				templateVars.message = {
-					type: "info",
-					text: "You have logged out of this device. If other LifeStream clients are logged in to your account, they will remain logged in."
-				};
-				break;
-			case "session_timeout":
-				templateVars.message = {
-					type: "danger",
-					text: "Your session has expired. To continue using LifeStream, you will need to sign in again."
-				};
-				break;
-			case "successful_login":
-				templateVars.message = {
-					type: "success",
-					text: "You have logged in successfully."
-				};
+		// Already logged in
+		if (tokenContents) {
+			// Redirect user to the URL they were trying to access before they
+			// were redirected to the login page.
+			//
+			// If they're just logging in for the first time, redirect to the
+			// gallery page.
+			console.log("Redirect to: " + req.query.fromUrl);
+			res.redirect(302, req.query.fromUrl ? req.query.fromUrl : "gallery");
 		}
 
-		// Redirect user to the URL they were trying to access before they
-		// were redirected to the login page.
-		if (req.query.from) {
-			templateVars.fromUrl = req.query.from;
+		if (req.query.reason) {
+			switch (req.query.reason) {
+				case "failed_login":
+					templateVars.message = {
+						type: "danger",
+						text: req.query.detail
+					};
+					break;
+				case "logout":
+					templateVars.message = {
+						type: "info",
+						text: "You have logged out of this device. If other LifeStream clients are logged in to your account, they will remain logged in."
+					};
+					break;
+				case "session_timeout":
+					templateVars.message = {
+						type: "danger",
+						text: "Your session has expired. To continue using LifeStream, you will need to sign in again."
+					};
+					break;
+				case "successful_login":
+					templateVars.message = {
+						type: "success",
+						text: "You have logged in successfully."
+					};
+			}
 		}
-	}
 
-	res.render("login", templateVars);
+		res.render("login", templateVars);
+	});
 });
 router.get("/usermgr", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		var templateVars = {
+			isAdmin: isAdmin ? true: false,
+			userLogin: tokenContents ? tokenContents.login: null,
+			title: "LifeStream - User manager"
+		}
+
+		// Not logged in; redirect to login page
+		if (!tokenContents) {
+			return res.redirect(302, "login?reason=session_timeout&fromUrl=" + encodeURIComponent(req.originalUrl));
+		}
+
+		// No admin privs? No managing users.
 		if (!isAdmin) {
 			res.json(models.error("Permission denied"));
 		}
 
-		res.render("usermgr", {
-			title: "LifeStream - User manager"
-		});
+		res.render("usermgr", templateVars);
 	});
-});
-router.get("/test", function(req, res, next) {
-	res.cookie("authorization", "Bearer " + security.makeToken(2, "deciare", lscrypto.hash("pass")));
-	res.render("index", { title: "LifeStream" });
 });
 
 module.exports = router;

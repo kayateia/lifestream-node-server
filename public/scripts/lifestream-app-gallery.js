@@ -1,5 +1,5 @@
 // Define the gallery controller
-lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsLightbox", "lsKeepAlive", "lsSession", "$timeout", "$window", function($scope, $element, $http, lsLightbox, keepalive, session, $timeout, $window) {
+lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $http, lsLightbox, keepalive, $timeout, $window) {
 	var gallery = this;
 
 	gallery.numImagesPerRow = 0; // Number of images that would fit on each row in the gallery, taking into account the width of the grid, the size of each thumbnail, and the margin between each thumbnail
@@ -213,8 +213,6 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 		keepalive.begin();
 		// Load most recent images in streams on page load.
 		gallery.loadImages(gallery.images.mine, gallery.myStreams, gallery.numImagesPerRow);
-		// Load user info on page load
-		session.queryUserInfo(userLogin);
 	});
 
 	// Cancel keepalive timers when the app closes.

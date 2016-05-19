@@ -193,7 +193,7 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 	$scope.formCtrl.form = {
 		id: "usermgrForm",
 		name: "usermgrForm",
-		submitButtonmsg: "Create user"
+		submitButtonText: "Create user"
 	};
 
 	// Form fields definition
@@ -290,7 +290,7 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 	$scope.formCtrl.form = {
 		id: "usermgrForm",
 		name: "usermgrForm",
-		submitButtonmsg: "Edit user"
+		submitButtonText: "Edit user"
 	};
 
 	// Form fields definition
@@ -379,7 +379,7 @@ lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $htt
 	$scope.formCtrl.form = {
 		id: "usermgrForm",
 		name: "usermgrForm",
-		submitButtonmsg: "Delete user"
+		submitButtonText: "Delete user"
 	};
 
 	// Form fields definition
