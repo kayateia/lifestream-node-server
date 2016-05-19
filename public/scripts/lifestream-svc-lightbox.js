@@ -74,8 +74,11 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 
 	//alert(lsLightbox.Lightbox.index);
 	$scope.$watch("lightboxCtrl.Lightbox.index", function(newValue, oldValue) {
-		if (newValue === oldValue) {
-			// Nothing to do
+		// Nothing to do if:
+		if (newValue === oldValue // values didn't actually change
+			 || newValue == -1 // lightbox was closed, being shown now
+			 || newValue == 1  // lightbox is being closed
+			) {
 			return;
 		}
 
