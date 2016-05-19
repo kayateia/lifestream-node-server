@@ -72,7 +72,15 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 	lightboxCtrl.Lightbox = lsLightbox.Lightbox; // angular-bootstrap-lightbox instance
 	lightboxCtrl.gallery = lsLightbox.gallery; // LifeStreamGalleryController instance
 
-	//alert(lsLightbox.Lightbox.index);
+	// Watch which image is currently focused in the Lightbox. By defaut, the
+	// Lightbox wraps around to the first image when advancing past the last
+	// image. This doesn't play nice with our infinitely scrolling gallery
+	// because more images may be on the server, not yet loaded.
+	//
+	// The user should be able to keep advancing until they reach the last
+	// available image on the server. To achieve that, we watch the index of
+	// the currently focused image in the lightbox, and do additional
+	// processing based on that.
 	$scope.$watch("lightboxCtrl.Lightbox.index", function(newValue, oldValue) {
 		// Nothing to do if:
 		if (newValue === oldValue // values didn't actually change
@@ -83,21 +91,24 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		}
 
 		var arr = lightboxCtrl.gallery.images.mine;
-		if (arr.expanded) {
-			if (newValue - arr.length < lightboxCtrl.gallery.numImagesPerRow) {
-				lightboxCtrl.gallery.loadMoreImages(arr, function() {
-					lightboxCtrl.Lightbox.setImages(arr);
-				});
-			}
+		// If the gallery is expanded and the user has reached the nth-last
+		// image (where n is the number of images that'll fit on one row),
+		// pre-load the next row.
+		if (arr.expanded && newValue - arr.length < lightboxCtrl.gallery.numImagesPerRow) {
+			lightboxCtrl.gallery.loadMoreImages(arr, function() {
+				lightboxCtrl.Lightbox.setImages(arr);
+			});
 		}
-		else {
-			if (newValue < oldValue) {
-				lightboxCtrl.gallery.expandGrid(arr, lightboxCtrl.gallery.myStreams);
-				lightboxCtrl.gallery.loadMoreImages(arr, function() {
-					lightboxCtrl.Lightbox.setImages(arr);
-					lightboxCtrl.Lightbox.setImage(oldValue + 1);
-				});
-			}
+		// If the galery is collased and the user has reached the first image
+		// by wrapping around from the last image, expand the gallery and
+		// load another row of images. Then focus on the first image from the
+		// newly loaded row.
+		else if (newValue == 0 && oldValue == arr.length - 1) {
+			lightboxCtrl.gallery.expandGrid(arr, lightboxCtrl.gallery.myStreams);
+			lightboxCtrl.gallery.loadMoreImages(arr, function() {
+				lightboxCtrl.Lightbox.setImages(arr);
+				lightboxCtrl.Lightbox.setImage(oldValue + 1);
+			});
 		}
 	});
 }]);
