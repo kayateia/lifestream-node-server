@@ -1,11 +1,13 @@
 <div ng-controller="LifeStreamLightboxController as lightboxCtrl" class="modal-body">
+	<div class="lightbox-nav">
+		<button class="close" aria-hidden="true" ng-click="$dismiss()">×</button>
+		<button class="prev" aria-hidden="true" ng-click="Lightbox.prevImage()">&lt;</button>
+		<button class="next" aria-hidden="true" ng-click="Lightbox.nextImage()">&gt;</button>
+	</div>
 	<div class="lightbox-image-container" ng-swipe-left="lightbox.nextImage()" ng-swipe-right="lightbox.prevImage()">
-		<div class="lightbox-nav">
-			<button class="close" aria-hidden="true" ng-click="$dismiss()">×</button>
-		</div>
 		<div class=lightbox-image-caption>
 			<span>{{Lightbox.imageCaption}}</span>
 		</div>
-		<img lightbox-src="{{Lightbox.imageUrl}}" />
+		<a href="{{Lightbox.imageUrl}}" target="_blank"><img lightbox-src="{{Lightbox.imageUrl}}" /></a>
 	</div>
 </div>
