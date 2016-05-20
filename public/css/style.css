@@ -32,12 +32,6 @@ a {
 .gallery-section h2 {
 	z-index: 1;
 }
-/* Increase visual contrast of affixed header over scrolling images */
-.gallery-section h2.affix {
-	background-color: rgba(34, 34, 34, 0.67);
-	text-shadow: 0 1px 2px black;
-}
-
 /* A collapsed gallery grid should only be one row */
 .gallery-grid {
 	overflow: scroll;
@@ -47,16 +41,20 @@ a {
 .gallery-grid.expanded {
 	white-space: normal;
 }
-/* When the affixed gallery header switches from static positioning (default)
- * to fixed positioning (Bootstrap affix), the gallery grid rushes up to fill
- * the space left behind by the no-longer-static header.
- *
- * Use a padding-top based on Bootstrap's definition of h2 to counter that
- * effect.
- *   60px = 30px font-size + 20px margin-top + 10px margin-bottom
+/* Prevent the header and gallery tiles from seeming to jump when an expanded
+ * gallery's header switches from static to fixed positioning.
  */
-.affix + .gallery-grid.expanded {
-	padding-top: 60px;
+.gallery-section h2.affix {
+	margin-top: 0;
+	padding-bottom: 5px;
+	top: 0;
+	width: 100%;
+	/* Increase visual contrast of affixed header over scrolling images */
+	background-color: rgba(34, 34, 34, 0.67);
+	text-shadow: 0 1px 2px black;
+}
+h2.affix + .gallery-grid.expanded {
+	padding-top: 40px; /* 30px font-size + 10px margin-bottom */
 	z-index: 0; /* Keep gallery tiles beneath the affixed header */
 }
 
