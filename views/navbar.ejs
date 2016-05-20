@@ -18,8 +18,16 @@
 			<a class="navbar-brand" href="#">LifeStream</a>
 		</div>
 		<div class="collapse navbar-collapse" id="ls-navbar-collapsible">
-			<ul class="nav navbar-nav">
-				<li><a ng-click="navbar.toggleLogin()" href="#">{{navbar.loginLabel}}</a></li>
+			<% if (userLogin) { %>
+				<ul class="nav navbar-nav navbar-left">
+					<li ng-class="{ active: navbar.page == '/gallery' }"><a href="gallery">Gallery</a><li>
+					<% if (isAdmin) { %>
+						<li ng-class="{ active: navbar.page == '/usermgr' }"><a href="usermgr">User Manager</a></li>
+					<% } %>
+				</ul>
+			<% } %>
+			<ul class="nav navbar-nav navbar-right">
+				<li ng-class="{ active: navbar.page == '/login' }"><a ng-click="navbar.toggleLogin()" href="#">{{navbar.loginLabel}}</a></li>
 			</ul>
 		</div>
 	</div>

@@ -1,10 +1,5 @@
 <% include header %>
 <script src="scripts/lifestream-app-usermgr.js"></script>
-<script type="text/ng-template" id="alert.html">
-  <div class="alert" style="background-color:#fa39c3;color:white" role="alert">
-	<div ng-transclude></div>
-  </div>
-</script>
 <h1>User manager</h1>
 <div ng-controller="LifeStreamUserManager as usermgr" ng-keypress="usermgr.keepAlivePing()">
 	<ul class="nav nav-pills nav-justified" role="navigation">
