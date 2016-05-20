@@ -120,11 +120,12 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 			// being in-view again until the next scroll event.
 			//
 			// We work around this limitation by artificially generating a
-			// scroll event after a short delay. We cannot rely on
-			// $scope.$evalAsync() here because the delay is too short.
+			// scroll event after a 0 ms timeout. The timer is guaranteed to
+			// fire after the current closure is fully complete
+			// (i.e. the DOM is rendered).
 			$timeout(function() {
 				angular.element(document).scroll();
-			}, 50);
+			}, 0);
 
 			if (callback) {
 				callback();
