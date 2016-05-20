@@ -189,4 +189,20 @@ router.get("/get/:id", function(req, res, next) {
 	});
 });
 
+router.post("/comment/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		dbmod.imageComment(req.params.id, req.body.comment, tokenContents, function(err) {
+			if (err) {
+				return res.json(err);
+			}
+
+			res.json(models.success());
+		});
+	});
+});
+
 module.exports = router;

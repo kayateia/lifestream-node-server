@@ -54,6 +54,7 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 							response.data.images.forEach(function(image) {
 								// Add this image's info to the target array
 								arr.push({
+									id: image.id,
 									thumbUrl: "api/image/get/" + image.id + "?scaleTo=192&scaleMode=cover",
 									url: "api/image/get/" + image.id,
 									uploader: image.userLogin,

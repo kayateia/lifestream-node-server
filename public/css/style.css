@@ -115,7 +115,7 @@ a {
 	padding: 0 4px 4px 4px;
 	top: -15px;
 	right: -15px;
-	z-index: 2;
+	z-index: 2; /* layer above navigation controls */
 }
 .lightbox-nav .next,
 .lightbox-nav .prev {
@@ -126,7 +126,7 @@ a {
 	width: 45%;
 	height: 100%;
 	text-shadow: 0 2px 4px black;
-	z-index: 1;
+	z-index: 1; /* layer below comment text and close button */
 }
 .lightbox-nav .next:hover,
 .lightbox-nav .prev:hover {
@@ -155,4 +155,34 @@ a {
 		width: 25%;
 		left: -15px;
 	}
+}
+
+.lightbox-image-caption {
+	color: #eeeeee;
+	text-shadow: 0 0 0.2em #222222, 0 0 0.4em #444444;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	top: inherit; /* top needs to be specified here to override the value in  angular-bootstra-lightbox.css */
+	z-index: 2; /* layer above navigation controls */
+}
+.lightbox-image-caption span {
+	background: none;
+	box-shadow: none;
+}
+.lightbox-image-caption .btn-edit {
+	font-size: 0.67em;
+}
+
+.lightbox-image-container form {
+	padding: 0.5em 0.9em;
+	width: 100%;
+	position: absolute;
+	bottom: 0;
+	z-index: 2; /* layer above navigation controls */
+}
+
+.lightbox-image-container form input[type=text] {
+	background-color: rgba(34, 34, 34, 0.67);
+	color: #eeeeee;
 }

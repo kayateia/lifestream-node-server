@@ -1,4 +1,4 @@
-angular.module("LifeStreamLightbox", [ "ui.bootstrap", "bootstrapLightbox" ]);
+angular.module("LifeStreamLightbox", [ "ui.bootstrap", "bootstrapLightbox", "LifeStreamSession" ]);
 
 // Configure angular-bootstrap-lightbox for use by LifeStreamGalleryController
 angular.module("LifeStreamLightbox").config(["LightboxProvider", function(LightboxProvider) {
@@ -66,11 +66,74 @@ angular.module("LifeStreamLightbox").factory("lsLightbox", [ "Lightbox", functio
 // This controller manages the custom template's behaviour. It uses properties
 // belonging to the service to communicate with both
 // LifeStreamGalleryController and angular-bootstrap-lightbox.
-angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "lsLightbox", function($scope, lsLightbox) {
+angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "$http", "lsLightbox", "lsSession", "$timeout", "$window", function($scope, $http, lsLightbox, session, $timeout, $window) {
 	var lightboxCtrl = this;
 
-	lightboxCtrl.Lightbox = lsLightbox.Lightbox; // angular-bootstrap-lightbox instance
-	lightboxCtrl.gallery = lsLightbox.gallery; // LifeStreamGalleryController instance
+	lightboxCtrl.commentFormShown = false; // true when comment editor is shown
+	lightboxCtrl.isMyImage = false; // true when the current image was uploaded by the logged-in user
+	lightboxCtrl.newComment = ""; // edited comment is saved here
+
+	lightboxCtrl.hideCommentForm = function() {
+		lightboxCtrl.commentFormShown = false;
+		lightboxCtrl.newComment = "";
+
+		// Remove the event that caused clicking outside of the comment form to
+		// hide it
+		$(document).off("click.hideCommentForm");
+		$("#commentInputGroup").off("click.stopPropagation");
+	};
+
+	lightboxCtrl.showCommentForm = function($event) {
+		// Confirm that the uploader is the same as the current user
+		if (lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].uploader == session.user.login) {
+			lightboxCtrl.commentFormShown = true;
+
+			// Pre-populate input field with current comment
+			lightboxCtrl.newComment = lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].comment;
+
+			// Auto-focus the comment field after DOM is rendered
+			$timeout(function() {
+				$("#newComment").focus();
+			}, 0);
+			$event.stopPropagation();
+
+			// Clicking anywhere outside of the comment form will close it, but
+			// prevent clicking INSIDE the comment form from triggering a close
+			$("#commentInputGroup").on("click.stopPropagation", function(event) {
+				event.stopPropagation();
+			});
+			$(document).on("click.hideCommentForm", function() {
+				lightboxCtrl.hideCommentForm();
+			});
+		}
+	};
+
+	lightboxCtrl.saveComment = function() {
+		// Save lightboxCtrl.newComment for later use. By the time the server
+		// responds to the request, the form would have been hidden and the old
+		// value for lightboxCtrl.newComment would have been deleted.
+		var newComment = lightboxCtrl.newComment;
+
+		// Save new comment to the server
+		$http.post("api/image/comment/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id, {
+			comment: newComment
+		}).then(
+			function done(response) {
+				if (response.data.success) {
+					// Update the local data model
+					lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].comment = newComment;
+				}
+				else {
+					$window.alert("Comment update failed: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				$window.alert("Comment update failed: " + response.status + " " + response.statusText)
+			}
+		);
+
+		lightboxCtrl.hideCommentForm();
+	};
 
 	// Watch which image is currently focused in the Lightbox. By defaut, the
 	// Lightbox wraps around to the first image when advancing past the last
@@ -81,22 +144,35 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 	// available image on the server. To achieve that, we watch the index of
 	// the currently focused image in the lightbox, and do additional
 	// processing based on that.
-	$scope.$watch("lightboxCtrl.Lightbox.index", function(newValue, oldValue) {
-		// Nothing to do if:
+	$scope.$watch("Lightbox.index", function(newValue, oldValue) {
+		// Invalid state if lightbox has never been opened
+		if (newValue === -1) {
+			return;
+		}
+
+		var arr = lsLightbox.gallery.images.mine;
+
+		// Check if current image was uploaded by the logged-in user.
+		//
+		// This check has to come before the nothing-to-do check because
+		// closing the lightbox sets the index to 1. Putting this check after
+		// the nothing-to-do  check would therefore prevent the image at
+		// index 1 from ever being recognised as belonging to the logged-in user
+		lightboxCtrl.isMyImage = arr[newValue].uploader == session.user.login;
+
+		// Nothing more to do if:
 		if (newValue === oldValue // values didn't actually change
-			 || newValue == -1 // lightbox was closed, being shown now
-			 || newValue == 1  // lightbox is being closed
+			||newValue == 1 // lightbox is being closed
 			) {
 			return;
 		}
 
-		var arr = lightboxCtrl.gallery.images.mine;
 		// If the gallery is expanded and the user has reached the nth-last
 		// image (where n is the number of images that'll fit on one row),
 		// pre-load the next row.
-		if (arr.expanded && newValue - arr.length < lightboxCtrl.gallery.numImagesPerRow) {
-			lightboxCtrl.gallery.loadMoreImages(arr, function() {
-				lightboxCtrl.Lightbox.setImages(arr);
+		if (arr.expanded && newValue - arr.length < lsLightbox.gallery.numImagesPerRow) {
+			lsLightbox.gallery.loadMoreImages(arr, function() {
+				lsLightbox.Lightbox.setImages(arr);
 			});
 		}
 		// If the galery is collased and the user has reached the first image
@@ -104,10 +180,10 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		// load another row of images. Then focus on the first image from the
 		// newly loaded row.
 		else if (newValue == 0 && oldValue == arr.length - 1) {
-			lightboxCtrl.gallery.expandGrid(arr, lightboxCtrl.gallery.myStreams);
-			lightboxCtrl.gallery.loadMoreImages(arr, function() {
-				lightboxCtrl.Lightbox.setImages(arr);
-				lightboxCtrl.Lightbox.setImage(oldValue + 1);
+			lsLightbox.gallery.expandGrid(arr, lsLightbox.gallery.myStreams);
+			lsLightbox.gallery.loadMoreImages(arr, function() {
+				lsLightbox.Lightbox.setImages(arr);
+				lsLightbox.Lightbox.setImage(oldValue + 1);
 			});
 		}
 	});
