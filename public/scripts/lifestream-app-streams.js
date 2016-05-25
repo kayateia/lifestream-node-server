@@ -68,7 +68,7 @@ lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsKeep
 	});
 }]);
 
-lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeout", "$window", function($scope, $http, session, $timeout, $window) {
+lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSession", "$timeout", "$window", function($scope, $http, $interval, session, $timeout, $window) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -354,7 +354,16 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 	}
 
 	// Initialise page by loading available streams from the server.
-	formCtrl.loadStreams();
+	// Since session.user is populated asynchronously on page load, we need to
+	// wait until session data is actually available before attempting to load
+	// streams.
+	formCtrl.initLoadInterval = $interval(function() {
+			if (session.user.id) {
+					$interval.cancel(formCtrl.initLoadInterval);
+					delete formCtrl.initLoadInterval;
+					formCtrl.loadStreams();
+			}
+	}, 100);
 }]);
 
 lsApp.controller("SubscriptionsController", ["$scope", "$http", function($scope, $http) {
