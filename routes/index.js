@@ -94,6 +94,22 @@ router.get("/login", function(req, res, next) {
 		res.render("login", templateVars);
 	});
 });
+router.get("/streams", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		var templateVars = {
+			isAdmin: isAdmin ? true: false,
+			userLogin: tokenContents ? tokenContents.login: null,
+			title: "LifeStream - Streams"
+		}
+
+		// Not logged in; redirect to login page
+		if (!tokenContents) {
+			return res.redirect(302, "login?reason=session_timeout&fromUrl=" + encodeURIComponent(req.originalUrl));
+		}
+
+		res.render("streams", templateVars);
+	});
+});
 router.get("/usermgr", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {

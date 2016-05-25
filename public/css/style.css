@@ -195,7 +195,35 @@ h2.affix + .gallery-grid.expanded {
 .lightbox-image-container .btn-edit:hover {
 	color: #7FDAFF;
 	text-decoration: underline;
+}
 .lightbox-image-container form input[type=text] {
 	background-color: rgba(34, 34, 34, 0.67);
 	color: #eeeeee;
+}
+
+table.streams-editor th,
+table.streams-editor td {
+	padding: 0 15px; /* space between columns */
+	vertical-align: top;
+}
+table.streams-editor button.btn-link {
+	color: #eeeeee;
+}
+table.streams-editor button.btn-link:hover {
+	color: #7FDAFF;
+}
+table.streams-editor .stream-name {
+	/* Align label relative to where text would normally appear inside a form field  */
+	display: block;
+	margin: 8px 0 0 13px;
+}
+table.streams-editor .pending {
+	color: #888888;
+	margin-left: 10px;
+}
+table.streams-editor .pending button.btn-link {
+	color: #888888;
+}
+table.streams-editor .pending label {
+	font-weight: normal;
 }

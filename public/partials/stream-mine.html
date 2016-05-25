@@ -1,0 +1,85 @@
+<h2>Create a stream</h2>
+<form id="newStreamForm" name="newStreamForm" ng-submit="formCtrl.createStream(formCtrl.newStream.name, formCtrl.newStream.private)" class="form-horizontal">
+	<div class="form-group">
+		<label for="newStreamName" class="col-sm-3 control-label">Stream name</label>
+		<div class="col-sm-9">
+			<div class="input-group">
+				<input id="newStreamName" name="newStreamName" class="form-control" type="text" ng-model="formCtrl.newStream.name" />
+				<span class="input-group-btn">
+					<button type="submit" class="btn btn-default">
+						<span class="glyphicon glyphicon-plus" />
+					</button>
+				</span>
+			</div>
+		</div>
+	</div>
+	<div class="form-group">
+		<label for="newStreamPrivate" class="col-sm-3 control-label">Privacy</label>
+		<div class="col-sm-4">
+			<select id="newStreamPermission" name="newStreamPermission" ng-model="formCtrl.newStream.permission" class="form-control">
+				<option value="1">Public</option>
+				<option value="2">Needs approval</option>
+				<option value="3">Hidden</option>
+			</select>
+		</div>
+	</div>
+</form>
+<h2>Streams you own</h2>
+<table class="streams-editor col-sm-12">
+	<tr>
+		<th>Stream name</th>
+		<th>Private</th>
+		<th>Invite</th>
+		<th>Delete</th>
+	</tr>
+	<tr ng-repeat="stream in formCtrl.streams">
+		<td class="col-sm-4">
+			<form id="streamNameForm-{{stream.id}}" name="streamNameForm-{{stream.id}}" ng-submit="formCtrl.renameStream(stream.id, stream.newName, $index)">
+				<span ng-hide="formCtrl.renameStreamFormShown[stream.id]" ng-click="formCtrl.showRenameStreamForm(stream.id, $index)" class="stream-name">{{stream.name}}</span>
+				<div ng-show="formCtrl.renameStreamFormShown[stream.id]" class="input-group">
+					<input id="streamNewName-{{stream.id}}" name="streamNewName-{{stream.id}}" type="text" ng-model="stream.newName" class="form-control" />
+					<span class="input-group-btn">
+						<button id="streamRenameBtn-{{stream.id}}" name="streamRenameBtn-{{stream.id}}" type="submit" class="btn btn-default">
+							<span class="glyphicon glyphicon-pencil" />
+						</button>
+					</span>
+				</div>
+			</form>
+		</td>
+		<td class="col-sm-3">
+			<select id="streamPermission-{{stream.id}}" name="streamPermission-{{stream.id}}" ng-model="stream.permission" class="form-control">
+				<option value="1">Public</option>
+				<option value="2">Needs approval</option>
+				<option value="3">Hidden</option>
+			</select>
+		</td>
+		<td class="col-sm-4">
+			<form id="streamInviteForm-{{stream.id}}" name="streamInviteForm-{{stream.id}}" ng-submit="formCtrl.invite(stream.id, stream.newInvite, $index)">
+				<div class="input-group">
+					<input id="streamInviteRecipient-{{stream.id}}" name="streamInviteRecipient-{{stream.id}}" type="text" ng-model="stream.newInvite" class="form-control" />
+					<span class="input-group-btn">
+						<button id="streamInviteBtn-{{stream.id}}" name="streamInviteBtn-{{stream.id}}" type="submit" class="btn btn-default">
+							<span class="glyphicon glyphicon-envelope" />
+						</button>
+					</span>
+				</div>
+			</form>
+			<div ng-if="stream.invites.length > 0" class="pending">
+				Pending invites:
+				<ul>
+					<li ng-repeat="invite in stream.invites">
+						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userLogin}}</label>
+						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" ng-click="formCtrl.uninvite(stream.id, invite.userid, $index)" class="btn btn-link">
+							<span class="glyphicon glyphicon-remove" />
+						</button>
+					</li>
+				</ul>
+			</div>
+		</td>
+		<td class="col-sm-1">
+			<button id="streamDeleteBtn-{{stream.id}}" name="streamDeleteBtn-{{stream.id}}" ng-click="formCtrl.deleteStream(stream.id, $index)" class="btn btn-link">
+				<span class="glyphicon glyphicon-trash" />
+			</button>
+		</td>
+	</tr>
+</table>
