@@ -19,11 +19,13 @@ router.get("/list", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.streamList(tokenContents.id, function(streams, err) {
+		var includeHidden = req.query.userid == tokenContents.id;
+
+		dbmod.streamList(Number(req.query.userid), includeHidden, function(err, streams) {
 			if (err) {
 				return res.json(err);
 			}
-			res.json(streams);
+			res.json(models.streamList(streams));
 		});
 	});
 });
