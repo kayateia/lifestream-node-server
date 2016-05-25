@@ -70,4 +70,101 @@ router.get("/:id/contents", function(req, res, next) {
 	});
 });
 
+router.get("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		dbmod.streamInfo(req.params.id, function(err, stream) {
+			if (err) {
+				return res.json(err);
+			}
+
+			res.json(models.streamInfo(stream));
+		});
+	});
+});
+
+router.post("/", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (req.body.name == "") {
+			return res.json(models.error("Stream name cannot be blank"));
+		}
+
+		if (req.body.userid != tokenContents.id && !isAdmin) {
+			return res.json(models.error("Permission denied"));
+		}
+
+		dbmod.streamCreate(req.body.userid, req.body.name, Number(req.body.permission), function(err) {
+			if (err) {
+				return res.json(err);
+			}
+
+			res.json(models.success());
+		});
+	});
+});
+
+router.put("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (!req.body.name && !Number(req.body.permission)) {
+			// Nothing to do
+			res.json(models.error("No changes requested"));
+		}
+
+		dbmod.streamInfo(req.params.id, function(err, stream) {
+			if (err) {
+				return res.json(err);
+			}
+
+			if (stream.userid != tokenContents.id && !isAdmin) {
+				return res.json(models.error("Permission denied"));
+			}
+
+			dbmod.streamModify(req.params.id, req.body.name, Number(req.body.permission), function(err) {
+				if (err) {
+					return res.json(err);
+				}
+
+				res.json(models.success());
+			});
+		});
+	});
+});
+
+router.delete("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		dbmod.streamInfo(req.params.id, function(err, stream) {
+			if (err) {
+				return res.json(err);
+			}
+
+			if (stream.userid != tokenContents.id && !isAdmin) {
+				return res.json(models.error("Permission denied"));
+			}
+
+			dbmod.streamDelete(req.params.id, function(err) {
+				if (err) {
+					return res.json(err);
+				}
+
+				res.json(models.success());
+			});
+		});
+	});
+});
+
 module.exports = router;

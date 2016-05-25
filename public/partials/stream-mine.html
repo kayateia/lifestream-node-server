@@ -1,5 +1,5 @@
 <h2>Create a stream</h2>
-<form id="newStreamForm" name="newStreamForm" ng-submit="formCtrl.createStream(formCtrl.newStream.name, formCtrl.newStream.private)" class="form-horizontal">
+<form id="newStreamForm" name="newStreamForm" ng-submit="formCtrl.createStream(formCtrl.newStream.name.trim(), formCtrl.newStream.private)" class="form-horizontal">
 	<div class="form-group">
 		<label for="newStreamName" class="col-sm-3 control-label">Stream name</label>
 		<div class="col-sm-9">
@@ -34,7 +34,7 @@
 	</tr>
 	<tr ng-repeat="stream in formCtrl.streams">
 		<td class="col-sm-4">
-			<form id="streamNameForm-{{stream.id}}" name="streamNameForm-{{stream.id}}" ng-submit="formCtrl.renameStream(stream.id, stream.newName, $index)">
+			<form id="streamNameForm-{{stream.id}}" name="streamNameForm-{{stream.id}}" ng-submit="formCtrl.renameStream(stream.id, stream.newName.trim(), $index)">
 				<span ng-hide="formCtrl.renameStreamFormShown[stream.id]" ng-click="formCtrl.showRenameStreamForm(stream.id, $index)" class="stream-name">{{stream.name}}</span>
 				<div ng-show="formCtrl.renameStreamFormShown[stream.id]" class="input-group">
 					<input id="streamNewName-{{stream.id}}" name="streamNewName-{{stream.id}}" type="text" ng-model="stream.newName" class="form-control" />
@@ -47,7 +47,7 @@
 			</form>
 		</td>
 		<td class="col-sm-3">
-			<select id="streamPermission-{{stream.id}}" name="streamPermission-{{stream.id}}" ng-model="stream.permission" class="form-control">
+			<select id="streamPermission-{{stream.id}}" name="streamPermission-{{stream.id}}" ng-model="stream.permission" ng-change="formCtrl.setStreamPermission(stream.id, stream.permission, $index)" class="form-control">
 				<option value="1">Public</option>
 				<option value="2">Needs approval</option>
 				<option value="3">Hidden</option>

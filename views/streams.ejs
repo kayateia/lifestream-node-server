@@ -4,7 +4,7 @@
 	<ul class="nav nav-pills nav-justified" role="navigation">
 		<li ng-repeat="op in streams.operations" ng-class="{ active: op.active }"><a href="#{{op.url}}">{{op.desc}}</a></li>
 	</ul>
-	<uib-alert ng-repeat="alert in streams.alerts" type="{{alert.type}}">{{alert.msg}}</uib-alert>
+	<uib-alert ng-repeat="(key, alert) in streams.alerts" type="{{alert.type}}" close="streams.unsetAlert(key)">{{alert.msg}}</uib-alert>
 	<div class="col-sm-offset-1 col-sm-10">
 		<div ng-view></div>
 	</div>

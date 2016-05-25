@@ -47,6 +47,17 @@ lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsKeep
 		streams.alerts = {};
 	};
 
+	streams.setAlert = function(key, type, msg) {
+		streams.alerts[key] = {
+			type: type,
+			msg: msg
+		};
+	};
+
+	streams.unsetAlert = function(key) {
+		delete streams.alerts[key];
+	};
+
 	// Default to the add user tab if one wasn't specified in the URL.
 	if (!$location.path()) {
 		streams.activateTab("mine");
@@ -57,7 +68,7 @@ lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsKeep
 	});
 }]);
 
-lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeout", function($scope, $http, session, $timeout) {
+lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeout", "$window", function($scope, $http, session, $timeout, $window) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -107,26 +118,21 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 		$http.get("api/invite/" + streamId).then(
 			function done(response) {
 				if (response.data.success) {
-					delete streams.alerts.loadInvites;
+					streams.unsetAlert("loadInvites");
 					callback(response.data.invites);
 				}
 				else {
-					streams.alerts.loadInvites = {
-						type: "danger",
-						msg: "Invite status could not be loaded: " + response.data.error
-					}
+					streams.setAlert("loadInvites", "danger", "Invite status could not be loaded: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.alerts.loadInvites = {
-					type: "danger",
-					msg: "Server error: " + response.status + " " + response.statusText
-				}
+				streams.setAlert("loadInvites", "danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
 
 	formCtrl.loadStreams = function() {
+		formCtrl.streams = [];
 		$http.get("api/stream/list?userid=" + session.user.id).then(
 			function done(response) {
 				if (response.data.success) {
@@ -146,30 +152,73 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 							formCtrl.streams.push(stream);
 						});
 
-						delete streams.alerts.loadStreams;
+						streams.unsetAlert("loadStreams");
 					});
 				}
 				else {
-					streams.alerts.loadStreams = {
-						type: "danger",
-						msg: "Streams could not be loaded: " + response.data.error
-					}
+					streams.setAlert("loadStreams", "danger", "Streams could not be loaded: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.alerts.loadStreams = {
-					type: "danger",
-					msg: "Server error: " + response.status + " " + response.statusText
-				}
+				streams.setAlert("loadStreams", "danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
 
 	formCtrl.createStream = function(name, private) {
+		if (name == "") {
+			streams.setAlert("createStream", "danger", "Stream name cannot be blank");
+			return;
+		}
+
+		$http.post("api/stream",
+			{
+				userid: session.user.id,
+				name: formCtrl.newStream.name,
+				permission: formCtrl.newStream.permission
+			}
+		).then(
+			function done(response) {
+				if (response.data.success) {
+					streams.setAlert("createStream", "success", "New stream created.");
+
+					// Refresh list of streams
+					formCtrl.loadStreams();
+				}
+				else {
+					streams.setAlert("createStream", "danger", "Could not create stream: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				streams.setAlert("createStream", "danger", "Server error: " + response.status + " " + response.statusText);
+			}
+		);
 	};
 
 	formCtrl.deleteStream = function(streamId, $index) {
 		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+
+		var confirm = $window.confirm("Really delete the stream named \"" + formCtrl.streams[$index].name + "\"?");
+		if (!confirm) {
+			return;
+		}
+
+		$http.delete("api/stream/" + streamId).then(
+			function done(response) {
+				if (response.data.success) {
+					streams.unsetAlert("deleteStream");
+
+					// Refresh list of streams
+					formCtrl.loadStreams();
+				}
+				else {
+					streams.setAlert("deleteStream", "danger", "Could not delete stream: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				streams.setAlert("deleteStream", "danger", "Server error: " + response.status + " " + response.statusText);
+			}
+		);
 	};
 
 	formCtrl.invite = function(streamId, userLogin, $index) {
@@ -181,9 +230,32 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 	};
 
 	formCtrl.renameStream = function(streamId, name, $index) {
-		var stream = $index === undefined ?  formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
 
-		formCtrl.hideRenameStreamForm(stream.id, $index);
+		if (name == "") {
+			streams.setAlert("createStream", "danger", "Stream name cannot be blank");
+			return;
+		}
+
+		$http.put("api/stream/" + streamId,
+			{
+				name: name
+			}
+		).then(
+			function done(response) {
+				if (response.data.success) {
+					formCtrl.streams[$index].name = name
+					formCtrl.hideRenameStreamForm(stream.id, $index);
+					streams.unsetAlert("renameStream");
+				}
+				else {
+					streams.setAlert("renameStream", "danger", "Could not create stream: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				streams.setAlert("renameStream", "danger", "Server error: " + response.status + " " + response.statusText);
+			}
+		);
 	};
 
 	formCtrl.showRenameStreamForm = function(streamId, $index) {
@@ -191,6 +263,9 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 
 		stream.newName = stream.name;
 		formCtrl.renameStreamFormShown[stream.id] = true;
+		$timeout(function() {
+			$("#streamNewName-" + stream.id).focus();
+		}, 0);
 	};
 
 	formCtrl.hideRenameStreamForm = function(streamId, $index) {
@@ -198,6 +273,28 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 
 		formCtrl.renameStreamFormShown[stream.id] = false;
 	};
+
+	formCtrl.setStreamPermission = function(streamId, permission, $index) {
+		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+
+		$http.put("api/stream/" + streamId,
+			{
+				permission: formCtrl.streams[$index].permission
+			}
+		).then(
+			function done(response) {
+				if (response.data.success) {
+					streams.unsetAlert("setStreamPermission");
+				}
+				else {
+					streams.setAlert("setStreamPermission", "danger", "Could not create stream: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				streams.setAlert("setStreamPermission", "danger", "Server error: " + response.status + " " + response.statusText);
+			}
+		);
+	}
 
 	// Initialise page by loading available streams from the server.
 	formCtrl.loadStreams();
