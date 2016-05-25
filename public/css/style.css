@@ -7,6 +7,15 @@ body {
 
 a {
 	color: #00B7FF;
+	text-decoration: none;
+}
+a:hover {
+	color: #7FDAFF;
+	text-decoration: underline;
+}
+
+.navbar .navbar-brand {
+	color: #854E83;
 }
 
 /* Fix for angular-bootstrap: https://angular-ui.github.io/bootstrap/ */
@@ -180,6 +189,12 @@ h2.affix + .gallery-grid.expanded {
 	z-index: 2; /* layer above navigation controls */
 }
 
+.lightbox-image-container .btn-edit {
+	cursor: pointer;
+}
+.lightbox-image-container .btn-edit:hover {
+	color: #7FDAFF;
+	text-decoration: underline;
 .lightbox-image-container form input[type=text] {
 	background-color: rgba(34, 34, 34, 0.67);
 	color: #eeeeee;
