@@ -189,7 +189,7 @@ router.get("/get/:id", function(req, res, next) {
 	});
 });
 
-router.post("/comment/:id", function(req, res, next) {
+router.post("/:id/comment", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
 			return res.json(err);
