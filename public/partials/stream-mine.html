@@ -32,7 +32,7 @@
 		<th>Invite</th>
 		<th>Delete</th>
 	</tr>
-	<tr ng-repeat="stream in formCtrl.streams">
+	<tr ng-repeat="stream in formCtrl.streams" ng-init="streamIndex = $index">
 		<td class="col-sm-4">
 			<form id="streamNameForm-{{stream.id}}" name="streamNameForm-{{stream.id}}" ng-submit="formCtrl.renameStream(stream.id, stream.newName.trim(), $index)">
 				<span ng-hide="formCtrl.renameStreamFormShown[stream.id]" ng-click="formCtrl.showRenameStreamForm(stream.id, $index)" class="stream-name">{{stream.name}}</span>
@@ -69,7 +69,7 @@
 				<ul>
 					<li ng-repeat="invite in stream.invites">
 						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userLogin}}</label>
-						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" ng-click="formCtrl.uninvite(stream.id, invite.userid, $index)" class="btn btn-link">
+						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" ng-click="formCtrl.uninvite(stream.id, invite.userid, streamIndex)" class="btn btn-link">
 							<span class="glyphicon glyphicon-remove" />
 						</button>
 					</li>

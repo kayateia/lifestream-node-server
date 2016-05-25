@@ -12,7 +12,7 @@ var dbmod = require("./../lib/db");
 var lscrypto = require("./../lib/lscrypto");
 var security = require("./../lib/security");
 
-// Get the list of available streams.
+// Get list of invites for the given stream
 router.get("/:id", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
@@ -24,6 +24,46 @@ router.get("/:id", function(req, res, next) {
 				return res.json(err);
 			}
 			res.json(models.inviteList(invites));
+		});
+	});
+});
+
+// Create invite for stream
+router.post("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (Number(req.body.userid) < 1) {
+			return res.json(models.error("Missing 'userid'"));
+		}
+
+		dbmod.inviteCreate(Number(req.params.id), Number(req.body.userid), function(err, invites) {
+			if (err) {
+				return res.json(err);
+			}
+			res.json(models.success());
+		});
+	});
+});
+
+// Revoke invite for stream
+router.delete("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (Number(req.query.userid) < 1) {
+			return res.json(models.error("Missing 'userid'"));
+		}
+
+		dbmod.inviteDelete(Number(req.params.id), Number(req.query.userid), function(err) {
+			if (err) {
+				return res.json(err);
+			}
+			res.json(models.success());
 		});
 	});
 });

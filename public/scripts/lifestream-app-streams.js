@@ -198,7 +198,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 	formCtrl.deleteStream = function(streamId, $index) {
 		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
 
-		var confirm = $window.confirm("Really delete the stream named \"" + formCtrl.streams[$index].name + "\"?");
+		var confirm = $window.confirm("Really delete the stream named \"" + stream.name + "\"?");
 		if (!confirm) {
 			return;
 		}
@@ -223,10 +223,67 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 
 	formCtrl.invite = function(streamId, userLogin, $index) {
 		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+
+		$http.get("api/user/info/" + stream.newInvite).then(
+			function done(response) {
+				if (response.data.success) {
+					streams.unsetAlert("invite");
+
+					$http.post("api/invite/" + stream.id,
+						{
+							userid: response.data.id
+						}
+					).then(
+						function done(response2) {
+							if (response2.data.success) {
+								stream.invites.push({
+									streamid: streamId,
+									userLogin: userLogin,
+									userid: response.data.id
+								});
+								streams.setAlert("invite", "success", userLogin + " has been invited to " + stream.name);
+							}
+							else {
+								streams.setAlert("invite", "danger", "Could not invite " + userLogin + ": " + response2.data.error);
+							}
+						},
+						function fail(response2) {
+							streams.setAlert("invite", "danger", "Server error: " + response2.status + " " + response2.statusText);
+						}
+					);
+				}
+				else {
+					streams.setAlert("invite", "danger", "Could not invite: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				streams.setAlert("invite", "danger", "Server error: " + response.status + " " + response.statusText);
+			}
+		);
 	};
 
 	formCtrl.uninvite = function(streamId, userId, $index) {
 		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+
+		$http.delete("api/invite/" + streamId + "?userid=" + userId).then(
+			function done(response) {
+				if (response.data.success) {
+					var removed = undefined;
+					stream.invites.forEach(function(invite, index) {
+						if (invite.userid == userId) {
+							removed = stream.invites.splice(index, 1);
+						}
+					});
+					streams.setAlert("uninvite", "success", removed[0].userLogin + "'s invitation to " + stream.name + " was revoked");
+				}
+				else {
+					streams.setAlert("uninvite", "danger", "Could not revoke invitation: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				streams.setAlert("uninvite", "danger", "Server error: " + response.status + " " + response.statusText);
+			}
+		);
 	};
 
 	formCtrl.renameStream = function(streamId, name, $index) {
@@ -244,7 +301,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 		).then(
 			function done(response) {
 				if (response.data.success) {
-					formCtrl.streams[$index].name = name
+					stream.name = name
 					formCtrl.hideRenameStreamForm(stream.id, $index);
 					streams.unsetAlert("renameStream");
 				}
@@ -279,7 +336,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "lsSession", "$timeo
 
 		$http.put("api/stream/" + streamId,
 			{
-				permission: formCtrl.streams[$index].permission
+				permission: stream.permission
 			}
 		).then(
 			function done(response) {
