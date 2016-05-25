@@ -4,7 +4,7 @@
 		  $scope === this) -->
 	<div ng-init="formCtrl.modelCtrl = this[formCtrl.form.name]" ng-repeat="field in formCtrl.fields">
 		<div ng-class="[ 'form-group has-feedback', { 'has-success': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$valid, 'has-error': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$invalid } ]">
-			<label for="{{field.id}}" class="col-sm-3">{{field.label}}</label>
+			<label for="{{field.id}}" class="col-sm-3 control-label">{{field.label}}</label>
 			<div class="col-sm-9">
 				<input id="{{field.id}}" name="{{field.id}}" ng-model="formCtrl[field.id]" ng-blur="field.validator(formCtrl.modelCtrl[field.id])" type="{{field.type}}" class="form-control" ng-required="field.required" aria-describedby="{{field.id}}Help" />
 				<span ng-class="[ 'form-control-feedback glyphicon', { 'glyphicon-ok': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$valid, 'glyphicon-remove': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$invalid } ]" aria-hidden="true" />
