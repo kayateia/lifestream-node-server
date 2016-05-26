@@ -1,4 +1,20 @@
-lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsKeepAlive", function($scope, $location, $http, keepalive) {
+lsApp.config([ "$routeProvider", function($routeProvider) {
+	$routeProvider
+		.when("/mine", {
+			controller: "MyStreamsController",
+			templateUrl: "./partials/stream-mine.html"
+		})
+		.when("/subscriptions", {
+			controller: "SubscriptionsController",
+			templateUrl: "./partials/horizontal-form.html"
+		})
+		.when("/subscribers", {
+			controller: "SubscribersController",
+			templateUrl: "./partials/horizontal-form.html"
+		})
+}]);
+
+lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsKeepAlive", "$timeout", function($scope, $location, $http, keepalive, $timeout) {
 	var streams = this;
 
 	streams.alerts = {};
@@ -44,18 +60,26 @@ lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsKeep
 		});
 
 		// Clear status alerts from the previous tab.
-		streams.alerts = {};
+		streams.alerts = [];
 	};
 
-	streams.setAlert = function(key, type, msg) {
-		streams.alerts[key] = {
+	streams.addAlert = function(type, msg) {
+		streams.alerts.push({
 			type: type,
-			msg: msg
-		};
+			msg: msg,
+			shown: true
+		});
 	};
 
-	streams.unsetAlert = function(key) {
-		delete streams.alerts[key];
+	streams.removeAlert = function($index) {
+		if (streams.alerts[$index] !== undefined) {
+			streams.alerts[$index].shown = false;
+
+			// Delete alert after animation finishes.
+			$timeout(function() {
+				streams.alerts.splice($index, 1);
+			}, 1000);
+		}
 	};
 
 	// Default to the add user tab if one wasn't specified in the URL.
@@ -118,15 +142,14 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 		$http.get("api/invite/" + streamId).then(
 			function done(response) {
 				if (response.data.success) {
-					streams.unsetAlert("loadInvites");
 					callback(response.data.invites);
 				}
 				else {
-					streams.setAlert("loadInvites", "danger", "Invite status could not be loaded: " + response.data.error);
+					streams.addAlert("danger", "Invite status could not be loaded: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("loadInvites", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
@@ -149,46 +172,44 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 						formCtrl.loadInvites(stream.id, function(invites) {
 							stream.invites = invites;
 						});
-
-						streams.unsetAlert("loadStreams");
 					});
 				}
 				else {
-					streams.setAlert("loadStreams", "danger", "Streams could not be loaded: " + response.data.error);
+					streams.addAlert("danger", "Streams could not be loaded: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("loadStreams", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
 
-	formCtrl.createStream = function(name, private) {
+	formCtrl.createStream = function(name, permission) {
 		if (name == "") {
-			streams.setAlert("createStream", "danger", "Stream name cannot be blank");
+			streams.addAlert("danger", "Stream name cannot be blank");
 			return;
 		}
 
 		$http.post("api/stream",
 			{
 				userid: session.user.id,
-				name: formCtrl.newStream.name,
-				permission: formCtrl.newStream.permission
+				name: name,
+				permission: permission
 			}
 		).then(
 			function done(response) {
 				if (response.data.success) {
-					streams.setAlert("createStream", "success", "New stream created.");
+					streams.addAlert("success", name + " created");
 
 					// Refresh list of streams
 					formCtrl.loadStreams();
 				}
 				else {
-					streams.setAlert("createStream", "danger", "Could not create stream: " + response.data.error);
+					streams.addAlert("danger", "Could not create stream: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("createStream", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
@@ -204,17 +225,17 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 		$http.delete("api/stream/" + streamId).then(
 			function done(response) {
 				if (response.data.success) {
-					streams.unsetAlert("deleteStream");
+					streams.addAlert("success", stream.name + " was deleted");
 
 					// Refresh list of streams
 					formCtrl.loadStreams();
 				}
 				else {
-					streams.setAlert("deleteStream", "danger", "Could not delete stream: " + response.data.error);
+					streams.addAlert("danger", "Could not delete stream: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("deleteStream", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
@@ -225,8 +246,6 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 		$http.get("api/user/info/" + stream.newInvite).then(
 			function done(response) {
 				if (response.data.success) {
-					streams.unsetAlert("invite");
-
 					$http.post("api/invite/" + stream.id,
 						{
 							userid: response.data.id
@@ -239,23 +258,23 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 									userLogin: userLogin,
 									userid: response.data.id
 								});
-								streams.setAlert("invite", "success", userLogin + " has been invited to " + stream.name);
+								streams.addAlert("success", userLogin + " has been invited to " + stream.name);
 							}
 							else {
-								streams.setAlert("invite", "danger", "Could not invite " + userLogin + ": " + response2.data.error);
+								streams.addAlert("danger", "Could not invite " + userLogin + ": " + response2.data.error);
 							}
 						},
 						function fail(response2) {
-							streams.setAlert("invite", "danger", "Server error: " + response2.status + " " + response2.statusText);
+							streams.addAlert("danger", "Server error: " + response2.status + " " + response2.statusText);
 						}
 					);
 				}
 				else {
-					streams.setAlert("invite", "danger", "Could not invite: " + response.data.error);
+					streams.addAlert("danger", "Could not invite: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("invite", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
@@ -272,14 +291,14 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 							removed = stream.invites.splice(index, 1);
 						}
 					});
-					streams.setAlert("uninvite", "success", removed[0].userLogin + "'s invitation to " + stream.name + " was revoked");
+					streams.addAlert("success", removed[0].userLogin + "'s invitation to " + stream.name + " was revoked");
 				}
 				else {
-					streams.setAlert("uninvite", "danger", "Could not revoke invitation: " + response.data.error);
+					streams.addAlert("danger", "Could not revoke invitation: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("uninvite", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
@@ -288,7 +307,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
 
 		if (name == "") {
-			streams.setAlert("createStream", "danger", "Stream name cannot be blank");
+			streams.addAlert("danger", "Stream name cannot be blank");
 			return;
 		}
 
@@ -301,14 +320,13 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 				if (response.data.success) {
 					stream.name = name
 					formCtrl.hideRenameStreamForm(stream.id, $index);
-					streams.unsetAlert("renameStream");
 				}
 				else {
-					streams.setAlert("renameStream", "danger", "Could not create stream: " + response.data.error);
+					streams.addAlert("danger", "Could not create stream: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("renameStream", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	};
@@ -339,14 +357,15 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 		).then(
 			function done(response) {
 				if (response.data.success) {
-					streams.unsetAlert("setStreamPermission");
+					streams.addAlert("success", stream.name + " permission changed");
 				}
 				else {
-					streams.setAlert("setStreamPermission", "danger", "Could not create stream: " + response.data.error);
+					// TODO: set view value back to old permission
+					streams.addAlert("danger", "Could not set permission: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				streams.setAlert("setStreamPermission", "danger", "Server error: " + response.status + " " + response.statusText);
+				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
 	}
@@ -380,20 +399,4 @@ lsApp.controller("SubscribersController", [ "$scope", "$http", function($scope, 
 	$scope.formCtrl = formCtrl;
 
 	streams.activateTab("subscribers");
-}]);
-
-lsApp.config([ "$routeProvider", function($routeProvider) {
-	$routeProvider
-		.when("/mine", {
-			controller: "MyStreamsController",
-			templateUrl: "./partials/stream-mine.html"
-		})
-		.when("/subscriptions", {
-			controller: "SubscriptionsController",
-			templateUrl: "./partials/horizontal-form.html"
-		})
-		.when("/subscribers", {
-			controller: "SubscribersController",
-			templateUrl: "./partials/horizontal-form.html"
-		})
 }]);

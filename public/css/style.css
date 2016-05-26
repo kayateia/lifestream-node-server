@@ -18,6 +18,39 @@ a:hover {
 	color: #854E83;
 }
 
+.alerts-container {
+	margin-left: -10px;
+	pointer-events: none;
+	width: 50%;
+	position: fixed;
+	right: 10px;
+	bottom: 0;
+	z-index: 10;
+}
+.alerts-container .alert {
+	box-shadow: 0 5px 10px rgba(34, 34, 34, 0.25);
+	margin-bottom: 10px;
+	padding-bottom: 5px;
+	padding-top: 5px;
+}
+.alerts-container .alert.fading.ng-enter {
+	opacity: 0.0;
+	transition: opacity 0.25s;
+}
+.alerts-container .alert.fading.ng-enter.ng-enter-active {
+	opacity: 1.0;
+}
+.alerts-container .alert.fading.ng-leave {
+	opacity: 1.0;
+	transition: opacity 1s;
+}
+.alerts-container .alert.fading.ng-leave.ng-leave-active {
+	opacity: 0.0;
+}
+.alerts-container .alert button {
+	pointer-events: auto;
+}
+
 /* Fix for angular-bootstrap: https://angular-ui.github.io/bootstrap/ */
 .nav,
 .pagination,
