@@ -142,14 +142,12 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 						stream.name = data.name;
 						stream.permission = data.permission.toString();
 						stream.newInvite = "";
+						formCtrl.streams.push(stream);
 
 						// Make separate API call to load invites for this
 						// stream.
 						formCtrl.loadInvites(stream.id, function(invites) {
 							stream.invites = invites;
-
-							// Finally, add this stream to the list.
-							formCtrl.streams.push(stream);
 						});
 
 						streams.unsetAlert("loadStreams");

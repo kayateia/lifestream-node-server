@@ -32,7 +32,7 @@
 		<th>Invite</th>
 		<th>Delete</th>
 	</tr>
-	<tr ng-repeat="stream in formCtrl.streams" ng-init="streamIndex = $index">
+	<tr ng-repeat="stream in formCtrl.streams" ng-init="streamIndex = $index" ng-show="stream.invites !== undefined">
 		<td class="col-sm-4">
 			<form id="streamNameForm-{{stream.id}}" name="streamNameForm-{{stream.id}}" ng-submit="formCtrl.renameStream(stream.id, stream.newName.trim(), $index)">
 				<span ng-hide="formCtrl.renameStreamFormShown[stream.id]" ng-click="formCtrl.showRenameStreamForm(stream.id, $index)" class="stream-name">{{stream.name}}</span>
