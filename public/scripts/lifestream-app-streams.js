@@ -297,6 +297,13 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 	formCtrl.renameStream = function(streamId, name, $index) {
 		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
 
+		// Bail if the user didn't specify a new name
+		if (name == stream.name) {
+			formCtrl.hideRenameStreamForm(stream.id, $index);
+			return;
+		}
+
+		// Validation
 		if (name == "") {
 			streams.addAlert("danger", "Stream name cannot be blank");
 			return;
