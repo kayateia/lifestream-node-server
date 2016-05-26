@@ -236,7 +236,7 @@ h2.affix + .gallery-grid.expanded {
 
 table.streams-editor th,
 table.streams-editor td {
-	padding: 0 15px; /* space between columns */
+	padding: 0 15px 15px 15px; /* space between columns */
 	vertical-align: top;
 }
 table.streams-editor button.btn-link {
@@ -254,9 +254,17 @@ table.streams-editor .pending {
 	color: #888888;
 	margin-left: 10px;
 }
+table.streams-editor .pending ul {
+	list-style: none;
+	margin-left: 0;
+	padding-left: 20px;
+}
 table.streams-editor .pending button.btn-link {
 	color: #888888;
+	padding-top: 0;
+	padding-bottom: 0;
 }
 table.streams-editor .pending label {
 	font-weight: normal;
+	margin-bottom: 0;
 }
