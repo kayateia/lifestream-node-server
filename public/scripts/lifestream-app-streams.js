@@ -112,19 +112,6 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 
 	// Data structure containing list of streams from server
 	formCtrl.streams = [];
-	/*formCtrl.streams = [
-		{
-			id: 1,
-			name: "Test stream name",
-			permission: "1",
-			invites: [
-				{
-					userid: 1,
-					login: "admin"
-				}
-			]
-		}
-	];*/
 
 	formCtrl.getStreamObj = function(streamId) {
 		var retval = undefined;
@@ -166,6 +153,10 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 						stream.permission = data.permission.toString();
 						stream.newInvite = "";
 						formCtrl.streams.push(stream);
+
+						// Keep track of the permission that used to be set for
+						// this stream, for prcessing by setStreamPermission()
+						stream.oldPermission = stream.permission;
 
 						// Make separate API call to load invites for this
 						// stream.
@@ -357,14 +348,22 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsSess
 		).then(
 			function done(response) {
 				if (response.data.success) {
+					// Update oldPermission for future runs of
+					// setStreamPermission()
+					stream.oldPermission = stream.permission;
 					streams.addAlert("success", stream.name + " permission changed");
 				}
 				else {
-					// TODO: set view value back to old permission
+					// If change couldn't be confirmed by server, revert to
+					// previous setting in the model
+					stream.permission = stream.oldPermission;
 					streams.addAlert("danger", "Could not set permission: " + response.data.error);
 				}
 			},
 			function fail(response) {
+				// If change couldn't be confirmed by server, revert to previous
+				// setting in the model
+				stream.permission = stream.oldPermission;
 				streams.addAlert("danger", "Server error: " + response.status + " " + response.statusText);
 			}
 		);
