@@ -1,12 +1,10 @@
 <% include header %>
 <script src="scripts/lifestream-app-streams.js"></script>
+<ls-alerts fixed dismiss-on-timeout="4000"></ls-alerts>
 <div ng-controller="LifeStreamsManager as streams" ng-keypress="streams.keepAlivePing()">
 	<ul class="nav nav-pills nav-justified" role="navigation">
 		<li ng-repeat="op in streams.operations" ng-class="{ active: op.active }"><a href="#{{op.url}}">{{op.desc}}</a></li>
 	</ul>
-	<div class="alerts-container">
-		<uib-alert ng-repeat="alert in streams.alerts" type="{{alert.type}}" close="streams.removeAlert($index)" dismiss-on-timeout="4000" ng-if="alert.shown" class="fading">{{alert.msg}}</uib-alert>
-	</div>
 	<div class="col-sm-offset-1 col-sm-10">
 		<div ng-view></div>
 	</div>

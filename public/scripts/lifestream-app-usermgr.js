@@ -1,7 +1,6 @@
-lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsKeepAlive", function($scope, $location, $http, keepalive) {
+lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "$http", "lsKeepAlive", function($scope, alerts, $location, $http, keepalive) {
 	var usermgr = this;
 
-	usermgr.alerts = {};
 	usermgr.operations = [
 		{
 			name: "add",
@@ -44,7 +43,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 		});
 
 		// Clear status alerts from the previous tab.
-		usermgr.alerts = {};
+		alerts.clear("usermgr");
 	};
 
 	// Each validation function accepts a single argument from the template
@@ -74,31 +73,22 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 				.then(
 					function done(response) {
 						if (response.data.success) {
-							usermgr.alerts.validateLoginIsNew = {
-								type: "danger",
-								msg: "User " + login.$viewValue + " already exists."
-							}
+							alerts.add("danger", "User " + login.$viewValue + " already exists", "validateLoginIsNew", "usermgr");
 							login.$setValidity("exists", false);
 						}
 						else {
-							delete usermgr.alerts.validateLoginIsNew;
+							alerts.remove("validateLoginIsNew", "usermgr");
 							login.$setValidity("exists", true);
 						}
 					},
 					function fail(response) {
-						usermgr.alerts.validateLoginIsNew = {
-							type: "danger",
-							msg: "Server error: " + response.status + " " + response.statusText
-						}
+						alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "validateLoginIsNew", "usermgr");
 						login.$setValidity("server", false);
 					}
 				);
 		}
 		else {
-			usermgr.alerts.validateLoginIsNew = {
-				type: "danger",
-				msg: "Username is required."
-			}
+			alerts.add("danger", "Username is required", "validateLoginIsNew", "usermgr");
 		}
 
 		return login.$valid;
@@ -113,7 +103,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 				.then(
 					function done(response) {
 						if (response.data.success) {
-							delete usermgr.alerts.validateLoginIsNew;
+							alerts.remove("validateLoginExists", "usermgr");
 							login.$setValidity("exists", true);
 
 							if (callback) {
@@ -121,27 +111,18 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 							}
 						}
 						else {
-							usermgr.alerts.validateLoginIsNew = {
-								type: "danger",
-								msg: "User " + login.$viewValue + " doesn't exist."
-							}
+							alerts.add("danger", "User " + login.$viewValue + " doesn't exist", "validateLoginExists", "usermgr");
 							login.$setValidity("exists", false);
 						}
 					},
 					function fail(response) {
-						usermgr.alerts.validateLoginIsNew = {
-							type: "danger",
-							msg: "Server error: " + response.status + " " + response.statusText
-						}
+						alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "validateLoginExists", "usermgr");
 						login.$setValidity("server", false);
 					}
 				);
 		}
 		else {
-			usermgr.alerts.validateLoginIsNew = {
-				type: "danger",
-				msg: "Username is required."
-			}
+			alerts.add("danger", "Username is required", "validateLoginExists", "usermgr");
 		}
 
 		return login.$valid
@@ -149,14 +130,11 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 	usermgr.validatePassword = function(password) {
 		if (password.$invalid) {
 		 	if (password.$error.required) {
-				usermgr.alerts.validatePassword = {
-					type: "danger",
-					msg: "Password is required."
-				}
+				alerts.add("danger", "Password is required", "validatePassword", "usermgr");
 			}
 		}
 		else {
-			delete usermgr.alerts.validatePassword;
+			alerts.remove("validatePassword", "usermgr");
 		}
 
 		return password.$valid;
@@ -178,7 +156,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "$location", "$http", "lsK
 	});
 }]);
 
-lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http) {
+lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -244,29 +222,20 @@ lsApp.controller("UserAddController", ["$scope", "$http", function($scope, $http
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.alerts.submitFunc = {
-						type: "success",
-						msg: "User " + formCtrl.login + " successfully created."
-					};
+					alerts.add("success", "User " + formCtrl.login + " successfully created", "submitFunc", "usermgr");
 				}
 				else {
-					usermgr.alerts.submitFunc = {
-						type: "danger",
-						msg: "User " + formCtrl.login + " could not be created: " + response.data.error
-					}
+					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "usermgr");
 				}
 			},
 			function fail(response) {
-				usermgr.alerts.submitFunc = {
-					type: "danger",
-					msg: "Server error: " + response.status + " " + response.statusText
-				}
+				alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
 			}
 		);
 	};
 }]);
 
-lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $http) {
+lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -342,29 +311,20 @@ lsApp.controller("UserEditController", ["$scope", "$http", function($scope, $htt
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.alerts.submitFunc = {
-						type: "success",
-						msg: "User " + formCtrl.login + " successfully updated."
-					};
+					alerts.add("success", "User " + formCtrl.login + " successfully updated", "submitFunc", "usermgr");
 				}
 				else {
-					usermgr.alerts.submitFunc = {
-						type: "danger",
-						msg: "User " + formCtrl.login + " could not be created: " + response.data.error
-					}
+					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "usermgr");
 				}
 			},
 			function fail(response) {
-				usermgr.alerts.submitFunc = {
-					type: "danger",
-					msg: "Server error: " + response.status + " " + response.statusText
-				}
+				alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
 			}
 		);
 	};
 }]);
 
-lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $http) {
+lsApp.controller("UserDelController", [ "$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -398,23 +358,14 @@ lsApp.controller("UserDelController", [ "$scope", "$http", function($scope, $htt
 		$http.delete("api/user/info/" + formCtrl.login, {}).then(
 			function done(response) {
 				if (response.data.success) {
-					usermgr.alerts.submitFunc = {
-						type: "success",
-						msg: "User " + formCtrl.login + " successfully deleted."
-					};
+					alerts.add("success", "User " + formCtrl.login + " successfully deleted", "submitFunc", "usermgr");
 				}
 				else {
-					usermgr.alerts.submitFunc = {
-						type: "danger",
-						msg: "User " + formCtrl.login + " could not be deleted: " + response.data.error
-					}
+					alerts.add("danger", "User " + formCtrl.login + " could not be deleted: " + response.data.error, "submitFunc", "usermgr");
 				}
 			},
 			function fail(response) {
-				usermgr.alerts.submitFunc = {
-					type: "danger",
-					msg: "Server error: " + response.status + " " + response.statusText
-				}
+				alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
 			}
 		);
 	};
