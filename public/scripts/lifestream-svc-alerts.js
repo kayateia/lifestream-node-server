@@ -111,7 +111,25 @@ angular.module("LifeStreamAlerts").directive("lsAlerts", function() {
 
 			if (attrs.fixed !== undefined) {
 				element.children(".alerts-container").addClass("fixed");
+				angular.element(document).on("mousemove.fixedAlerts." + scope.container, function(event) {
+					element.find(".alert").each(function(index, found) {
+						var rect = found.getBoundingClientRect();
+						if (event.clientX > rect.left &&
+							event.clientX < rect.right &&
+							event.clientY > rect.top &&
+							event.clientY < rect.bottom) {
+							angular.element(found).addClass("translucent");
+						}
+						else {
+							angular.element(found).removeClass("translucent");
+						}
+					});
+				});
 			}
+
+			scope.$on("$destroy", function() {
+				angular.element(document).off("mousemove.fixedAlerts." + scope.container);
+			});
 		}
 	};
 });

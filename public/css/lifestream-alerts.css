@@ -7,9 +7,14 @@
 	bottom: 0;
 	z-index: 10;
 }
+.alerts-container .alert.translucent {
+	opacity: 0.5;
+}
 .alerts-container .alert {
 	box-shadow: 0 5px 10px rgba(34, 34, 34, 0.25);
 	margin-bottom: 10px;
+	opacity: 1.0;
+	transition: opacity 0.25s;
 	padding-bottom: 5px;
 	padding-top: 5px;
 }
