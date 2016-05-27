@@ -2,4 +2,4 @@
 // modules that add definitions to it.
 //
 // All dependencies for any module of LifeStreamWebApp must be specified here.
-var lsApp = angular.module("LifeStreamWebApp", [ "ngAnimate", "ngRoute", "angular-inview", "ui.bootstrap", "LifeStreamLightbox", "LifeStreamSession", "LifeStreamKeepAlive" ]);
+var lsApp = angular.module("LifeStreamWebApp", [ "ngAnimate", "ngRoute", "angular-inview", "ui.bootstrap", "LifeStreamAlerts", "LifeStreamLightbox", "LifeStreamSession", "LifeStreamKeepAlive" ]);

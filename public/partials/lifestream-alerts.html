@@ -1,0 +1,3 @@
+<div class="alerts-container">
+	<uib-alert ng-repeat="(index, alert) in alerts.lists[container]" type="{{alert.type}}" close="alerts.remove(index, container)" dismiss-on-timeout="{{dismissOnTimeout}}" ng-if="alert.shown" class="fading">{{alert.msg}}</uib-alert>
+</div>
