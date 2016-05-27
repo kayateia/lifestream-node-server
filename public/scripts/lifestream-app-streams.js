@@ -123,11 +123,11 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 	};
 
 	formCtrl.loadStreams = function() {
-		formCtrl.streams = [];
 		$http.get("api/stream/list?userid=" + session.user.id).then(
 			function done(response) {
 				alerts.remove("loadStreams", "serverError");
 				if (response.data.success) {
+					formCtrl.streams = []; // repopulate streams from scratch
 					response.data.streams.forEach(function(data) {
 						var stream = {};
 						stream.id = data.streamid;
