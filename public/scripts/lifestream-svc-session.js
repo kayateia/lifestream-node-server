@@ -1,5 +1,5 @@
 angular.module("LifeStreamSession", [ "ngCookies" ])
-	.factory("lsSession", [ "$cookies", "$http", "$window", function($cookies, $http, $window) {
+	.factory("lsSession", [ "$cookies", "$http", "lsAlerts", "$window", function($cookies, $http, alerts, $window) {
 		var session = this;
 
 		// Keep track of information about the logged-in user
@@ -23,6 +23,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 				password: password
 			}).then(
 				function done(response) {
+					alerts.remove("login", "session");
 					if (response.data.success) {
 						$cookies.put("authorization", "Bearer " + response.data.token);
 						$window.location.replace("login?reason=successful_login" + fromUrlStr);
@@ -33,7 +34,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 					}
 				},
 				function fail(response) {
-					$window.alert("login failed: " + response.status + " " + response.statusText);
+					alerts.add("danger", "Server error logging in: " + response.status + " " + response.statusText, "login", "session");
 				}
 			);
 		};
@@ -48,6 +49,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 				.then(
 					function done(response) {
 						if (response.data.success) {
+							alerts.remove("queryUserInfo", "session");
 							session.user = {
 								id: response.data.id,
 								login: response.data.login,
@@ -60,11 +62,11 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 							}
 						}
 						else {
-							$window.alert("Querying user info failed: " + JSON.stringify(response.data));
+							alerts.add("warning", "Querying user info failed: " + response.data.error, "queryUserInfo", "session");
 						}
 					},
 					function fail(response) {
-						$window.alert("Querying user info failed: " + response.status + " " + response.statusText);
+						alerts.add("danger", "Server error querying user info: " + response.status + " " + response.statusText, "queryUserInfo", "session");
 					}
 				);
 		};
@@ -73,11 +75,15 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 			$http.get("api/user/new-token").then(
 				function done(response) {
 					if (response.data.success) {
+						alerts.remove("refresh", "session");
 						$cookies.put("authorization", "Bearer " + response.data.token);
+					}
+					else {
+						alerts.add("warning", "Refreshing authorization token failed: " + response.data.error, "refresh", "session");
 					}
 				},
 				function fail(response) {
-					$window.alert("new-token request failed: " + response.status + " " + response.statusText);
+					alerts.add("danger", "Server error refreshing authorization token: " + response.status + " " + response.statusText, "refresh", "session");
 				}
 			);
 		};

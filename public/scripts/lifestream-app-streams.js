@@ -108,6 +108,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 	formCtrl.loadInvites = function(streamId, callback) {
 		$http.get("api/invite/" + streamId).then(
 			function done(response) {
+				alerts.remove("loadInvites", "serverError");
 				if (response.data.success) {
 					callback(response.data.invites);
 				}
@@ -116,7 +117,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error loading invites: " + response.status + " " + response.statusText, "loadInvites", "serverError");
 			}
 		);
 	};
@@ -125,6 +126,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 		formCtrl.streams = [];
 		$http.get("api/stream/list?userid=" + session.user.id).then(
 			function done(response) {
+				alerts.remove("loadStreams", "serverError");
 				if (response.data.success) {
 					response.data.streams.forEach(function(data) {
 						var stream = {};
@@ -150,7 +152,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "serverError");
 			}
 		);
 	};
@@ -169,6 +171,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 			}
 		).then(
 			function done(response) {
+				alerts.remove("createStream", "serverError");
 				if (response.data.success) {
 					alerts.add("success", name + " created");
 
@@ -180,7 +183,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error creating stream: " + response.status + " " + response.statusText, "createStream", "serverError");
 			}
 		);
 	};
@@ -195,6 +198,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 
 		$http.delete("api/stream/" + streamId).then(
 			function done(response) {
+				alerts.remove("deleteStream", "serverError");
 				if (response.data.success) {
 					alerts.add("success", stream.name + " was deleted");
 
@@ -206,7 +210,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error deleting stream: " + response.status + " " + response.statusText, "deleteStream", "serverError");
 			}
 		);
 	};
@@ -216,6 +220,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 
 		$http.get("api/user/info/" + stream.newInvite).then(
 			function done(response) {
+				alerts.remove("invite", "serverError");
 				if (response.data.success) {
 					$http.post("api/invite/" + stream.id,
 						{
@@ -236,7 +241,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 							}
 						},
 						function fail(response2) {
-							alerts.add("danger", "Server error: " + response2.status + " " + response2.statusText);
+							alerts.add("danger", "Server error inviting user: " + response2.status + " " + response2.statusText, "invite", "serverError");
 						}
 					);
 				}
@@ -245,7 +250,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error inviting user: " + response.status + " " + response.statusText, "invite", "serverError");
 			}
 		);
 	};
@@ -255,6 +260,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 
 		$http.delete("api/invite/" + streamId + "?userid=" + userId).then(
 			function done(response) {
+				alerts.remove("uninvite", "serverError");
 				if (response.data.success) {
 					var removed = undefined;
 					stream.invites.forEach(function(invite, index) {
@@ -269,7 +275,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error revoking invite: " + response.status + " " + response.statusText, "uninvite", "serverError");
 			}
 		);
 	};
@@ -295,16 +301,17 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 			}
 		).then(
 			function done(response) {
+				alerts.remove("renameStream", "serverError");
 				if (response.data.success) {
 					stream.name = name
 					formCtrl.hideRenameStreamForm(stream.id, $index);
 				}
 				else {
-					alerts.add("danger", "Could not create stream: " + response.data.error);
+					alerts.add("danger", "Could not rename stream: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error renaming stream: " + response.status + " " + response.statusText, "renameStream", "serverError");
 			}
 		);
 	};
@@ -335,6 +342,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 		).then(
 			function done(response) {
 				if (response.data.success) {
+					alerts.remove("setStreamPermission", "serverError");
 					// Update oldPermission for future runs of
 					// setStreamPermission()
 					stream.oldPermission = stream.permission;
@@ -351,7 +359,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				// If change couldn't be confirmed by server, revert to previous
 				// setting in the model
 				stream.permission = stream.oldPermission;
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText);
+				alerts.add("danger", "Server error setting stream permission: " + response.status + " " + response.statusText, "setStreamPermission", "serverError");
 			}
 		);
 	}

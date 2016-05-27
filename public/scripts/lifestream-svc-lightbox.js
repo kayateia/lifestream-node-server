@@ -66,7 +66,7 @@ angular.module("LifeStreamLightbox").factory("lsLightbox", [ "Lightbox", functio
 // This controller manages the custom template's behaviour. It uses properties
 // belonging to the service to communicate with both
 // LifeStreamGalleryController and angular-bootstrap-lightbox.
-angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "$http", "lsLightbox", "lsSession", "$timeout", "$window", function($scope, $http, lsLightbox, session, $timeout, $window) {
+angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "$http", "lsAlerts", "lsLightbox", "lsSession", "$timeout", function($scope, $http, alerts, lsLightbox, session, $timeout) {
 	var lightboxCtrl = this;
 
 	lightboxCtrl.commentFormShown = false; // true when comment editor is shown
@@ -119,16 +119,17 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 			comment: newComment
 		}).then(
 			function done(response) {
+				alerts.remove("saveComment", "serverError");
 				if (response.data.success) {
 					// Update the local data model
 					lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].comment = newComment;
 				}
 				else {
-					$window.alert("Comment update failed: " + response.data.error);
+					alerts.add("danger", "Comment update failed: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				$window.alert("Comment update failed: " + response.status + " " + response.statusText)
+				alerts.add("danger", "Server error updating comment: " + response.status + " " + response.statusText, "saveComment", "serverError");
 			}
 		);
 

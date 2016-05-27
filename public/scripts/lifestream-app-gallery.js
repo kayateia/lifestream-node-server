@@ -1,5 +1,5 @@
 // Define the gallery controller
-lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $http, lsLightbox, keepalive, $timeout, $window) {
+lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", function($scope, $element, $http, alerts, lsLightbox, keepalive, $timeout) {
 	var gallery = this;
 
 	gallery.numImagesPerRow = 0; // Number of images that would fit on each row in the gallery, taking into account the width of the grid, the size of each thumbnail, and the margin between each thumbnail
@@ -49,35 +49,36 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 				+ (count ? "&count=" + count : "")
 				+ (olderThan ? "&olderThan=" + olderThan : "")
 			).then(
-					function done(response) {
-						if (response.data.success) {
-							response.data.images.forEach(function(image) {
-								// Add this image's info to the target array
-								arr.push({
-									id: image.id,
-									thumbUrl: "api/image/get/" + image.id + "?scaleTo=192&scaleMode=cover",
-									url: "api/image/get/" + image.id,
-									uploader: image.userLogin,
-									uploadTime: image.uploadTime,
-									comment: image.comment
-								});
-
-								// Record this image's ID into a separate
-								// array, to make it quicker to identify
-								// whether a given image ID is already known
-								arr.ids.push(image.id);
+				function done(response) {
+					alerts.remove("loadImages", "serverError");
+					if (response.data.success) {
+						response.data.images.forEach(function(image) {
+							// Add this image's info to the target array
+							arr.push({
+								id: image.id,
+								thumbUrl: "api/image/get/" + image.id + "?scaleTo=192&scaleMode=cover",
+								url: "api/image/get/" + image.id,
+								uploader: image.userLogin,
+								uploadTime: image.uploadTime,
+								comment: image.comment
 							});
 
-							// If a callback function was specified, call it
-							if (callback) {
-								callback();
-							}
+							// Record this image's ID into a separate
+							// array, to make it quicker to identify
+							// whether a given image ID is already known
+							arr.ids.push(image.id);
+						});
+
+						// If a callback function was specified, call it
+						if (callback) {
+							callback();
 						}
-					},
-					function fail(response) {
-						$window.alert("Server error: " + response.status + " " + response.statusText);
 					}
-				);
+				},
+				function fail(response) {
+					alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImages", "serverError");
+				}
+			);
 		});
 	};
 

@@ -82,7 +82,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 						}
 					},
 					function fail(response) {
-						alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "validateLoginIsNew", "usermgr");
+						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginIsNew", "usermgr");
 						login.$setValidity("server", false);
 					}
 				);
@@ -116,7 +116,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 						}
 					},
 					function fail(response) {
-						alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "validateLoginExists", "usermgr");
+						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginExists", "usermgr");
 						login.$setValidity("server", false);
 					}
 				);
@@ -229,7 +229,7 @@ lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
+				alerts.add("danger", "Server error creating user: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
 			}
 		);
 	};
@@ -318,7 +318,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
+				alerts.add("danger", "Server error updating user: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
 			}
 		);
 	};
@@ -365,7 +365,7 @@ lsApp.controller("UserDelController", [ "$scope", "lsAlerts", "$http", function(
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
+				alerts.add("danger", "Server error deleting user: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
 			}
 		);
 	};
