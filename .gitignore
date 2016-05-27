@@ -1,9 +1,15 @@
 node_modules/
 old/
-lifestream.db
 uploads/
 public/components/
 
 # Local changes only
 config.js
 
+# Database
+lifestream.db
+lifestream.db-shm
+lifestream.db-wal
+
+# Finder metadata
+.DS_Store
