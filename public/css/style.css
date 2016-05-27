@@ -14,9 +14,20 @@ a:hover {
 	text-decoration: underline;
 }
 
+.navbar {
+	background-image: url("../images/lsvibrant.jpg");
+	background-position: center 0;
+	background-size: cover;
+	border-style: none;
+}
 .navbar .navbar-brand {
 	color: #854E83;
 }
+.navbar-default .navbar-nav > .active > a,
+.navbar-default .navbar-nav > .active > a:hover,
+.navbar-default .navbar-nav > .active > a:focus {
+	background-color: rgba(15, 15, 15, 0.5);
+	color: #eeeeee;
 
 .alerts-container {
 	margin-left: -10px;
