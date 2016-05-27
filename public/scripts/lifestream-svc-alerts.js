@@ -93,7 +93,7 @@ angular.module("LifeStreamAlerts").directive("lsAlerts", function() {
 	return {
 		restrict: "E",
 		controller: "LifeStreamAlertsController",
-		controllerAs: "alerts",
+		controllerAs: "alertsCtrl",
 		templateUrl: "partials/lifestream-alerts.html",
 		scope: {
 			container: "@",

@@ -1,5 +1,5 @@
 <div class="alerts-container">
-	<uib-alert ng-repeat="(index, alert) in alerts.lists[container]" type="{{alert.type}}" close="alerts.remove(index, container)" dismiss-on-timeout="{{dismissOnTimeout}}" ng-if="alert.shown" class="fading">
+	<uib-alert ng-repeat="(index, alert) in alertsCtrl.lists[container]" type="{{alert.type}}" close="alertsCtrl.remove(index, container)" dismiss-on-timeout="{{dismissOnTimeout}}" ng-if="alert.shown" class="fading">
 		<span ng-if="alert.type=='success'" class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
 		<span ng-if="alert.type=='info'" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
 		<span ng-if="alert.type=='warning'" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
