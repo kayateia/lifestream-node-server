@@ -66,6 +66,17 @@ router.post("/post", function(req, res, next) {
 				return res.json(models.error("File name was invalid"));
 			}
 
+			var fullFilename = "./uploads/" + tokenContents.id + "/" + req.files[0].originalname;
+
+			try {
+				fs.accessSync(fullFilename, fs.F_OK);
+
+				// If we got here, then the file already exists - just bail.
+				console.log("   File", fullFilename, " already exists - bailing");
+				return res.json(models.success());
+			} catch (e) {
+			}
+
 			try {
 				fs.accessSync("./uploads", fs.F_OK);
 			} catch (e) {
@@ -79,8 +90,7 @@ router.post("/post", function(req, res, next) {
 				fs.mkdirSync(uploadPath);
 			}
 
-			fs.writeFileSync("./uploads/" + tokenContents.id + "/" + req.files[0].originalname,
-				req.files[0].buffer);
+			fs.writeFileSync(fullFilename, req.files[0].buffer);
 
 			dbmod.imageAdd(tokenContents.id, [streamid], req.files[0].originalname, comment,
 				function(err) {
