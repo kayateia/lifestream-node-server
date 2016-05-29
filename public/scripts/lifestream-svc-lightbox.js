@@ -119,7 +119,7 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 			comment: newComment
 		}).then(
 			function done(response) {
-				alerts.remove("saveComment", "serverError");
+				alerts.remove("saveComment", "persistent");
 				if (response.data.success) {
 					// Update the local data model
 					lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].comment = newComment;
@@ -129,7 +129,7 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error updating comment: " + response.status + " " + response.statusText, "saveComment", "serverError");
+				alerts.add("danger", "Server error updating comment: " + response.status + " " + response.statusText, "saveComment", "persistent");
 			}
 		);
 

@@ -4,7 +4,6 @@
 	<ul class="nav nav-pills nav-justified" role="navigation">
 		<li ng-repeat="op in usermgr.operations" ng-class="{ active: op.active }"><a href="#{{op.url}}">{{op.desc}}</a></li>
 	</ul>
-	<ls-alerts container="usermgr"></ls-alerts>
 	<div class="col-sm-offset-2 col-sm-8">
 		<div ng-view></div>
 	</div>

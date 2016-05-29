@@ -22,6 +22,8 @@
 		<script src="scripts/lifestream-app.js"></script>
 	</head>
 <body>
+<div id="alerts-containers-container" class="col-lg-offset-8 col-md-offset-7 col-sm-offset-6 col-xs-offset-5 col-lg-4 col-md-5 col-sm-6 col-xs-7">
+	<ls-alerts id="persistent-alerts" collapsible="bottom" dodge container="persistent"></ls-alerts>
+	<ls-alerts id="global-alerts" dodge dismiss-on-timeout="4000"></ls-alerts>
+</div>
 <% include navbar %>
-<ls-alerts container="serverError"></ls-alerts>
-<ls-alerts container="session"></ls-alerts>

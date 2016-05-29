@@ -50,7 +50,7 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 				+ (olderThan ? "&olderThan=" + olderThan : "")
 			).then(
 				function done(response) {
-					alerts.remove("loadImages", "serverError");
+					alerts.remove("loadImages", "persistent");
 					if (response.data.success) {
 						response.data.images.forEach(function(image) {
 							// Add this image's info to the target array
@@ -76,7 +76,7 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 					}
 				},
 				function fail(response) {
-					alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImages", "serverError");
+					alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImages", "persistent");
 				}
 			);
 		});
@@ -178,6 +178,7 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	//   streams - An array of stream IDs from which to load images.
 	gallery.expandGrid = function(arr, streams) {
 		arr.expanded = true;
+		gallery.loadMoreImages(arr);
 	};
 
 	// Paramters:

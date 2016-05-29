@@ -43,7 +43,10 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 		});
 
 		// Clear status alerts from the previous tab.
-		alerts.clear("usermgr");
+		alerts.remove("validateLoginIsNew", "persistent");
+		alerts.remove("validateLoginExists", "persistent");
+		alerts.remove("validatePassword", "persistent");
+		alerts.remove("validateName", "persistent");
 	};
 
 	// Each validation function accepts a single argument from the template
@@ -73,22 +76,22 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 				.then(
 					function done(response) {
 						if (response.data.success) {
-							alerts.add("danger", "User " + login.$viewValue + " already exists", "validateLoginIsNew", "usermgr");
+							alerts.add("danger", "User " + login.$viewValue + " already exists", "validateLoginIsNew", "persistent");
 							login.$setValidity("exists", false);
 						}
 						else {
-							alerts.remove("validateLoginIsNew", "usermgr");
+							alerts.remove("validateLoginIsNew", "persistent");
 							login.$setValidity("exists", true);
 						}
 					},
 					function fail(response) {
-						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginIsNew", "usermgr");
+						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginIsNew", "persistent");
 						login.$setValidity("server", false);
 					}
 				);
 		}
 		else {
-			alerts.add("danger", "Username is required", "validateLoginIsNew", "usermgr");
+			alerts.add("danger", "Username is required", "validateLoginIsNew", "persistent");
 		}
 
 		return login.$valid;
@@ -103,7 +106,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 				.then(
 					function done(response) {
 						if (response.data.success) {
-							alerts.remove("validateLoginExists", "usermgr");
+							alerts.remove("validateLoginExists", "persistent");
 							login.$setValidity("exists", true);
 
 							if (callback) {
@@ -111,18 +114,18 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 							}
 						}
 						else {
-							alerts.add("danger", "User " + login.$viewValue + " doesn't exist", "validateLoginExists", "usermgr");
+							alerts.add("danger", "User " + login.$viewValue + " doesn't exist", "validateLoginExists", "persistent");
 							login.$setValidity("exists", false);
 						}
 					},
 					function fail(response) {
-						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginExists", "usermgr");
+						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginExists", "persistent");
 						login.$setValidity("server", false);
 					}
 				);
 		}
 		else {
-			alerts.add("danger", "Username is required", "validateLoginExists", "usermgr");
+			alerts.add("danger", "Username is required", "validateLoginExists", "persistent");
 		}
 
 		return login.$valid
@@ -130,16 +133,25 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 	usermgr.validatePassword = function(password) {
 		if (password.$invalid) {
 		 	if (password.$error.required) {
-				alerts.add("danger", "Password is required", "validatePassword", "usermgr");
+				alerts.add("danger", "Password is required", "validatePassword", "persistent");
 			}
 		}
 		else {
-			alerts.remove("validatePassword", "usermgr");
+			alerts.remove("validatePassword", "persistent");
 		}
 
 		return password.$valid;
 	};
 	usermgr.validateName = function(name) {
+		if (name.$invalid) {
+		 	if (name.$error.required) {
+				alerts.add("danger", "Name is required", "validateName", "persistent");
+			}
+		}
+		else {
+			alerts.remove("validateName", "persistent");
+		}
+
 		return name.$valid;
 	};
 	usermgr.validateEmail = function(email) {
@@ -222,14 +234,14 @@ lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					alerts.add("success", "User " + formCtrl.login + " successfully created", "submitFunc", "usermgr");
+					alerts.add("success", "User " + formCtrl.login + " successfully created", "submitFunc", "persistent");
 				}
 				else {
-					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "usermgr");
+					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "persistent");
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error creating user: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
+				alerts.add("danger", "Server error creating user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
 			}
 		);
 	};
@@ -311,14 +323,14 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 		}).then(
 			function done(response) {
 				if (response.data.success) {
-					alerts.add("success", "User " + formCtrl.login + " successfully updated", "submitFunc", "usermgr");
+					alerts.add("success", "User " + formCtrl.login + " successfully updated", "submitFunc", "persistent");
 				}
 				else {
-					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "usermgr");
+					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "persistent");
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error updating user: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
+				alerts.add("danger", "Server error updating user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
 			}
 		);
 	};
@@ -358,14 +370,14 @@ lsApp.controller("UserDelController", [ "$scope", "lsAlerts", "$http", function(
 		$http.delete("api/user/info/" + formCtrl.login, {}).then(
 			function done(response) {
 				if (response.data.success) {
-					alerts.add("success", "User " + formCtrl.login + " successfully deleted", "submitFunc", "usermgr");
+					alerts.add("success", "User " + formCtrl.login + " successfully deleted", "submitFunc", "persistent");
 				}
 				else {
-					alerts.add("danger", "User " + formCtrl.login + " could not be deleted: " + response.data.error, "submitFunc", "usermgr");
+					alerts.add("danger", "User " + formCtrl.login + " could not be deleted: " + response.data.error, "submitFunc", "persistent");
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error deleting user: " + response.status + " " + response.statusText, "submitFunc", "usermgr");
+				alerts.add("danger", "Server error deleting user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
 			}
 		);
 	};

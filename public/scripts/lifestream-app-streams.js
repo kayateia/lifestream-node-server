@@ -108,7 +108,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 	formCtrl.loadInvites = function(streamId, callback) {
 		$http.get("api/invite/" + streamId).then(
 			function done(response) {
-				alerts.remove("loadInvites", "serverError");
+				alerts.remove("loadInvites", "persistent");
 				if (response.data.success) {
 					callback(response.data.invites);
 				}
@@ -117,7 +117,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error loading invites: " + response.status + " " + response.statusText, "loadInvites", "serverError");
+				alerts.add("danger", "Server error loading invites: " + response.status + " " + response.statusText, "loadInvites", "persistent");
 			}
 		);
 	};
@@ -125,7 +125,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 	formCtrl.loadStreams = function() {
 		$http.get("api/stream/list?userid=" + session.user.id).then(
 			function done(response) {
-				alerts.remove("loadStreams", "serverError");
+				alerts.remove("loadStreams", "persistent");
 				if (response.data.success) {
 					formCtrl.streams = []; // repopulate streams from scratch
 					response.data.streams.forEach(function(data) {
@@ -152,7 +152,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "serverError");
+				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "persistent");
 			}
 		);
 	};
@@ -171,7 +171,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 			}
 		).then(
 			function done(response) {
-				alerts.remove("createStream", "serverError");
+				alerts.remove("createStream", "persistent");
 				if (response.data.success) {
 					alerts.add("success", name + " created");
 
@@ -183,7 +183,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error creating stream: " + response.status + " " + response.statusText, "createStream", "serverError");
+				alerts.add("danger", "Server error creating stream: " + response.status + " " + response.statusText, "createStream", "persistent");
 			}
 		);
 	};
@@ -198,7 +198,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 
 		$http.delete("api/stream/" + streamId).then(
 			function done(response) {
-				alerts.remove("deleteStream", "serverError");
+				alerts.remove("deleteStream", "persistent");
 				if (response.data.success) {
 					alerts.add("success", stream.name + " was deleted");
 
@@ -210,7 +210,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error deleting stream: " + response.status + " " + response.statusText, "deleteStream", "serverError");
+				alerts.add("danger", "Server error deleting stream: " + response.status + " " + response.statusText, "deleteStream", "persistent");
 			}
 		);
 	};
@@ -220,7 +220,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 
 		$http.get("api/user/info/" + stream.newInvite).then(
 			function done(response) {
-				alerts.remove("invite", "serverError");
+				alerts.remove("invite", "persistent");
 				if (response.data.success) {
 					$http.post("api/invite/" + stream.id,
 						{
@@ -241,7 +241,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 							}
 						},
 						function fail(response2) {
-							alerts.add("danger", "Server error inviting user: " + response2.status + " " + response2.statusText, "invite", "serverError");
+							alerts.add("danger", "Server error inviting user: " + response2.status + " " + response2.statusText, "invite", "persistent");
 						}
 					);
 				}
@@ -250,7 +250,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error inviting user: " + response.status + " " + response.statusText, "invite", "serverError");
+				alerts.add("danger", "Server error inviting user: " + response.status + " " + response.statusText, "invite", "persistent");
 			}
 		);
 	};
@@ -260,7 +260,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 
 		$http.delete("api/invite/" + streamId + "?userid=" + userId).then(
 			function done(response) {
-				alerts.remove("uninvite", "serverError");
+				alerts.remove("uninvite", "persistent");
 				if (response.data.success) {
 					var removed = undefined;
 					stream.invites.forEach(function(invite, index) {
@@ -275,7 +275,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error revoking invite: " + response.status + " " + response.statusText, "uninvite", "serverError");
+				alerts.add("danger", "Server error revoking invite: " + response.status + " " + response.statusText, "uninvite", "persistent");
 			}
 		);
 	};
@@ -301,7 +301,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 			}
 		).then(
 			function done(response) {
-				alerts.remove("renameStream", "serverError");
+				alerts.remove("renameStream", "persistent");
 				if (response.data.success) {
 					stream.name = name
 					formCtrl.hideRenameStreamForm(stream.id, $index);
@@ -311,7 +311,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error renaming stream: " + response.status + " " + response.statusText, "renameStream", "serverError");
+				alerts.add("danger", "Server error renaming stream: " + response.status + " " + response.statusText, "renameStream", "persistent");
 			}
 		);
 	};
@@ -342,7 +342,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 		).then(
 			function done(response) {
 				if (response.data.success) {
-					alerts.remove("setStreamPermission", "serverError");
+					alerts.remove("setStreamPermission", "persistent");
 					// Update oldPermission for future runs of
 					// setStreamPermission()
 					stream.oldPermission = stream.permission;
@@ -359,7 +359,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 				// If change couldn't be confirmed by server, revert to previous
 				// setting in the model
 				stream.permission = stream.oldPermission;
-				alerts.add("danger", "Server error setting stream permission: " + response.status + " " + response.statusText, "setStreamPermission", "serverError");
+				alerts.add("danger", "Server error setting stream permission: " + response.status + " " + response.statusText, "setStreamPermission", "persistent");
 			}
 		);
 	}

@@ -14,6 +14,16 @@ a:hover {
 	text-decoration: underline;
 }
 
+#alerts-containers-container {
+	position: fixed;
+	bottom: 0;
+	right: 0;
+	z-index: 10;
+}
+#alerts-containers-container .alerts-toggle-container {
+	text-align: right;
+}
+
 .navbar {
 	background-image: url("../images/lsvibrant.jpg");
 	background-position: center 0;

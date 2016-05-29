@@ -23,7 +23,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 				password: password
 			}).then(
 				function done(response) {
-					alerts.remove("login", "session");
+					alerts.remove("login", "persistent");
 					if (response.data.success) {
 						$cookies.put("authorization", "Bearer " + response.data.token);
 						$window.location.replace("login?reason=successful_login" + fromUrlStr);
@@ -34,7 +34,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 					}
 				},
 				function fail(response) {
-					alerts.add("danger", "Server error logging in: " + response.status + " " + response.statusText, "login", "session");
+					alerts.add("danger", "Server error logging in: " + response.status + " " + response.statusText, "login", "persistent");
 				}
 			);
 		};
@@ -49,7 +49,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 				.then(
 					function done(response) {
 						if (response.data.success) {
-							alerts.remove("queryUserInfo", "session");
+							alerts.remove("queryUserInfo", "persistent");
 							session.user = {
 								id: response.data.id,
 								login: response.data.login,
@@ -62,11 +62,11 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 							}
 						}
 						else {
-							alerts.add("warning", "Querying user info failed: " + response.data.error, "queryUserInfo", "session");
+							alerts.add("warning", "Querying user info failed: " + response.data.error, "queryUserInfo", "persistent");
 						}
 					},
 					function fail(response) {
-						alerts.add("danger", "Server error querying user info: " + response.status + " " + response.statusText, "queryUserInfo", "session");
+						alerts.add("danger", "Server error querying user info: " + response.status + " " + response.statusText, "queryUserInfo", "persistent");
 					}
 				);
 		};
@@ -75,15 +75,15 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 			$http.get("api/user/new-token").then(
 				function done(response) {
 					if (response.data.success) {
-						alerts.remove("refresh", "session");
+						alerts.remove("refresh", "persistent");
 						$cookies.put("authorization", "Bearer " + response.data.token);
 					}
 					else {
-						alerts.add("warning", "Refreshing authorization token failed: " + response.data.error, "refresh", "session");
+						alerts.add("warning", "Refreshing authorization token failed: " + response.data.error, "refresh", "persistent");
 					}
 				},
 				function fail(response) {
-					alerts.add("danger", "Server error refreshing authorization token: " + response.status + " " + response.statusText, "refresh", "session");
+					alerts.add("danger", "Server error refreshing authorization token: " + response.status + " " + response.statusText, "refresh", "persistent");
 				}
 			);
 		};
