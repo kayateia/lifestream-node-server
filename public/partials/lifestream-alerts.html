@@ -1,9 +1,53 @@
-<div class="alerts-container">
-	<uib-alert ng-repeat="(index, alert) in alertsCtrl.lists[container]" type="{{alert.type}}" close="alertsCtrl.remove(index, container)" dismiss-on-timeout="{{dismissOnTimeout}}" ng-if="alert.shown" class="fading">
-		<span ng-if="alert.type=='success'" class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
-		<span ng-if="alert.type=='info'" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
-		<span ng-if="alert.type=='warning'" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-		<span ng-if="alert.type=='danger'" class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
+<div class="alerts-toggle-container"  ng-if="collapsible == 'top' && alertsCtrl.size[container].total > 1">
+	<div class="alert" ng-click="alertsCtrl.toggleCollapsed(container)">
+		<span ng-show="alertsCtrl.size[container].success > 0" class="text-success">
+			<span class="glyphicon glyphicon-ok-sign"></span>
+			{{alertsCtrl.size[container].success}}
+		</span>
+		<span ng-show="alertsCtrl.size[container].info > 0" class="text-info">
+			<span class="glyphicon glyphicon-info-sign"></span>
+			{{alertsCtrl.size[container].info}}
+		</span>
+		<span ng-show="alertsCtrl.size[container].warning > 0" class="text-warning">
+			<span class="glyphicon glyphicon-exclamation-sign"></span>
+			{{alertsCtrl.size[container].warning}}
+		</span>
+		<span ng-show="alertsCtrl.size[container].danger > 0" class="text-danger">
+			<span class="glyphicon glyphicon-remove-sign"></span>
+			{{alertsCtrl.size[container].danger}}
+		</span>
+		<span ng-show="alertsCtrl.collapsed[container]" class="glyphicon glyphicon-triangle-bottom text-muted" aria-hidden="true"></span>
+		<span ng-hide="alertsCtrl.collapsed[container]" class="glyphicon glyphicon-triangle-top text-muted" aria-hidden="true"></span>
+	</div>
+</div>
+<div class="alerts-container" ng-hide="alertsCtrl.collapsed[container]">
+	<uib-alert ng-repeat="(index, alert) in alertsCtrl.lists[container]" type="{{alert.type}}" close="alertsCtrl.remove(index, container)" dismiss-on-timeout="{{dismissOnTimeout}}" ng-if="alert.shown">
+		<span ng-if="alert.type == 'success'" class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+		<span ng-if="alert.type == 'info'" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
+		<span ng-if="alert.type == 'warning'" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
+		<span ng-if="alert.type == 'danger'" class="glyphicon glyphicon-remove-sign" aria-hidden="true"></span>
 		{{alert.msg}}
 	</uib-alert>
+</div>
+<div class="alerts-toggle-container" ng-if="collapsible == 'bottom' && alertsCtrl.size[container].total > 1">
+	<div class="alert" ng-click="alertsCtrl.toggleCollapsed(container)">
+		<span ng-show="alertsCtrl.size[container].success > 0" class="text-success">
+			<span class="glyphicon glyphicon-ok-sign"></span>
+			{{alertsCtrl.size[container].success}}
+		</span>
+		<span ng-show="alertsCtrl.size[container].info > 0" class="text-info">
+			<span class="glyphicon glyphicon-info-sign"></span>
+			{{alertsCtrl.size[container].info}}
+		</span>
+		<span ng-show="alertsCtrl.size[container].warning > 0" class="text-warning">
+			<span class="glyphicon glyphicon-exclamation-sign"></span>
+			{{alertsCtrl.size[container].warning}}
+		</span>
+		<span ng-show="alertsCtrl.size[container].danger > 0" class="text-danger">
+			<span class="glyphicon glyphicon-remove-sign"></span>
+			{{alertsCtrl.size[container].danger}}
+		</span>
+		<span ng-show="alertsCtrl.collapsed[container]" class="glyphicon glyphicon-triangle-top text-muted" aria-hidden="true"></span>
+		<span ng-hide="alertsCtrl.collapsed[container]" class="glyphicon glyphicon-triangle-bottom text-muted" aria-hidden="true"></span>
+	</div>
 </div>

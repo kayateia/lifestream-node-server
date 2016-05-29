@@ -1,11 +1,14 @@
-.alerts-container.fixed {
-	margin-left: -10px;
-	pointer-events: none;
-	width: 50%;
-	position: fixed;
-	right: 10px;
-	bottom: 0;
+.alerts-container {
 	z-index: 10;
+}
+.alerts-container.ng-hide {
+	opacity: 0;
+	transform: scale(0.2);
+	transform-origin: 100% 125%;
+}
+.alerts-container.ng-hide-add,
+.alerts-container.ng-hide-remove {
+	transition: all 0.25s;
 }
 .alerts-container .alert.translucent {
 	opacity: 0.5;
@@ -13,25 +16,60 @@
 .alerts-container .alert {
 	box-shadow: 0 5px 10px rgba(34, 34, 34, 0.25);
 	margin-bottom: 10px;
-	opacity: 1.0;
+	opacity: 1;
 	transition: opacity 0.25s;
 	padding-bottom: 5px;
 	padding-top: 5px;
 }
-.alerts-container .alert.fading.ng-enter {
-	opacity: 0.0;
+.alerts-container .alert.ng-enter {
+	opacity: 0;
 	transition: opacity 0.25s;
 }
-.alerts-container .alert.fading.ng-enter.ng-enter-active {
-	opacity: 1.0;
+.alerts-container .alert.ng-enter.ng-enter-active {
+	opacity: 1;
 }
-.alerts-container .alert.fading.ng-leave {
-	opacity: 1.0;
+.alerts-container .alert.ng-leave {
+	opacity: 1;
 	transition: opacity 1s;
 }
-.alerts-container .alert.fading.ng-leave.ng-leave-active {
-	opacity: 0.0;
+.alerts-container .alert.ng-leave.ng-leave-active {
+	opacity: 0;
 }
 .alerts-container .alert button {
 	pointer-events: auto;
 }
+
+.alerts-toggle-container.ng-enter {
+	opacity: 0;
+	transition: opacity 0.25s;
+}
+.alerts-toggle-container.ng-enter-active {
+	opacity: 1;
+}
+.alerts-toggle-container.ng-leave {
+	opacity: 1;
+	transition: opacity 1s;
+}
+.alerts-toggle-container.ng-leave-active {
+	opacity: 0;
+}
+.alerts-toggle-container .alert {
+	background-color: #f9f9f9;
+	box-shadow: 0 5px 10px rgba(34, 34, 34, 0.25);
+	display: inline-block;
+	margin-bottom: 10px;
+	padding: 5px 15px;
+	z-index: 10;
+}
+/*.alerts-toggle-container .alert .text-success {
+	color: #dff0d8;
+}
+.alerts-toggle-container .alert .text-info {
+	color: #d9edf7;
+}
+.alerts-toggle-container .alert .text-warning {
+	color: #fcf8e3;
+}
+.alerts-toggle-container .alert .text-danger {
+	color: #f2dede;
+}*/
