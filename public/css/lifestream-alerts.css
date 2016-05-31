@@ -1,4 +1,4 @@
-.alerts-container {
+ls-alerts {
 	z-index: 10; /* alerts stay visible when overlapping other content */
 	pointer-events: none; /* passthrough mouse input to elements below */
 }
@@ -79,5 +79,9 @@
 	display: inline-block;
 	margin-bottom: 10px;
 	padding: 5px 15px;
+	pointer-events: auto;
 	z-index: 10;
+}
+.alerts-toggle-container .alert:hover {
+	box-shadow: 0 0 20px #7FDAFF;
 }
