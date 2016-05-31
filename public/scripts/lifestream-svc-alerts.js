@@ -48,6 +48,25 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 		_global: false
 	};
 
+	// If alerts container is collapsible and collapsed, but new alerts should
+	// be temporarily shown before being collapsed like the rest, this value is
+	// the duration for which new alerts should be temporarily shown
+	alerts.collapseOnTimeout = {
+		_global: 0
+	}
+
+	// Structured similarly to alerts.list, this object holds temporary alerts
+	// affected by collapseOnTimeout.
+	//
+	// Alerts are added to this stack automatically as needed by alerts.add(),
+	// and removed automatically as needed by the template.
+	//
+	// Alerts added to or removed from this stack have no effect on alerts.size,
+	// and no effect on alerts in the regular stack.
+	alerts.pendingCollapse = {
+		_global: []
+	}
+
 	// alerts.add()
 	//
 	//   Adds an alert of the given type with the given text. The alert may be
@@ -62,20 +81,27 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 	//     of creating a new alert.
 	//   container (optional): The name of the alert container, as specified in
 	//     the <ls-alerts container="nameOfContainer"> attribute.
-	alerts.add = function(type, msg, key, container) {
+	//   pendingCollapse (optional): Add message to the pendingCollapse stack
+	//     instead of the regular stack
+	alerts.add = function(type, msg, key, container, pendingCollapse) {
+		var arr;
+
 		// Default to global container if none specified
 		if (!container) {
 			container = "_global";
 		}
 
+		// Is this message for the pendingCollapse stack?
+		arr = pendingCollapse ? alerts.pendingCollapse : alerts.lists;
+
 		// Initialise container
-		if (alerts.lists[container] === undefined) {
+		if (arr[container] === undefined) {
 			if (key) {
-				//alerts.lists[container] = new Map();
-				alerts.lists[container] = new Object(null);
+				//arr[container] = new Map();
+				arr[container] = new Object(null);
 			}
 			else {
-				alerts.lists[container] = [];
+				arr[container] = [];
 			}
 		}
 
@@ -90,70 +116,79 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 			};
 		}
 
-		if (!key && alerts.lists[container] instanceof Array) {
-			// Increment counts. Since no key was supplied, we know an existing
-			// alert is not being replaced
-			alerts.size[container].total++;
-			alerts.size[container][type]++;
+		if (!key && arr[container] instanceof Array) {
+			if (!pendingCollapse) {
+				// Increment counts. Since no key was supplied, we know an
+				// existing alert is not being replaced
+				alerts.size[container].total++;
+				alerts.size[container][type]++;
+			}
 
 			// Push to array only if key is not specified, and the container
 			// hasn't already been turned into an Object by a previous push of
 			// a keyed alert
-			alerts.lists[container].push({
+			arr[container].push({
 				type: type,
 				msg: msg,
 				shown: true
 			});
+
+			// Array index for latest alert
+			key = arr[container].length - 1;
 		}
-		else if (key && alerts.lists[container] instanceof Array) {
-			// Increment counts. Since the alerts list for this container is
-			// currently an array, we know that this is the first keyed alert,
-			// and therefore cannot be replacing an existing alert
-			alerts.size[container].total++;
-			alerts.size[container][type]++;
+		else if (key && arr[container] instanceof Array) {
+			if (!pendingCollapse) {
+				// Increment counts. Since the alerts list for this container is
+				// currently an array, we know that this is the first keyed
+				// alert, and therefore cannot be replacing an existing alert
+				alerts.size[container].total++;
+				alerts.size[container][type]++;
+			}
 
 			// The container was an Array, but we have received a keyed alert,
 			// so we need to convert it to a Map
 			//var newMap = new Map();
-			//alerts.lists[container].forEach(function(value, key) {
+			//arr[container].forEach(function(value, key) {
 			//	newMap.set(key, value);
 			//});
-			//alerts.lists[container] = newMap;
+			//arr[container] = newMap;
 			var newObj = new Object(null);
-			alerts.lists[container].forEach(function(value, key) {
+			arr[container].forEach(function(value, key) {
 				newObj[key] = value;
 			});
-			alerts.lists[container] = newObj;
+			arr[container] = newObj;
 
 			// And insert the new alert
-			//alerts.lists[container].set(key, {
-			alerts.lists[container][key] = {
+			//arr[container].set(key, {
+			arr[container][key] = {
 				type: type,
 				msg: msg,
 				shown: true
 			//});
 			};
 		}
-		//else if (key && alerts.lists[container] instanceof Map) {
-		else if (key && !(alerts.lists[container] instanceof Array)) {
-			// Increment counts if there is no existing alert with this key
-			if (alerts.lists[container][key] === undefined) {
-				alerts.size[container].total++;
-				alerts.size[container][type]++;
+		//else if (key && arr[container] instanceof Map) {
+		else if (key && !(arr[container] instanceof Array)) {
+			if (!pendingCollapse) {
+				// Increment counts if there is no existing alert with this key
+				if (arr[container][key] === undefined) {
+					alerts.size[container].total++;
+					alerts.size[container][type]++;
+				}
+				// If the key does exist, but it's getting replaced by an alert
+				// of a different type, adjust counts
+				else if (arr[container][key].type != type) {
+					alerts.size[container][arr[container][key].type]--;
+					alerts.size[container][type]++;
+				}
+				// Otherwise, an existing alert is getting replaced with another
+				// alert of the same type, and there is no need to adjust counts
 			}
-			// If the key does exist, but it's getting replaced by an alert of
-			// a different type, adjust counts
-			else if (alerts.lists[container][key].type != type) {
-				alerts.size[container][alerts.lists[container][key].type]--;
-				alerts.size[container][type]++;
-			}
-			// Otherwise, an existing alert is getting replaced with another
-			// alert of the same type, and there is no need to adjust counts
 
 			// If a key for this container was specified at any point during
 			// its lifetime, it has been converted to a Map
-			//alerts.lists[container].set(key, {
-			alerts.lists[container][key] = {
+			//arr[container].set(key, {
+			arr[container][key] = {
 				type: type,
 				msg: msg,
 				shown: true
@@ -163,25 +198,35 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 		else {
 			// Increment counts. No key was specified, so this alert cannot be
 			// replacing an existing alert.
-			alerts.size[container].total++;
-			alerts.size[container][type]++;
+			if (!pendingCollapse) {
+				alerts.size[container].total++;
+				alerts.size[container][type]++;
+			}
 
 			// If the container is a Map and no key was specified, generate a
 			// key based on the current size of the Map.
-			//var newKey = alerts.lists[container].size;
-			var newKey = Object.keys(alerts.lists[container]).length;
-			//while (alerts.lists[container].has(newKey)) {
-			//	newKey++;
-			//}
-			//alerts.lists[container].set(newKey, {
-			alerts.lists[container][newKey] = {
+			//key = arr[container].size;
+			key = Object.keys(arr[container]).length;
+			//while (arr[container].has(key)) {
+			while (arr[container][key] !== undefined) {
+				key++;
+			}
+			//arr[container].set(newKey, {
+			arr[container][newKey] = {
 				type: type,
 				msg: msg,
 				shown: true
 			//});
 			};
-			//alerts.size[container] = alerts.lists[container].size;
-			alerts.size[container] = Object.keys(alerts.lists[container]).length;
+			//alerts.size[container] = arr[container].size;
+			alerts.size[container] = Object.keys(arr[container]).length;
+		}
+
+		// If container is currently collapsed, and collapseOnTimeout is
+		// specified on this container, temporarily show this alert in addition
+		// to adding it to the collapsed container
+		if (!pendingCollapse && alerts.collapseOnTimeout[container] && alerts.collapsed[container]) {
+			alerts.add(type, msg, key, container, true);
 		}
 	};
 
@@ -192,35 +237,43 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 	// Parameters:
 	//   index: a numeric index (if alert.lists[container] is an Array) or a
 	//     unique key (if alerts.lists[container] has become an Object).
-	//   contianer (optional): The container from which to remove this alert.
-	alerts.remove = function(index, container) {
+	//   container (optional): The container from which to remove this alert.
+	//   pendingCollapse (optional): Remove message from the pendingCollapse
+	//     stack instead of the regular stack
+	alerts.remove = function(index, container, pendingCollapse) {
 		// Default to global container if none specified
 		if (!container) {
 			container = "_global";
 		}
+
+		// Is this message for the pendingCollapse stack?
+		arr = pendingCollapse ? alerts.pendingCollapse : alerts.lists;
+
 		// Bail if container is not defined
-		else if (alerts.lists[container] === undefined) {
+		if (arr[container] === undefined) {
 			return;
 		}
 
 		// Only remove the message if it currently exists
-		if (alerts.lists[container][index] !== undefined) {
-			// Decrement counts
-			alerts.size[container].total--;
-			alerts.size[container][alerts.lists[container][index].type]--;
+		if (arr[container][index] !== undefined) {
+			if (!pendingCollapse) {
+				// Decrement counts
+				alerts.size[container].total--;
+				alerts.size[container][arr[container][index].type]--;
+			}
 
 			// Remove alert from view (start animating)
-			alerts.lists[container][index].shown = false;
+			arr[container][index].shown = false;
 
 			// Delete alert after animation finishes.
 			$timeout(function() {
-				if (alerts.lists[container] instanceof Array) {
+				if (arr[container] instanceof Array) {
 					// Remove element from array
-					alerts.lists[container].splice(index, 1);
+					arr[container].splice(index, 1);
 				}
 				else {
 					// Delete object property
-					delete alerts.lists[container][index];
+					delete arr[container][index];
 				}
 			}, 1000);
 		}
@@ -232,27 +285,41 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 	//
 	// Parameters:
 	//   container (optional): The container from which to remove all alerts.
-	alerts.clear = function(container) {
+	//   pendingCollapse (optional): Clear messages from the pendingCollapse
+	//     stack instead of the regular stack
+	alerts.clear = function(container, pendingCollapse) {
 		// Default to global container if none specified
 		if (!container) {
 			container = "_global";
 		}
 
-		if (alerts.lists[container] instanceof Array) {
+		// Are these messages for the pendingCollapse stack?
+		arr = pendingCollapse ? alerts.pendingCollapse : alerts.lists;
+
+		if (arr[container] instanceof Array) {
 			// Iterate through array indeces
-			alerts.lists[container].forEach(function(alert, index) {
-				alerts.remove(index, container);
+			arr[container].forEach(function(alert, index) {
+				alerts.remove(index, container, pendingCollapse);
 			});
 		}
 		else {
 			// Iterate through object properties
-			for (var property in alerts.lists[container]) {
-				alerts.remove(property, container);
+			for (var property in arr[container]) {
+				alerts.remove(property, container, pendingCollapse);
 			}
 		}
-		alerts.size[container] = 0;
+
+		if (!pendingCollapse) {
+			alerts.size[container] = 0;
+		}
 	}
 
+	// alerts.collapse()
+	//
+	//   Collapse an alerts container.
+	//
+	// Paremter:
+	//   container: Name of the container.
 	alerts.collapse = function(container) {
 		// Default to global container if none specified
 		if (!container) {
@@ -262,6 +329,12 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 		alerts.collapsed[container] = true;
 	}
 
+	// alerts.expand()
+	//
+	//   Expand an alerts container.
+	//
+	// Paremter:
+	//   container: Name of the container.
 	alerts.expand = function(container) {
 		// Default to global container if none specified
 		if (!container) {
@@ -269,6 +342,7 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 		}
 
 		alerts.collapsed[container] = false;
+		alerts.clear(container, true);
 	}
 
 	return alerts;
@@ -276,6 +350,10 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 
 angular.module("LifeStreamAlerts").controller("LifeStreamAlertsController", [ "lsAlerts", "$scope", function(alerts, $scope) {
 	var alertsCtrl = this;
+
+	// True if at least one temporary alert associated with a collapseOnTimeout
+	// container is showing
+	alertsCtrl.pendingCollapseInView = false;
 
 	// Simply make the service bits accessible via the controller
 	for (var property in alerts) {
@@ -291,6 +369,24 @@ angular.module("LifeStreamAlerts").controller("LifeStreamAlertsController", [ "l
 		}
 
 		if (alerts.collapsed[container]) {
+			// This is a hack involved in using ngClass to apply a CSS class to
+			// an .alerts-container element if at least one temporary alert
+			// associated with a collapseOnTimeout container is showing.
+			//
+			// The hack is necessary because the following CSS selector will not
+			// work with ngAnimate:
+			//   .some-adjacent-element + .alerts-container.ng-hide-remove
+			//
+			// The element to which .ng-hide-remove is attached needs to be
+			// targettable without any dependency on sibling elements. We use
+			// this hack to apply (or unapply) a CSS class to the element that
+			// makes it directly targettable.
+			alertsCtrl.pendingCollapseInView = (
+				alerts.collapseOnTimeout[container] && (
+					alerts.pendingCollapse[container].length ||
+					Object.keys(alerts.pendingCollapse[container]).length
+				)
+			) ? true : false;
 			alerts.expand(container);
 		}
 		else {
@@ -306,16 +402,35 @@ angular.module("LifeStreamAlerts").directive("lsAlerts", function() {
 		controllerAs: "alertsCtrl",
 		templateUrl: "partials/lifestream-alerts.html",
 		scope: {
+			collapseOnTimeout: "@",
 			collapsible: "@",
 			container: "@",
 			dismissOnTimeout: "@"
 		},
 		link: function(scope, element, attrs, controller) {
+			// Default to global container if none specified
 			if (attrs.container === undefined) {
-				// Default to global container if none specified
 				scope.container="_global";
 			}
 
+			// If collapseOnTimeout is set, default this container to collapsed
+			// (since new alerts will be temporarily shown anyway)
+			if (attrs.collapseOnTimeout) {
+				controller.collapsed[scope.container] = true;
+			}
+			// Otherwise, default container to expanded so the user is able to
+			// see alerts as they appear.
+			else {
+				controller.collapsed[scope.container] = false;
+			}
+
+			// Pass value of collapseOnTimeout to the service
+			if (Number(attrs.collapseOnTimeout) > 0) {
+				controller.collapseOnTimeout[scope.container] = Number(attrs.collapseOnTimeout);
+			}
+
+			// If dodge is defined, turn alert bubble translucent when mouse
+			// cursor is hovered over it
 			if (attrs.dodge !== undefined) {
 				angular.element(document).on("mousemove.alertsDodge." + scope.container, function(event) {
 					element.find(".alert").each(function(index, found) {
