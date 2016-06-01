@@ -39,11 +39,23 @@ router.post("/:id", function(req, res, next) {
 			return res.json(models.error("Missing 'userid'"));
 		}
 
-		dbmod.inviteCreate(Number(req.params.id), Number(req.body.userid), function(err, invites) {
+		dbmod.streamInfo(req.params.id, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
-			res.json(models.success());
+
+			// Only the owner of a stream may send invites
+			if (stream.userid != tokenContents.id) {
+				return res.json(models.error("Permission denied"));
+			}
+			else {
+				dbmod.inviteCreate(Number(req.params.id), Number(req.body.userid), function(err, invites) {
+					if (err) {
+						return res.json(err);
+					}
+					res.json(models.success());
+				});
+			}
 		});
 	});
 });
@@ -59,11 +71,23 @@ router.delete("/:id", function(req, res, next) {
 			return res.json(models.error("Missing 'userid'"));
 		}
 
-		dbmod.inviteDelete(Number(req.params.id), Number(req.query.userid), function(err) {
+		dbmod.streamInfo(req.params.id, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
-			res.json(models.success());
+
+			// Only the owner of a stream may revoke invites
+			if (stream.userid != tokenContents.id) {
+				return res.json(models.error("Permission denied"));
+			}
+			else {
+				dbmod.inviteDelete(Number(req.params.id), Number(req.query.userid), function(err) {
+					if (err) {
+						return res.json(err);
+					}
+					res.json(models.success());
+				});
+			}
 		});
 	});
 });
