@@ -17,7 +17,6 @@
 		<div ng-repeat="image in gallery.images">
 			<div ng-click="gallery.zoomImage($index)" class="gallery-tile" ng-style="{ 'background-image': 'url(' + image.thumbUrl + ')', 'height': thumbSize, 'width': thumbSize }">
 				<ul>
-					<li>{{image.uploader}}</li>
 					<li>{{image.uploadTime * 1000 | date : "yyyy-MM-dd @ HH:mm:ss"}}</li>
 					<li><span ng-show="image.comment" class="glyphicon glyphicon-comment" /></li>
 				</ul>

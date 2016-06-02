@@ -79,7 +79,8 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 							id: image.id,
 							thumbUrl: "api/image/get/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
 							url: "api/image/get/" + image.id,
-							uploader: image.userLogin,
+							userLogin: image.userLogin,
+							userName: image.userName,
 							uploadTime: image.uploadTime,
 							comment: image.comment
 						});

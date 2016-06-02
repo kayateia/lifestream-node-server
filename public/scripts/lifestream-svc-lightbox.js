@@ -85,7 +85,7 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 
 	lightboxCtrl.showCommentForm = function($event) {
 		// Confirm that the uploader is the same as the current user
-		if (lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].uploader == session.user.login) {
+		if (lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].userLogin == session.user.login) {
 			lightboxCtrl.commentFormShown = true;
 
 			// Pre-populate input field with current comment
@@ -157,7 +157,7 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		// closing the lightbox sets the index to 1. Putting this check after
 		// the nothing-to-do  check would therefore prevent the image at
 		// index 1 from ever being recognised as belonging to the logged-in user
-		lightboxCtrl.isMyImage = lsLightbox.gallery.images[newValue].uploader == session.user.login;
+		lightboxCtrl.isMyImage = lsLightbox.gallery.images[newValue].userLogin == session.user.login;
 
 		// Nothing more to do if:
 		if (newValue === oldValue // values didn't actually change
