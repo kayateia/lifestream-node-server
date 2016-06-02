@@ -115,86 +115,92 @@ router.get("/get/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.imageGet(req.params.id, function(err, img) {
+		dbmod.imageCheckViewPermission(req.params.id, tokenContents.id, function(err) {
 			if (err) {
 				return res.json(err);
 			}
 
-			var imageFile = "./uploads/" + img.userid + "/" + img.fn;
-
-			// If original image is smaller than requested size, or no
-			// specific size was requested, send original file.
-			var sendOriginalFile = function() {
-				res.sendFile(imageFile, { root: process.cwd() });
-			}
-
-			// If specific image size was requested, resize before sending
-			if (req.query.scaleTo) {
-				var imageSize = sizeOf(imageFile);
-
-				// Image is resized asynchronously; send buffer as result
-				var sendFromBuffer = function(err, buffer) {
-					if (err) {
-						res.json(err);
-					}
-					res.set("Content-Type", "image/" + path.extname(imageFile).substring(1));
-					res.send(buffer);
+			dbmod.imageGet(req.params.id, function(err, img) {
+				if (err) {
+					return res.json(err);
 				}
 
-				// Determine which of hte image's dimensions are larger.
-				if (imageSize.width >= imageSize.height) {
-					imageSize.largerDimension = "width";
-					imageSize.lesserDimension = "height";
+				var imageFile = "./uploads/" + img.userid + "/" + img.fn;
+
+				// If original image is smaller than requested size, or no
+				// specific size was requested, send original file.
+				var sendOriginalFile = function() {
+					res.sendFile(imageFile, { root: process.cwd() });
+				}
+
+				// If specific image size was requested, resize before sending
+				if (req.query.scaleTo) {
+					var imageSize = sizeOf(imageFile);
+
+					// Image is resized asynchronously; send buffer as result
+					var sendFromBuffer = function(err, buffer) {
+						if (err) {
+							res.json(err);
+						}
+						res.set("Content-Type", "image/" + path.extname(imageFile).substring(1));
+						res.send(buffer);
+					}
+
+					// Determine which of hte image's dimensions are larger.
+					if (imageSize.width >= imageSize.height) {
+						imageSize.largerDimension = "width";
+						imageSize.lesserDimension = "height";
+					}
+					else {
+						imageSize.largerDimension = "height";
+						imageSize.lesserDimension = "width";
+					}
+
+					switch (req.query.scaleMode) {
+						case "cover":
+							if (imageSize[imageSize.lesserDimension] > req.query.scaleTo) {
+								// Scale the image's smaller dimension to match
+								// the target size.
+								if (imageSize.lesserDimension == "width") {
+									gm(imageFile)
+										.resize(req.query.scaleTo, null)
+										.toBuffer(null, sendFromBuffer);
+								}
+								else {
+									gm(imageFile)
+										.resize(null, req.query.scaleTo)
+										.toBuffer(null, sendFromBuffer);
+								}
+							}
+							else {
+								sendOriginalFile();
+							}
+							break;
+						case "contain":
+						default:
+							if (imageSize[imageSize.largerDimension] > req.query.scaleTo) {
+								// Scale the image's larger dimension to match
+								// the target size.
+								if (imageSize.largerDimension == "width") {
+									gm(imageFile)
+										.resize(req.query.scaleTo, null)
+										.toBuffer(null, sendFromBuffer);
+								}
+								else {
+									gm(imageFile)
+										.resize(null, req.query.scaleTo)
+										.toBuffer(null, sendFromBuffer);
+								}
+							}
+							else {
+								sendOriginalFile();
+							}
+					}
 				}
 				else {
-					imageSize.largerDimension = "height";
-					imageSize.lesserDimension = "width";
+					sendOriginalFile();
 				}
-
-				switch (req.query.scaleMode) {
-					case "cover":
-						if (imageSize[imageSize.lesserDimension] > req.query.scaleTo) {
-							// Scale the image's smaller dimension to match
-							// the target size.
-							if (imageSize.lesserDimension == "width") {
-								gm(imageFile)
-									.resize(req.query.scaleTo, null)
-									.toBuffer(null, sendFromBuffer);
-							}
-							else {
-								gm(imageFile)
-									.resize(null, req.query.scaleTo)
-									.toBuffer(null, sendFromBuffer);
-							}
-						}
-						else {
-							sendOriginalFile();
-						}
-						break;
-					case "contain":
-					default:
-						if (imageSize[imageSize.largerDimension] > req.query.scaleTo) {
-							// Scale the image's larger dimension to match
-							// the target size.
-							if (imageSize.largerDimension == "width") {
-								gm(imageFile)
-									.resize(req.query.scaleTo, null)
-									.toBuffer(null, sendFromBuffer);
-							}
-							else {
-								gm(imageFile)
-									.resize(null, req.query.scaleTo)
-									.toBuffer(null, sendFromBuffer);
-							}
-						}
-						else {
-							sendOriginalFile();
-						}
-				}
-			}
-			else {
-				sendOriginalFile();
-			}
+			});
 		});
 	});
 });
@@ -205,12 +211,18 @@ router.post("/:id/comment", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.imageComment(req.params.id, req.body.comment, tokenContents, function(err) {
+		dbmod.imageCheckEditPermission(req.params.id, tokenContents.id, function(err) {
 			if (err) {
 				return res.json(err);
 			}
 
-			res.json(models.success());
+			dbmod.imageComment(req.params.id, req.body.comment, function(err) {
+				if (err) {
+					return res.json(err);
+				}
+
+				res.json(models.success());
+			});
 		});
 	});
 });

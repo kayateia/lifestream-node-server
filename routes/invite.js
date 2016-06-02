@@ -35,8 +35,8 @@ router.post("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (Number(req.body.userid) < 1) {
-			return res.json(models.error("Missing 'userid'"));
+		if (req.body.userid === undefined || Number(req.body.userid) < 1) {
+			return res.json(models.error("Invalid 'userid'"));
 		}
 
 		dbmod.streamInfo(req.params.id, function(err, stream) {
@@ -67,8 +67,8 @@ router.delete("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (Number(req.query.userid) < 1) {
-			return res.json(models.error("Missing 'userid'"));
+		if (req.query.userid === undefined || Number(req.query.userid) < 1) {
+			return res.json(models.error("Invalid 'userid'"));
 		}
 
 		dbmod.streamInfo(req.params.id, function(err, stream) {
