@@ -1,13 +1,32 @@
 // Define the gallery controller
-lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", function($scope, $element, $http, alerts, lsLightbox, keepalive, $timeout) {
+angular.module("LifeStreamGallery", [ "LifeStreamAlerts", "LifeStreamLightbox", "LifeStreamKeepAlive" ]);
+
+angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", function($scope, $element, $http, alerts, lsLightbox, keepalive, $timeout) {
 	var gallery = this;
 
-	gallery.numImagesPerRow = 0; // Number of images that would fit on each row in the gallery, taking into account the width of the grid, the size of each thumbnail, and the margin between each thumbnail
-	gallery.myStreams = [ 1 ]; // TODO: replace with array of stream IDs owned by user. Generally, the array should contain a single element specifying the user's auto-upload stream; otherwise, the same image may appear multiple times in the gallery if it's referenced from multiple streams
-	gallery.subscribedStreams = [ 1 ]; //TODO: replace with array of stream IDs to which user is subscribed
+	// streamid from directive. May be a comma-separated list. Split the list
+	// into an array, and keep only numeric IDs
+	gallery.streams = [];
+	$scope.streamid.split(",").forEach(function(value) {
+		value = Number(value);
+		if (!Number.isNaN(value)) {
+			gallery.streams.push(value);
+		}
+	});
 
-	// Each property under gallery.images is an array object. These array
-	// objects are intended to be populated by gallery.loadImages().
+	// Thumbnail size from directive
+	gallery.thumbSize = !Number.isNaN($scope.thumbSize) ? Number($scope.thumbSize) : 192;
+
+	// .gallery-section container element
+	gallery.element = $element.children(".gallery-section");
+
+	// Number of images that would fit each row in the gallery, taking into
+	// account the width of the container element, the size of each thumbnail,
+	// and the margin between each thumbnail. Updated by $scope.$watch()
+	gallery.numImagesPerRow = 0;
+
+	// gallery.images is an array of objects. Each element in the array is
+	// intended to be populated by gallery.loadImages().
 	//
 	// Each element in the array is an object of the form:
 	//   {
@@ -17,69 +36,70 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	//     uploadTime: the time the image was uploaded (seconds since epoch)
 	//     comment: a string that the uploader may optionally add
 	//   }
+	gallery.images = [];
+
+	// Any time an image is added to the array, that image's ID should be added
+	// to this array, to make it easier to find whether a given image is already
+	// in this gallery's grid
+	gallery.ids = [];
+
+	// True when the gallery is expanded
+	gallery.expanded = false;
+
+	// gallery.keepAlivePing()
 	//
-	// Additionally, each array object has the following properties:
-	//   expanded - true when the gallery section corresponding to this array
-	//     is expanded
-	gallery.images = {
-		mine: [],
-		other: []
-	};
-
-	// Shortcut for determining whether a given image ID already exists in an
-	// array.
-	gallery.images.mine.ids = [];
-	gallery.images.other.ids = [];
-
+	//   Should be called whenever user activity is detected.
 	gallery.keepAlivePing = function() {
 		keepalive.ping();
 	};
 
+	// gallery.loadImages()
+	//
+	//   Loads a list of images from the server, from the specified streams.
+	//   Each image ID is loaded into the grid exactly once; if the same image
+	//   appears in multiple streams, the image itself will still appear Only
+	//   once in the grid.
+	//
 	// Parameters:
-	//   arr - An array object under gallery.images, to store data from the
-	//     server.
-	//   streams - An array of stream IDs from which to load images.
 	//   count - (optional) Number of images to load.
 	//   olderThan - (optional) UNIX time. Only load images older than this.
 	//   callback - (optional) Function to be called when server response has
 	//      been successfully processed.
-	gallery.loadImages = function(arr, streams, count, olderThan, callback) {
-		streams.forEach(function(id) {
-			$http.get("api/stream/" +  id + "/contents?"
-				+ (count ? "&count=" + count : "")
-				+ (olderThan ? "&olderThan=" + olderThan : "")
-			).then(
-				function done(response) {
-					alerts.remove("loadImages", "persistent");
-					if (response.data.success) {
-						response.data.images.forEach(function(image) {
-							// Add this image's info to the target array
-							arr.push({
-								id: image.id,
-								thumbUrl: "api/image/get/" + image.id + "?scaleTo=192&scaleMode=cover",
-								url: "api/image/get/" + image.id,
-								uploader: image.userLogin,
-								uploadTime: image.uploadTime,
-								comment: image.comment
-							});
-
-							// Record this image's ID into a separate
-							// array, to make it quicker to identify
-							// whether a given image ID is already known
-							arr.ids.push(image.id);
+	gallery.loadImages = function(count, olderThan, callback) {
+		$http.get("api/stream/" +  gallery.streams.join(",") + "/contents?"
+			+ (count ? "&count=" + count : "")
+			+ (olderThan ? "&olderThan=" + olderThan : "")
+		).then(
+			function done(response) {
+				alerts.remove("loadImages", "persistent");
+				if (response.data.success) {
+					response.data.images.forEach(function(image) {
+						// Add this image's info to the target array
+						gallery.images.push({
+							id: image.id,
+							thumbUrl: "api/image/get/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
+							url: "api/image/get/" + image.id,
+							uploader: image.userLogin,
+							uploadTime: image.uploadTime,
+							comment: image.comment
 						});
 
-						// If a callback function was specified, call it
-						if (callback) {
-							callback();
-						}
+						// Record this image's ID into a separate
+						// array, to make it quicker to identify
+						// whether a given image ID is already known
+						gallery.ids.push(image.id);
+					});
+
+					// If a callback function was specified, call it
+					if (callback) {
+						callback();
 					}
-				},
-				function fail(response) {
-					alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImages", "persistent");
 				}
-			);
-		});
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImages", "persistent");
+			}
+		);
 	};
 
 	// gallery.unloadImages()
@@ -87,12 +107,11 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	//   Removes images from the end of a gallery.images array.
 	//
 	// Parameters:
-	//   arr - An array object under gallery.images
 	//   count - Number of images to unload
-	gallery.unloadImages = function(arr, count) {
+	gallery.unloadImages = function(count) {
 		for (var i = 0; i < count; i++) {
-			arr.pop();
-			arr.ids.pop();
+			gallery.images.pop();
+			gallery.ids.pop();
 		}
 	};
 
@@ -103,16 +122,15 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	//   gallery is visible and its scroll position is within the viewport.
 	//
 	// Parameters:
-	//   arr - An array object under gallery.images
 	//   callback - (optional) Function to be called when server response has
 	//     been successfully processed.
-	gallery.loadMoreImages = function(arr, callback) {
+	gallery.loadMoreImages = function(callback) {
 		// Only load more images if the gallery is expanded
-		if (!arr.expanded) {
+		if (!gallery.expanded) {
 			return;
 		}
 
-		gallery.loadImages(arr, gallery.myStreams, gallery.numImagesPerRow, arr[arr.length - 1].uploadTime, function() {
+		gallery.loadImages(gallery.numImagesPerRow, gallery.images[gallery.images.length - 1].uploadTime, function() {
 			// angular-inview only triggers the in-view check one time when
 			// the element enters or leaves the viewport.
 			//
@@ -139,13 +157,10 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	//
 	//   Ensures that each row in the gallery grid contains a number of
 	//   thumbnails equal to what will fit on a single row.
-	//
-	// Parameters:
-	//   arr - An array object under gallery.images.
-	gallery.adjustImageRows = function(arr) {
+	gallery.adjustImageRows = function() {
 		// Check whether any blanks are left over on the last row of
 		// thumbnails.
-		var blanks = arr.length % gallery.numImagesPerRow;
+		var blanks = gallery.images.length % gallery.numImagesPerRow;
 		if (blanks != 0) {
 			blanks = gallery.numImagesPerRow - blanks;
 		}
@@ -153,51 +168,55 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 		// If blanks are left over, and the gallery is expanded OR there
 		// aren't currently enough images to fill the first row, load
 		// more images to fill the blanks.
-		if (blanks > 0 && (arr.expanded || arr.length < gallery.numImagesPerRow)) {
-			gallery.loadImages(arr, gallery.myStreams, blanks, arr[arr.length - 1].uploadTime);
+		if (blanks > 0 && (gallery.expanded || gallery.images.length < gallery.numImagesPerRow)) {
+			gallery.loadImages(blanks, gallery.images[gallery.images.length - 1].uploadTime);
 		}
 
 		// If the gallery is collapsed, and the current number of
 		// displayed images won't fit in the new width, unload the images
 		// that won't fit.
-		if (!arr.expanded) {
-			gallery.unloadImages(arr, arr.length - gallery.numImagesPerRow);
+		if (!gallery.expanded) {
+			gallery.unloadImages(gallery.images.length - gallery.numImagesPerRow);
 		}
 
 	}
 
-	// Parameters:
-	//   arr - An array object under gallery.images.
-	gallery.collapseGrid = function(arr) {
-		arr.expanded = false;
-		gallery.adjustImageRows(arr);
+	// gallery.collapseGrid()
+	//
+	//   Collapses the gallery to show only one row.
+	gallery.collapseGrid = function() {
+		gallery.expanded = false;
+		gallery.adjustImageRows();
 	};
 
-	// Parameters:
-	//   arr - An array object under gallery.images.
-	//   streams - An array of stream IDs from which to load images.
-	gallery.expandGrid = function(arr, streams) {
-		arr.expanded = true;
-		gallery.loadMoreImages(arr);
+	// gallery.expandGrid()
+	//
+	//   Expands the gallery to show multiple rows.
+	gallery.expandGrid = function(callback) {
+		gallery.expanded = true;
+		gallery.loadMoreImages(callback);
 	};
 
+	// gallery.zoomImage()
+	//
+	//   Opens a lighbox to zoom in on the selected image
+	//
 	// Paramters:
-	//   arr - An array object populated by loadImages()
 	//   index - The index of the image within the array
-	gallery.zoomImage = function(arr, index) {
+	gallery.zoomImage = function(index) {
 		lsLightbox.setGallery(gallery);
-		lsLightbox.openModal(arr, index);
+		lsLightbox.openModal(gallery.images, index);
 	};
 
 	// Watch the size of the gallery grid's element. We use this to calculate
 	// how many image thumbnails can fit on a single row.
 	//
-	// Each thumbnail is 196px = 192px image + 4px margin-right.
+	// Each thumbnail is gallery.thumbSize + 4px margin-right.
 	$scope.getElementDimensions = function() {
-		return { 'h': $element.height(), 'w': $element.width() };
+		return { 'h': gallery.element.height(), 'w': gallery.element.width() };
 	};
 	$scope.$watch($scope.getElementDimensions, function(newValue, oldValue) {
-		gallery.numImagesPerRow = Math.floor(newValue.w / 196);
+		gallery.numImagesPerRow = Math.floor(newValue.w / (gallery.thumbSize + 4));
 	}, true);
 	angular.element(window).bind("resize", function() {
 		$scope.$apply();
@@ -207,20 +226,34 @@ lsApp.controller("LifeStreamGalleryController", ["$scope", "$element", "$http", 
 	// that the number of images on each row matches the new width.
 	$scope.$watch("gallery.numImagesPerRow", function(newValue, oldValue) {
 		if (newValue != oldValue) {
-			gallery.adjustImageRows(gallery.images.mine);
+			gallery.adjustImageRows();
 		}
 	});
 
-	// Functions to execute once the document is fully loaded.
-	angular.element(document).ready(function() {
-		// Begin keepalive timers
-		keepalive.begin();
-		// Load most recent images in streams on page load.
-		gallery.loadImages(gallery.images.mine, gallery.myStreams, gallery.numImagesPerRow);
-	});
+	// Begin keepalive timers
+	keepalive.begin();
+
+	// Load most recent images after page is fully rendered and there
+	// is valid width for the container element
+	$timeout(function() {
+		gallery.loadImages(gallery.numImagesPerRow);
+	}, 0);
 
 	// Cancel keepalive timers when the app closes.
 	$scope.$on("$destroy", function() {
 		keepalive.end();
 	});
+}]);
+
+angular.module("LifeStreamGallery").directive("lsGallery", [ "$timeout", function($timeout) {
+	return {
+		controller: "LifeStreamGalleryController",
+		controllerAs: "gallery",
+		templateUrl: "partials/lifestream-gallery.html",
+		scope: {
+			streamid: "@",
+			thumbSize: "@",
+			title: "@"
+		}
+	};
 }]);

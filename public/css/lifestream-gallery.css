@@ -1,0 +1,68 @@
+/* Kludge around the fact that Angular ngRepeat wraps each repetition with the
+ * the element to which the ng-repeat tag was attached.
+ *
+ * A <div ng-repeat="..."> would therefore cause each repetition to be wrapped
+ * inside a <div> tag, but gallery tiles should e displayed inline.
+ */
+.gallery-section div[ng-repeat] {
+	display: inline-block;
+	margin-right: 4px;
+}
+
+/* Keep the affixed header above gallery tiles */
+.gallery-section h2 {
+	z-index: 1;
+}
+/* A collapsed gallery grid should only be one row */
+.gallery-grid {
+	overflow: scroll;
+	white-space: nowrap;
+}
+/* An expanded gallery grid can be multiple rows */
+.gallery-grid.expanded {
+	white-space: normal;
+}
+/* Prevent the header and gallery tiles from seeming to jump when an expanded
+ * gallery's header switches from static to fixed positioning.
+ */
+.gallery-section h2.affix {
+	margin-top: 0;
+	padding-bottom: 5px;
+	top: 0;
+	width: 100%;
+	/* Increase visual contrast of affixed header over scrolling images */
+	background-color: rgba(34, 34, 34, 0.67);
+	text-shadow: 0 1px 2px black;
+}
+h2.affix + .gallery-grid.expanded {
+	padding-top: 40px; /* 30px font-size + 10px margin-bottom */
+	z-index: 0; /* Keep gallery tiles beneath the affixed header */
+}
+
+.gallery-tile {
+	background-position: center;
+	background-size: cover;
+	display: table-cell;
+	height: 192px;
+	width: 192px;
+	vertical-align: bottom;
+}
+.gallery-tile.placeholder {
+	height: 1px;
+}
+.gallery-tile > ul {
+	background-image: linear-gradient(rgba(0, 0, 0, 0), rgba(0, 0, 0, 0.5));
+	color: white;
+	margin: 0;
+	padding: 5px;
+	position: relative;
+}
+.gallery-tile > ul > li {
+	list-style: none;
+	text-shadow: 0 1px 2px black;
+}
+.gallery-tile .glyphicon {
+	position: absolute;
+	top: 5px;
+	right: 5px;
+}

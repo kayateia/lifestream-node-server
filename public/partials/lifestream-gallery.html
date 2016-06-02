@@ -1,0 +1,28 @@
+<div class="gallery-section">
+	<!-- Show the unaffixed header when the gallery is collapsed -->
+	<h2 ng-hide="gallery.expanded">
+		{{title}}
+		<small>
+			<a ng-click="gallery.expandGrid()" href="#">More »</a>
+		</small>
+	</h2>
+	<!-- Show the affixed header when the gallery is expanded -->
+	<h2 data-spy="affix" data-offset-top="92" ng-show="gallery.expanded">
+		Your uploads
+		<small>
+			<a ng-click="gallery.collapseGrid()" href="#">Less «</a>
+		</small>
+	</h2>
+	<div ng-class="[ 'gallery-grid', { expanded: gallery.expanded } ]" in-view-container>
+		<div ng-repeat="image in gallery.images">
+			<div ng-click="gallery.zoomImage($index)" class="gallery-tile" ng-style="{ 'background-image': 'url(' + image.thumbUrl + ')' }">
+				<ul>
+					<li>{{image.uploader}}</li>
+					<li>{{image.uploadTime * 1000 | date : "yyyy-MM-dd @ HH:mm:ss"}}</li>
+					<li><span ng-show="image.comment" class="glyphicon glyphicon-comment" /></li>
+				</ul>
+			</div>
+		</div>
+		<div ng-show="gallery.expanded" in-view="$inview && gallery.loadMoreImages()" class="gallery-tile placeholder"></div>
+	</div>
+</div>

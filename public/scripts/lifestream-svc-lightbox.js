@@ -151,15 +151,13 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 			return;
 		}
 
-		var arr = lsLightbox.gallery.images.mine;
-
 		// Check if current image was uploaded by the logged-in user.
 		//
 		// This check has to come before the nothing-to-do check because
 		// closing the lightbox sets the index to 1. Putting this check after
 		// the nothing-to-do  check would therefore prevent the image at
 		// index 1 from ever being recognised as belonging to the logged-in user
-		lightboxCtrl.isMyImage = arr[newValue].uploader == session.user.login;
+		lightboxCtrl.isMyImage = lsLightbox.gallery.images[newValue].uploader == session.user.login;
 
 		// Nothing more to do if:
 		if (newValue === oldValue // values didn't actually change
@@ -171,19 +169,18 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		// If the gallery is expanded and the user has reached the nth-last
 		// image (where n is the number of images that'll fit on one row),
 		// pre-load the next row.
-		if (arr.expanded && newValue - arr.length < lsLightbox.gallery.numImagesPerRow) {
-			lsLightbox.gallery.loadMoreImages(arr, function() {
-				lsLightbox.Lightbox.setImages(arr);
+		if (lsLightbox.gallery.expanded && newValue - lsLightbox.gallery.images.length < lsLightbox.gallery.numImagesPerRow) {
+			lsLightbox.gallery.loadMoreImages(function() {
+				lsLightbox.Lightbox.setImages(lsLightbox.gallery.images);
 			});
 		}
 		// If the galery is collased and the user has reached the first image
 		// by wrapping around from the last image, expand the gallery and
 		// load another row of images. Then focus on the first image from the
 		// newly loaded row.
-		else if (newValue == 0 && oldValue == arr.length - 1) {
-			lsLightbox.gallery.expandGrid(arr, lsLightbox.gallery.myStreams);
-			lsLightbox.gallery.loadMoreImages(arr, function() {
-				lsLightbox.Lightbox.setImages(arr);
+		else if (newValue == 0 && oldValue == lsLightbox.gallery.images.length - 1) {
+			lsLightbox.gallery.expandGrid(function() {
+				lsLightbox.Lightbox.setImages(lsLightbox.gallery.images);
 				lsLightbox.Lightbox.setImage(oldValue + 1);
 			});
 		}
