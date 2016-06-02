@@ -17,6 +17,7 @@ var stream = require('./routes/stream');
 var image = require("./routes/image");
 var user = require("./routes/user");
 var invite = require("./routes/invite");
+var subscription = require("./routes/subscription");
 
 var app = express();
 
@@ -37,6 +38,7 @@ app.use('/api/stream', stream);
 app.use("/api/image", image);
 app.use("/api/user", user);
 app.use("/api/invite", invite);
+app.use("/api/subscription", subscription);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
