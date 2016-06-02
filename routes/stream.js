@@ -56,6 +56,18 @@ router.get("/:id/contents", function(req, res, next) {
 			olderThan = null;
 		}
 
+		// Supposing the :id parameter is a comma-delimited string, convert it
+		// into an array, and keep only the numbers
+		var ids = [];
+		req.params.id.split(",").forEach(function(value) {
+			value = Number(value);
+			if (!Number.isNaN(value)) {
+				ids.push(value);
+			}
+		});
+		// Rejoin numeric IDs into sanitised comma-delimited string
+		req.params.id = ids.join(",");
+
 		dbmod.streamContents(req.params.id, count, olderThan, function(err, rows) {
 			if (err) {
 				return res.json(err);
