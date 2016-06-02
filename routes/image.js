@@ -227,4 +227,73 @@ router.post("/:id/comment", function(req, res, next) {
 	});
 });
 
+router.get("/:id/streams", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		dbmod.imageGetStreams(req.params.id, function(err, rows) {
+			if (err) {
+				return res.json(err);
+			}
+
+			res.json(models.imageStreamList(req.params.id, rows));
+		});
+	});
+});
+
+router.post("/:id/streams", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (req.body.streamid === undefined || Number(req.body.streamid) < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		dbmod.imageCheckEditPermission(req.params.id, tokenContents.id, function(err) {
+			if (err) {
+				return res.json(err);
+			}
+
+			console.log(req.body.streamid);
+			dbmod.imageAddStream(req.params.id, req.body.streamid, function(err) {
+				if (err) {
+					return res.json(err);
+				}
+
+				res.json(models.success());
+			});
+		});
+	});
+});
+
+router.delete("/:id/streams", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (req.query.streamid === undefined || Number(req.query.streamid) < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		dbmod.imageCheckEditPermission(req.params.id, tokenContents.id, function(err) {
+			if (err) {
+				return res.json(err);
+			}
+
+			dbmod.imageRemoveStream(req.params.id, req.query.streamid, function(err) {
+				if (err) {
+					return res.json(err);
+				}
+
+				res.json(models.success());
+			});
+		});
+	});
+});
+
 module.exports = router;
