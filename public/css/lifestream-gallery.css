@@ -22,6 +22,10 @@
 .gallery-grid.expanded {
 	white-space: normal;
 }
+/* Thumbnail caption text should wrap */
+.gallery-tile li {
+	white-space: normal;
+}
 /* Prevent the header and gallery tiles from seeming to jump when an expanded
  * gallery's header switches from static to fixed positioning.
  */
