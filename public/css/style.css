@@ -40,6 +40,9 @@ a:hover {
 	background-color: rgba(15, 15, 15, 0.5);
 	color: #eeeeee;
 }
+.navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
+	background-color: rgba(15, 15, 15, 0.1);
+}
 
 /* Fix for angular-bootstrap: https://angular-ui.github.io/bootstrap/ */
 .nav,
@@ -189,6 +192,17 @@ table.streams-editor .pending label {
 	font-weight: normal;
 	margin-bottom: 0;
 }
+
+.search-result .gallery-section > h2,
+.subscription-list .gallery-section > h2 {
+	font-size: 20px;
+}
+
+.search-result .gallery-section > h2.affix + .gallery-grid.expanded,
+.subscription-list .gallery-section > h2.affix + .gallery-grid.expanded {
+	padding-top: 50px;
+}
+
 
 .search-result ul,
 .subscription-list ul {
