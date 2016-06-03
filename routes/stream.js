@@ -30,6 +30,27 @@ router.get("/list", function(req, res, next) {
 	});
 });
 
+// Search for streams by substring of stream name
+router.get("/search", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (!req.query.q.trim()) {
+			return res.json(models.error("No search terms given"));
+		}
+
+		var terms = req.query.q.split(" ");
+		dbmod.streamSearch(terms, function(err, results) {
+			if (err) {
+				return res.json(err);
+			}
+			res.json(models.streamList(results));
+		});
+	});
+});
+
 // Get the contents of a stream, sorted in reverse order by time,
 // and with the specified limit. The maximum limit is 1000.
 router.get("/:id/contents", function(req, res, next) {

@@ -50,6 +50,27 @@ router.post("/login/:login", function(req, res, next) {
 	});
 });
 
+// Search for streams by substring of stream name
+router.get("/search", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (!req.query.q.trim()) {
+			return res.json(models.error("No search terms given"));
+		}
+
+		var terms = req.query.q.split(" ");
+		dbmod.userSearch(terms, function(err, results) {
+			if (err) {
+				return res.json(err);
+			}
+			res.json(models.userList(results));
+		});
+	});
+});
+
 // Register a device for push notifications. Parameters:
 // id: a string uniquely identifying the device
 // type: a string specifying the cloud service type (google, apple, microsoft)
