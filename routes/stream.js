@@ -37,11 +37,14 @@ router.get("/search", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (!req.query.q.trim()) {
+		// TODO: some fancier search logic. For now, just pass the terms on to
+		// the DB
+		var terms = [ req.query.q.trim() ];
+		if (!terms[0]) {
 			return res.json(models.error("No search terms given"));
 		}
 
-		var terms = req.query.q.split(" ");
+		//var terms = req.query.q.split(" ");
 		dbmod.streamSearch(terms, function(err, results) {
 			if (err) {
 				return res.json(err);

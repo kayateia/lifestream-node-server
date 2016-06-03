@@ -424,21 +424,28 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	//   user login, and user name. Search terms shorter than 3 characters in
 	//   length are ignored.
 	formCtrl.submitSearch = function() {
-		var terms = [];
+		var terms = formCtrl.search.terms.trim();
+
+		// TODO: Be cleverer about search engine logic. For now, just send terms
+		// to the server without fancy parsing
+		if (terms.length < 3) {
+			alerts.add("danger", "Search terms must be at least 3 characters long");
+			return;
+		}
 
 		// Discard search terms shorter than 3 characters in length
-		formCtrl.search.terms.split(" ").forEach(function(value) {
+		/*formCtrl.search.terms.split(" ").forEach(function(value) {
 			if (value.trim().length >= 3) {
 				terms.push(value.trim());
 			}
 		})
 		if (terms.length > 0) {
-			terms.join(" ");
+			terms = terms.join(" ");
 		}
 		else {
 			alerts.add("danger", "Search terms must be at least 3 characters long");
 			return;
-		}
+		}*/
 
 		// Search user logins and user names for substring
 		$http.get("api/user/search?q=" + encodeURIComponent(terms)).then(
