@@ -13,7 +13,7 @@ angular.module("LifeStreamKeepAlive", [ "LifeStreamSession" ])
 
 		keepalive.end = function() {
 			if (keepalive.interval !== undefined) {
-				keepalive.interval.cancel();
+				$interval.cancel(keepalive.interval.cancel);
 				keepalive.interval = undefined;
 			}
 		};
