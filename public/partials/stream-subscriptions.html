@@ -1,0 +1,48 @@
+<h2>Subscribe to a stream</h2>
+<form id="newSubscriptionForm" name="newSubscriptionForm" ng-submit="formCtrl.submitSearch()" class="form-horizontal">
+	<div class="form-group">
+		<label for="searchField" class="col-sm-3 control-label">Search</label>
+		<div class="col-sm-9">
+			<div class="input-group">
+				<input id="searchField" name="searchField" class="form-control" type="text" ng-model="formCtrl.search.terms" />
+				<span class="input-group-btn">
+					<button type="submit" class="btn btn-default">
+						<span class="glyphicon glyphicon-search" />
+					</button>
+				</span>
+			</div>
+		</div>
+	</div>
+</form>
+<div class="search-result" ng-if="formCtrl.search.users.length">
+	Matching users:
+	<ul>
+		<li ng-repeat="user in formCtrl.search.users">
+			<a href="#" ng-click="formCtrl.toggleUser(user.id, $event)">{{user.name}} ({{user.login}})</a>
+			<ul ng-if="formCtrl.search.userStreams[user.id].length > 0">
+				<li ng-repeat="stream in formCtrl.search.userStreams[user.id]">
+					<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
+					<a href="#" ng-click="formCtrl.subscribe(stream, $event)">subscribe</a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+</div>
+<div class="search-result" ng-if="formCtrl.search.streams.length">
+	Matching streams:
+	<ul>
+		<li ng-repeat="stream in formCtrl.search.streams">
+			<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
+			<a href="#" ng-click="formCtrl.subscribe(stream, $event)">subscribe</a>
+		</li>
+	</ul>
+</div>
+<div class="subscription-list" ng-if="formCtrl.subscriptions.length > 0">
+	<h2>Your subscriptions</h2>
+	<ul>
+		<li ng-repeat="subscription in formCtrl.subscriptions">
+			<ls-gallery streamid="{{subscription.streamid}}" thumb-size="192" title="{{subscription.streamName}} from {{subscription.userName}} ({{subscription.userLogin}})"></ls-gallery>
+			<a href="#" ng-click="formCtrl.unsubscribe(subscription, $event)">unsubscribe</a>
+		</li>
+	</ul>
+</div>

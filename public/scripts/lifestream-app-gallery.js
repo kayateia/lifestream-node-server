@@ -185,7 +185,14 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// gallery.collapseGrid()
 	//
 	//   Collapses the gallery to show only one row.
-	gallery.collapseGrid = function() {
+	//
+	// Parameters:
+	//   $event (optional): Event object, for preventing click propagation
+	gallery.collapseGrid = function($event) {
+		if ($event) {
+			$event.preventDefault();
+		}
+
 		gallery.expanded = false;
 		gallery.adjustImageRows();
 	};
@@ -193,7 +200,15 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// gallery.expandGrid()
 	//
 	//   Expands the gallery to show multiple rows.
-	gallery.expandGrid = function(callback) {
+	//
+	// Parameters:
+	//   callback (optional): Called wehen more images are loaded
+	//   $event (optional): Event object, for preventing click propagation
+	gallery.expandGrid = function(callback, $event) {
+		if ($event) {
+			$event.preventDefault();
+		}
+
 		gallery.expanded = true;
 		gallery.loadMoreImages(callback);
 	};

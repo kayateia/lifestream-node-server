@@ -1,4 +1,4 @@
-lsApp.config([ "$routeProvider", function($routeProvider) {
+angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routeProvider) {
 	$routeProvider
 		.when("/mine", {
 			controller: "MyStreamsController",
@@ -6,7 +6,7 @@ lsApp.config([ "$routeProvider", function($routeProvider) {
 		})
 		.when("/subscriptions", {
 			controller: "SubscriptionsController",
-			templateUrl: "./partials/horizontal-form.html"
+			templateUrl: "./partials/stream-subscriptions.html"
 		})
 		.when("/subscribers", {
 			controller: "SubscribersController",
@@ -14,7 +14,7 @@ lsApp.config([ "$routeProvider", function($routeProvider) {
 		})
 }]);
 
-lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsAlerts", "lsKeepAlive", "$timeout", function($scope, $location, $http, alerts, keepalive, $timeout) {
+angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsAlerts", "lsKeepAlive", "$timeout", function($scope, $location, $http, alerts, keepalive, $timeout) {
 	var streams = this;
 
 	streams.operations = [
@@ -72,7 +72,7 @@ lsApp.controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsAler
 	});
 }]);
 
-lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAlerts", "lsSession", "$timeout", "$window", function($scope, $http, $interval, alerts, session, $timeout, $window) {
+angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAlerts", "lsSession", "$timeout", "$window", function($scope, $http, $interval, alerts, session, $timeout, $window) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -130,7 +130,7 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 					formCtrl.streams = []; // repopulate streams from scratch
 					response.data.streams.forEach(function(data) {
 						var stream = {};
-						stream.id = data.streamid;
+						stream.id = data.id;
 						stream.name = data.name;
 						stream.permission = data.permission.toString();
 						stream.newInvite = "";
@@ -377,20 +377,214 @@ lsApp.controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAler
 	}, 100);
 }]);
 
-lsApp.controller("SubscriptionsController", ["$scope", "$http", function($scope, $http) {
+angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scope", "$http", "lsAlerts", "lsSession", function($scope, $http, alerts, session) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
 	$scope.formCtrl = formCtrl;
 
+	// Mark this tab as active.
 	streams.activateTab("subscriptions");
+
+	// Data used in stream search
+	formCtrl.search = {
+		terms: "", // search terms
+		users: [], // matching users
+		userStreams: {}, // streams belonging to users
+		streams: [] // matching streams
+	};
+
+	// List of existing subscriptions for current user
+	formCtrl.subscriptions = [];
+
+	// formCtrl.submitSearch()
+	//
+	//   Searches for given search terms for substring matches of stream name,
+	//   user login, and user name. Search terms shorter than 3 characters in
+	//   length are ignored.
+	formCtrl.submitSearch = function() {
+		var terms = [];
+
+		// Discard search terms shorter than 3 characters in length
+		formCtrl.search.terms.split(" ").forEach(function(value) {
+			if (value.trim().length >= 3) {
+				terms.push(value.trim());
+			}
+		})
+		if (terms.length > 0) {
+			terms.join(" ");
+		}
+		else {
+			alerts.add("danger", "Search terms must be at least 3 characters long");
+			return;
+		}
+
+		// Search user logins and user names for substring
+		$http.get("api/user/search?q=" + encodeURIComponent(terms)).then(
+			function done(response) {
+				if (response.data.success) {
+					formCtrl.search.users = response.data.users;
+					if (formCtrl.search.users.length == 0) {
+						alerts.add("info", "No matching users");
+					}
+				}
+				else {
+					alerts.add("danger", "Error searching users: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error searching users: " + response.status + " " + response.statusText, "submitSearch", "persistent");
+			}
+		);
+		// Search stream names for substring
+		$http.get("api/stream/search?q=" + encodeURIComponent(terms)).then(
+			function done(response) {
+				if (response.data.success) {
+					formCtrl.search.streams = response.data.streams;
+					if (formCtrl.search.streams.length == 0) {
+						alerts.add("info", "No matching streams");
+					}
+				}
+				else {
+					alerts.add("danger", "Error searching streams: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error searching streams: " + response.status + " " + response.statusText, "submitSearch", "persistent");
+			}
+		);
+	};
+
+	formCtrl.loadSubscriptions = function() {
+		$http.get("api/subscription/user/" + session.user.id).then(
+			function done(response) {
+				if (response.data.success) {
+					formCtrl.subscriptions = response.data.subscriptions;
+				}
+				else {
+					alerts.add("danger", "Error loading subscriptions: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error loading subscriptions: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+			}
+		);
+	};
+
+	formCtrl.collapseUser = function(id, $event) {
+		delete formCtrl.search.userStreams[id];
+	};
+
+	formCtrl.expandUser = function(id, $event) {
+		$http.get("api/stream/list?userid=" + id).then(
+			function done(response) {
+				if (response.data.success) {
+					formCtrl.search.userStreams[id] = response.data.streams;
+				}
+				else {
+					alerts.add("danger", "Error listing streams from user: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error listing streams from user: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+			}
+		);
+	};
+
+	formCtrl.toggleUser = function(id, $event) {
+		// Don't actually go anywhere
+		$event.preventDefault();
+
+		if (formCtrl.search.userStreams[id] === undefined) {
+			// Collapse all other users
+			formCtrl.search.userStreams = {};
+			// Expand the selected user
+			formCtrl.expandUser(id);
+		}
+		else {
+			formCtrl.collapseUser(id);
+		}
+	};
+
+	formCtrl.requestInvite = function(stream) {
+		// TODO: implement invite request system
+	};
+
+	formCtrl.findSubscriptionObj = function(id) {
+		for (var i = 0; i < formCtrl.subscriptions.length; i++) {
+			if (formCtrl.subscriptions[i].id == id) {
+				return i;
+			}
+		}
+
+		return -1;
+	};
+
+	formCtrl.subscribe = function(stream, $event) {
+		// Don't actually go anywhere
+		$event.preventDefault();
+
+		$http.post("api/subscription/" + stream.id,
+			{
+				userid: session.user.id
+			}
+		).then(
+			function done(response) {
+				if (response.data.success) {
+					formCtrl.subscriptions.push({
+						streamid: stream.id,
+						streamName: stream.name,
+						userid: stream.userid,
+						userLogin: stream.userLogin,
+						userName: stream.userName
+					});
+					alerts.add("success", "Subscribed to " + stream.name);
+				}
+				else {
+					alerts.add("danger", "Error subscribing to stream: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error subscribing to stream: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+			}
+		);
+	};
+
+	formCtrl.unsubscribe = function(subscription, $event) {
+		// Don't actually go anywhere
+		$event.preventDefault();
+
+		console.log(subscription);
+		$http.delete("api/subscription/" + subscription.streamid + "?userid=" + session.user.id).then(
+			function done(response) {
+				if (response.data.success) {
+					var index = formCtrl.findSubscriptionObj(subscription.streamid);
+					formCtrl.subscriptions.splice(index, 1);
+					alerts.add("success", "Unsubscribed from " + subscription.streamName);
+				}
+				else {
+					alerts.add("danger", "Error unsubscribing from stream: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+			}
+		);
+	};
+
+	// Once page is fully rendered...
+	angular.element(document).ready(function() {
+		// Load list of streams this user is subscribed to
+		formCtrl.loadSubscriptions();
+	});
 }]);
 
-lsApp.controller("SubscribersController", [ "$scope", "$http", function($scope, $http) {
+angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$http", function($scope, $http) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
 	$scope.formCtrl = formCtrl;
 
+	// Mark this tab as active.
 	streams.activateTab("subscribers");
 }]);

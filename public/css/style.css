@@ -189,3 +189,13 @@ table.streams-editor .pending label {
 	font-weight: normal;
 	margin-bottom: 0;
 }
+
+.search-result ul,
+.subscription-list ul {
+	list-style: none;
+}
+
+.search-result .gallery-tile,
+.subscription-list .gallery-tile {
+	font-size: 8px;
+}

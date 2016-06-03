@@ -3,14 +3,14 @@
 	<h2 ng-hide="gallery.expanded">
 		{{title}}
 		<small>
-			<a ng-click="gallery.expandGrid()" href="#">More »</a>
+			<a ng-click="gallery.expandGrid(null, $event)" href="#">More »</a>
 		</small>
 	</h2>
 	<!-- Show the affixed header when the gallery is expanded -->
 	<h2 data-spy="affix" data-offset-top="92" ng-show="gallery.expanded">
 		Your uploads
 		<small>
-			<a ng-click="gallery.collapseGrid()" href="#">Less «</a>
+			<a ng-click="gallery.collapseGrid($event)" href="#">Less «</a>
 		</small>
 	</h2>
 	<div ng-class="[ 'gallery-grid', { expanded: gallery.expanded } ]" in-view-container>
