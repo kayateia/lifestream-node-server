@@ -389,11 +389,11 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	// wait until session data is actually available before attempting to load
 	// streams.
 	formCtrl.initLoadInterval = $interval(function() {
-			if (session.user.id) {
-					$interval.cancel(formCtrl.initLoadInterval);
-					delete formCtrl.initLoadInterval;
-					formCtrl.loadStreams();
-			}
+		if (session.user.id) {
+				$interval.cancel(formCtrl.initLoadInterval);
+				delete formCtrl.initLoadInterval;
+				formCtrl.loadStreams();
+		}
 	}, 100);
 }]);
 
@@ -574,7 +574,6 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		// Don't actually go anywhere
 		$event.preventDefault();
 
-		console.log(subscription);
 		$http.delete("api/subscription/" + subscription.streamid + "?userid=" + session.user.id).then(
 			function done(response) {
 				if (response.data.success) {
@@ -592,11 +591,17 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		);
 	};
 
-	// Once page is fully rendered...
-	angular.element(document).ready(function() {
-		// Load list of streams this user is subscribed to
-		formCtrl.loadSubscriptions();
-	});
+	// Initialise page by loading list of streams this user is subscribed to.
+	// Since session.user is populated asynchronously on page load, we need to
+	// wait until session data is actually available before attempting to load
+	// streams.
+	formCtrl.initLoadInterval = $interval(function() {
+		if (session.user.id) {
+			$interval.cancel(formCtrl.initLoadInterval);
+			delete formCtrl.initLoadInterval;
+			formCtrl.loadSubscriptions();
+		}
+	}, 100);
 }]);
 
 angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$http", "$interval", "lsAlerts", "lsSession", function($scope, $http, $interval, alerts, session) {
