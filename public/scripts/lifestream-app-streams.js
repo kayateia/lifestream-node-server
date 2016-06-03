@@ -252,9 +252,10 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 								stream.invites.push({
 									streamid: streamId,
 									userLogin: userLogin,
+									userName: response.data.name,
 									userid: response.data.id
 								});
-								alerts.add("success", userLogin + " has been invited to " + stream.name);
+								alerts.add("success", "Invited " + response.data.name + " to " + stream.name);
 							}
 							else {
 								alerts.add("danger", "Could not invite " + userLogin + ": " + response2.data.error);
@@ -288,7 +289,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 							removed = stream.invites.splice(index, 1);
 						}
 					});
-					alerts.add("success", removed[0].userLogin + "'s invitation to " + stream.name + " was revoked");
+					alerts.add("success", "Revoked " + removed[0].userName + "'s invitation to " + stream.name);
 				}
 				else {
 					alerts.add("danger", "Could not revoke invitation: " + response.data.error);
@@ -397,7 +398,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	}, 100);
 }]);
 
-angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scope", "$http", "lsAlerts", "lsSession", function($scope, $http, alerts, session) {
+angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scope", "$http", "$interval", "lsAlerts", "lsSession", function($scope, $http, $interval, alerts, session) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -482,7 +483,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 					formCtrl.subscriptions = response.data.subscriptions;
 				}
 				else {
-					alerts.add("danger", "Error loading subscriptions: " + response.data.error);
+					alerts.add("danger", "Subscriptions could not be loaded: " + response.data.error);
 				}
 			},
 			function fail(response) {
@@ -502,7 +503,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 					formCtrl.search.userStreams[id] = response.data.streams;
 				}
 				else {
-					alerts.add("danger", "Error listing streams from user: " + response.data.error);
+					alerts.add("danger", "Could not list streams from user: " + response.data.error);
 				}
 			},
 			function fail(response) {
@@ -561,7 +562,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 					alerts.add("success", "Subscribed to " + stream.name);
 				}
 				else {
-					alerts.add("danger", "Error subscribing to stream: " + response.data.error);
+					alerts.add("danger", "Could not subscribe to stream: " + response.data.error);
 				}
 			},
 			function fail(response) {
@@ -582,7 +583,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 					alerts.add("success", "Unsubscribed from " + subscription.streamName);
 				}
 				else {
-					alerts.add("danger", "Error unsubscribing from stream: " + response.data.error);
+					alerts.add("danger", "Could not unsubscribe from stream: " + response.data.error);
 				}
 			},
 			function fail(response) {

@@ -68,7 +68,7 @@
 				Pending invites:
 				<ul>
 					<li ng-repeat="invite in stream.invites">
-						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userLogin}}</label>
+						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userName}} ({{invite.userLogin}})</label>
 						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" ng-click="formCtrl.uninvite(stream.id, invite.userid, streamIndex)" class="btn btn-link">
 							<span class="glyphicon glyphicon-remove" />
 						</button>
