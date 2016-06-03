@@ -1,0 +1,16 @@
+<h2>Your subscribers</h2>
+<ul class="subscriber-list">
+	<li ng-repeat="stream in formCtrl.streams">
+		{{stream.name}} ({{stream.permission}})
+		<ul ng-if="formCtrl.subscribers[stream.id].length > 0">
+			<li ng-repeat="subscriber in formCtrl.subscribers[stream.id]">
+				{{subscriber.userName}}
+				({{subscriber.userLogin}})
+				<a href="#" ng-click="formCtrl.unsubscribe(subscriber, stream, $event)">unsubscribe</a>
+			</li>
+		</ul>
+		<ul ng-if="formCtrl.subscribers[stream.id].length < 1">
+			<li class="text-muted">No one yet. <a href="#/mine">Invite</a> someone?</li>
+		</ul>
+	</li>
+</ul>

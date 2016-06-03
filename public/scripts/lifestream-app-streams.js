@@ -10,7 +10,7 @@ angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routePro
 		})
 		.when("/subscribers", {
 			controller: "SubscribersController",
-			templateUrl: "./partials/horizontal-form.html"
+			templateUrl: "./partials/stream-subscribers.html"
 		})
 }]);
 
@@ -61,6 +61,26 @@ angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", 
 		// Clear status alerts from the previous tab.
 		alerts.clear();
 	};
+
+	streams.permissionName = function(perm) {
+		var name;
+
+		switch (perm) {
+			case 1:
+				name = "public";
+				break;
+			case 2:
+				name = "needs approval";
+				break;
+			case 3:
+				name = "hidden";
+				break;
+			default:
+				name = "unknown";
+		}
+
+		return name;
+	}
 
 	// Default to the add user tab if one wasn't specified in the URL.
 	if (!$location.path()) {
@@ -579,7 +599,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	});
 }]);
 
-angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$http", function($scope, $http) {
+angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$http", "$interval", "lsAlerts", "lsSession", function($scope, $http, $interval, alerts, session) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -587,4 +607,105 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 
 	// Mark this tab as active.
 	streams.activateTab("subscribers");
+
+	// List of streams belonging to current user
+	formCtrl.streams = [];
+
+	// List of users subscribed to each of the current user's streams
+	formCtrl.subscribers = {};
+
+	formCtrl.loadStreams = function(callback) {
+		$http.get("api/stream/list?userid=" + session.user.id).then(
+			function done(response) {
+				alerts.remove("loadStreams", "persistent");
+				if (response.data.success) {
+					formCtrl.streams = []; // repopulate streams from scratch
+					response.data.streams.forEach(function(data) {
+						var stream = {};
+						stream.id = data.id;
+						stream.name = data.name;
+						stream.permission = streams.permissionName(data.permission);
+						formCtrl.streams.push(stream);
+					});
+
+					if (callback) {
+						callback();
+					}
+				}
+				else {
+					alerts.add("danger", "Streams could not be loaded: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "persistent");
+			}
+		);
+	};
+
+	// formCtrl.loadSubscribers()
+	//
+	//   This should be called after formCtrl.loadStreams(), as it depends on
+	//   the formCtrl.streams array to be populated.
+	//
+	//   Loads a list of subscribers for each stream.
+	formCtrl.loadSubscribers = function() {
+		formCtrl.streams.forEach(function(stream) {
+			$http.get("api/subscription/" + stream.id).then(
+				function done(response) {
+					if (response.data.success) {
+						console.log(response.data);
+						formCtrl.subscribers[stream.id] = response.data.subscriptions;
+					}
+					else {
+						alerts.add("danger", "Subscribers could not be loaded: " + response.data.error);
+					}
+				},
+				function fail(response) {
+					alerts.add("danger", "Server error loading subscribers: " + response.status + " " + response.statusText, "loadStreams", "persistent");
+				}
+			);
+		});
+	};
+
+	formCtrl.findSubscriberObj = function(streamid, userid) {
+		for (var i = 0; i < formCtrl.subscribers[streamid].length; i++) {
+			if (formCtrl.subscribers[streamid][i].userid == userid) {
+				return i;
+			}
+		}
+
+		return -1;
+	};
+
+	formCtrl.unsubscribe = function(subscriber, stream, $event) {
+		// Don't actually go anywhere
+		$event.preventDefault();
+
+		$http.delete("api/subscription/" + subscriber.streamid + "?userid=" + subscriber.userid).then(
+			function done(response) {
+				if (response.data.success) {
+					var index = formCtrl.findSubscriberObj(subscriber.streamid, subscriber.userid);
+					alerts.add("success", "Unsubscribed " + subscriber.userName + " from " + stream.name);
+				}
+				else {
+					alerts.add("danger", "Could not unsubscribe from stream: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+			}
+		);
+	};
+
+	// Initialise page by loading available streams from the server.
+	// Since session.user is populated asynchronously on page load, we need to
+	// wait until session data is actually available before attempting to load
+	// streams.
+	formCtrl.initLoadInterval = $interval(function() {
+		if (session.user.id) {
+				$interval.cancel(formCtrl.initLoadInterval);
+				delete formCtrl.initLoadInterval;
+				formCtrl.loadStreams(formCtrl.loadSubscribers);
+		}
+	}, 100);
 }]);
