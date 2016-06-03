@@ -19,6 +19,8 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 
 	// .gallery-section container element
 	gallery.element = $element.children(".gallery-section");
+	// Offsets of .gallery-section container relative to document
+	gallery.elementOffset = undefined;
 
 	// Number of images that would fit each row in the gallery, taking into
 	// account the width of the container element, the size of each thumbnail,
@@ -249,9 +251,20 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// Begin keepalive timers
 	keepalive.begin();
 
-	// Load most recent images after page is fully rendered and there
-	// is valid width for the container element
+	// After page is fully rendered and there is valid position and width for
+	// the container element...
 	$timeout(function() {
+		// Obtain offset of gallery relative to document
+		gallery.elementOffset = gallery.element.offset();
+
+		// Activate affixing of header
+		gallery.element.children("h2.expanded").affix({
+			offset: {
+				top: gallery.elementOffset.top
+			}
+		});
+
+		// Load most recent images
 		gallery.loadImages(gallery.numImagesPerRow);
 	}, 0);
 
