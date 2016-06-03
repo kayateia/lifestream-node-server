@@ -46,7 +46,7 @@ router.get("/:id", function(req, res, next) {
 
 // Subscribe user to stream
 router.post("/:id", function(req, res, next) {
-	security.validateLogin(req, res, function(err, tokenContents) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		if (err) {
 			return res.json(err);
 		}
@@ -55,30 +55,28 @@ router.post("/:id", function(req, res, next) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
+		// Users can't subscribe other users to streams
+		if (req.body.userid != tokenContents.id && !isAdmin) {
+			return res.json(models.error("Permission denied"));
+		}
+
 		dbmod.streamInfo(req.params.id, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
-
-			// Only the owner of a stream may send subscriptions
-			if (stream.userid != tokenContents.id) {
-				return res.json(models.error("Permission denied"));
-			}
-			else {
-				dbmod.subscriptionCreate(Number(req.params.id), Number(req.body.userid), function(err, subscriptions) {
-					if (err) {
-						return res.json(err);
-					}
-					res.json(models.success());
-				});
-			}
+			dbmod.subscriptionCreate(Number(req.params.id), Number(req.body.userid), function(err, subscriptions) {
+				if (err) {
+					return res.json(err);
+				}
+				res.json(models.success());
+			});
 		});
 	});
 });
 
 // Unsubscribe user from stream
 router.delete("/:id", function(req, res, next) {
-	security.validateLogin(req, res, function(err, tokenContents) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		if (err) {
 			return res.json(err);
 		}
@@ -92,8 +90,11 @@ router.delete("/:id", function(req, res, next) {
 				return res.json(err);
 			}
 
-			// Only the owner of a stream may revoke subscriptions
-			if (stream.userid != tokenContents.id) {
+			// Any user may unsubscribe themselves from a stream.
+			// Only the owner of a stream may unsubscribe other users.
+			if (stream.userid != tokenContents.id &&
+				req.query.userid != tokenContents.id &&
+				!isAdmin) {
 				return res.json(models.error("Permission denied"));
 			}
 			else {
