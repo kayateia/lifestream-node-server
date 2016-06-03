@@ -147,12 +147,12 @@ router.post("/info/:login", function(req, res, next) {
 		var pwdhash = lscrypto.hash(pwd);
 		console.log("Would create with hash",pwdhash);
 
-		dbmod.userCreate(login, pwdhash, name, email, isadmin, function(err) {
+		dbmod.userCreate(login, pwdhash, name, email, isadmin, function(err, id) {
 			if (err) {
 				return res.json(err);
 			}
 
-			res.json(models.success());
+			res.json(models.insertSuccess(id));
 		});
 	});
 });

@@ -133,12 +133,12 @@ router.post("/", function(req, res, next) {
 			return res.json(models.error("Permission denied"));
 		}
 
-		dbmod.streamCreate(req.body.userid, req.body.name, Number(req.body.permission), function(err) {
+		dbmod.streamCreate(req.body.userid, req.body.name, Number(req.body.permission), function(err, id) {
 			if (err) {
 				return res.json(err);
 			}
 
-			res.json(models.success());
+			res.json(models.insertSuccess(id));
 		});
 	});
 });

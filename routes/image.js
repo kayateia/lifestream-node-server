@@ -93,13 +93,13 @@ router.post("/post", function(req, res, next) {
 			fs.writeFileSync(fullFilename, req.files[0].buffer);
 
 			dbmod.imageAdd(tokenContents.id, [streamid], req.files[0].originalname, comment,
-				function(err) {
+				function(err, id) {
 					if (err)
 						res.json(err);
 					else {
 						// Notify the appropriate push services of new messages available.
 						device.notify([streamid], function(err) {
-							res.json(models.success());
+							res.json(models.insertSuccess(id));
 						});
 					}
 				}
