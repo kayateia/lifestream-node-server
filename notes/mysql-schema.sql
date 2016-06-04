@@ -1,8 +1,17 @@
+drop table device;
+drop table subscription;
+drop table invitation;
+drop table streamimage;
+drop table stream;
+drop table image;
+drop table user;
+drop table meta;
+
 create table meta (
 	id integer auto_increment primary key,
 	token varchar(255),
 	value text);
--- insert into meta(key, value) values ('version', '1');
+--insert into meta(token, value) values ('version', '1');
 
 create table user (
 	id integer auto_increment primary key,
@@ -11,9 +20,13 @@ create table user (
 	name varchar(64),
 	email varchar(64),
 	enabled tinyint,
-	isadmin tinyint)
--- insert into user(login, pwhash, name, isadmin) values ('adminLogin', , 'Admin User', 1);
---	[ config.adminLogin, lscrypto.hash(config.adminPassword) ]
+	isadmin tinyint);
+--insert into user(login, pwhash, name, isadmin) values ('admin', 'passwordHash', 'Admin User', 1);
+-- To obtain password hash, run the following JS in project root directory:
+--
+-- var config = require("./config");
+-- var lscrypto = require("./lib/lscrypto");
+-- console.log(lscrypto.hash(config.adminPassword));
 
 create table device (
 	id integer auto_increment primary key,
@@ -37,7 +50,7 @@ create table stream (
 	name varchar(255),
 	permission tinyint,
 	constraint foreign key(userid) references user(id));
--- insert into stream(userid, name, permission) values (1, 'Global Stream', PERM_PUBLIC);
+--insert into stream(userid, name, permission) values (1, 'Global Stream', 1);
 
 create table streamimage (
 	imageid int,
@@ -50,7 +63,7 @@ create table subscription (
 	streamid int,
 	constraint foreign key(userid) references user(id),
 	constraint foreign key(streamid) references stream(id));
--- insert into subscription(userid, streamid) values (1, 1);
+--insert into subscription(userid, streamid) values (1, 1);
 
 create table invitation (
 	streamid int,
