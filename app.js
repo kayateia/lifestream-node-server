@@ -19,6 +19,9 @@ var user = require("./routes/user");
 var invite = require("./routes/invite");
 var subscription = require("./routes/subscription");
 
+var sal = require("./lib/sal");
+var sqlite = require("./lib/drivers/sqlite");
+
 var app = express();
 
 // view engine setup
@@ -46,6 +49,9 @@ app.use(function(req, res, next) {
 	err.status = 404;
 	next(err);
 });
+
+// Set up database
+sal.init(sqlite);
 
 // error handlers
 
