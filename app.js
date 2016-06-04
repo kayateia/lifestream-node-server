@@ -21,6 +21,7 @@ var subscription = require("./routes/subscription");
 
 var sal = require("./lib/sal");
 var sqlite = require("./lib/drivers/sqlite");
+var mysql = require("./lib/drivers/mysql");
 
 var app = express();
 
@@ -51,7 +52,8 @@ app.use(function(req, res, next) {
 });
 
 // Set up database
-sal.init(sqlite);
+// sal.init(sqlite);
+sal.init(mysql);
 
 // error handlers
 
