@@ -9,5 +9,11 @@ module.exports = {
 	adminLogin: "admin",
 
 	// Default admin user password
-	adminPassword: "admin"
+	adminPassword: "admin",
+
+	// MySQL connection information, if needed.
+	mysqlHost: "localhost",
+	mysqlUser: "username",
+	mysqlPassword: "password",
+	mysqlDatabase: "lifestream"
 };
