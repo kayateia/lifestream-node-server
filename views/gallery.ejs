@@ -4,7 +4,10 @@
 	// Template variables from server
 	var userLogin = '<%= userLogin %>';
 </script>
+<script src="scripts/lifestream-app-gallerypage.js"></script>
 
-<ls-gallery streamid="1" thumb-size="192" title="Your uploads"></ls-gallery>
+<div ng-controller="LifeStreamGalleryPageController as galleryPage">
+	<ls-gallery ng-if="galleryPage.myStreams.length > 0" streamid="{{galleryPage.myStreamsToString()}}" thumb-size="192" title="Your uploads"></ls-gallery>
+</div>
 
 <% include footer %>

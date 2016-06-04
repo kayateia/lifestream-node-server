@@ -67,6 +67,11 @@ a:hover {
 	-webkit-appearance: none;
 	position: absolute;
 }
+.lightbox-nav .close:focus,
+.lightbox-nav .next:focus,
+.lightbox-nav .prev:focus {
+	outline: none;
+}
 .lightbox-nav .close {
 	background-color: black;
 	border-color: #eeeeee;
@@ -183,6 +188,9 @@ table.streams-editor .pending ul {
 	margin-left: 0;
 	padding-left: 20px;
 }
+table.streams-editor .pending li {
+	white-space: nowrap;
+}
 table.streams-editor .pending button.btn-link {
 	color: #888888;
 	padding-top: 0;
@@ -212,4 +220,31 @@ table.streams-editor .pending label {
 .search-result .gallery-tile,
 .subscription-list .gallery-tile {
 	font-size: 8px;
+}
+
+table.streams-editor .pending.ng-enter,
+table.streams-editor .pending li.ng-enter,
+.subscription-list li.ng-enter {
+	opacity: 0;
+	transition: opacity 1s;
+}
+table.streams-editor .pending.ng-enter.ng-enter-active,
+table.streams-editor .pending li.ng-enter.ng-enter-active,
+.subscription-list li.ng-enter.ng-enter-active {
+	opacity: 1;
+}
+table.streams-editor .pending.ng-leave,
+table.streams-editor .pending li.ng-leave,
+table.streams-editor tr.ng-leave,
+.subscription-list li.ng-leave,
+.subscriber-list li.ng-leave {
+	opacity: 1;
+	transition: opacity 1s;
+}
+table.streams-editor .pending.ng-leave.ng-leave-active,
+table.streams-editor .pending li.ng-leave.ng-leave-active,
+table.streams-editor tr.ng-leave.ng-leave-active,
+.subscription-list li.ng-leave.ng-leave-active,
+.subscriber-list li.ng-leave.ng-leave-active {
+	opacity: 0;
 }
