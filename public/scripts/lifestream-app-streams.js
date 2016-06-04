@@ -113,17 +113,15 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	// Data structure containing list of streams from server
 	formCtrl.streams = [];
 
-	formCtrl.getStreamObj = function(streamId) {
-		var retval = undefined;
-
-		formCtrl.streams.forEach(function(value) {
-			if (value.id == streamId) {
-				retval = value;
+	formCtrl.findStreamObj = function(id) {
+		for (var i = 0; i < formCtrl.streams.length; i++) {
+			if (formCtrl.streams[i].id == id) {
+				return i;
 			}
-		});
+		}
 
-		return retval;
-	}
+		return -1;
+	};
 
 	formCtrl.loadInvites = function(streamId, callback) {
 		$http.get("api/invite/" + streamId).then(
@@ -149,11 +147,12 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 				if (response.data.success) {
 					formCtrl.streams = []; // repopulate streams from scratch
 					response.data.streams.forEach(function(data) {
-						var stream = {};
-						stream.id = data.id;
-						stream.name = data.name;
-						stream.permission = data.permission.toString();
-						stream.newInvite = "";
+						var stream = {
+							id: data.id,
+							name: data.name,
+							permission: data.permission.toString(),
+							newInvite: ""
+						};
 						formCtrl.streams.push(stream);
 
 						// Keep track of the permission that used to be set for
@@ -195,8 +194,15 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 				if (response.data.success) {
 					alerts.add("success", name + " created");
 
-					// Refresh list of streams
-					formCtrl.loadStreams();
+					// Append stream to the list
+					formCtrl.streams.push({
+						id: response.data.id,
+						name: name,
+						permission: permission,
+						newInvite: "",
+						invites: []
+					});
+					console.log(formCtrl.streams);
 				}
 				else {
 					alerts.add("danger", "Could not create stream: " + response.data.error);
@@ -209,7 +215,8 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.deleteStream = function(streamId, $index) {
-		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var index = $index === undefined ? formCtrl.findStreamObj(streamId) : $index;
+		var stream = formCtrl.streams[index];
 
 		var confirm = $window.confirm("Really delete the stream named \"" + stream.name + "\"?");
 		if (!confirm) {
@@ -222,8 +229,8 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 				if (response.data.success) {
 					alerts.add("success", stream.name + " was deleted");
 
-					// Refresh list of streams
-					formCtrl.loadStreams();
+					// Remove stream from list
+					formCtrl.streams.splice(index, 1);
 				}
 				else {
 					alerts.add("danger", "Could not delete stream: " + response.data.error);
@@ -236,7 +243,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.invite = function(streamId, userLogin, $index) {
-		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
 
 		$http.get("api/user/info/" + stream.newInvite).then(
 			function done(response) {
@@ -277,7 +284,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.uninvite = function(streamId, userId, $index) {
-		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
 
 		$http.delete("api/invite/" + streamId + "?userid=" + userId).then(
 			function done(response) {
@@ -302,7 +309,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.renameStream = function(streamId, name, $index) {
-		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
 
 		// Bail if the user didn't specify a new name
 		if (name == stream.name) {
@@ -338,7 +345,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.showRenameStreamForm = function(streamId, $index) {
-		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
 
 		stream.newName = stream.name;
 		formCtrl.renameStreamFormShown[stream.id] = true;
@@ -348,13 +355,13 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.hideRenameStreamForm = function(streamId, $index) {
-		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
 
 		formCtrl.renameStreamFormShown[stream.id] = false;
 	};
 
 	formCtrl.setStreamPermission = function(streamId, permission, $index) {
-		var stream = $index === undefined ? formCtrl.getStreamObj(streamId) : formCtrl.streams[$index];
+		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
 
 		$http.put("api/stream/" + streamId,
 			{
@@ -540,7 +547,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 
 	formCtrl.findSubscriptionObj = function(id) {
 		for (var i = 0; i < formCtrl.subscriptions.length; i++) {
-			if (formCtrl.subscriptions[i].id == id) {
+			if (formCtrl.subscriptions[i].streamid == id) {
 				return i;
 			}
 		}
@@ -666,7 +673,6 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 			$http.get("api/subscription/" + stream.id).then(
 				function done(response) {
 					if (response.data.success) {
-						console.log(response.data);
 						formCtrl.subscribers[stream.id] = response.data.subscriptions;
 					}
 					else {
@@ -698,6 +704,7 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 			function done(response) {
 				if (response.data.success) {
 					var index = formCtrl.findSubscriberObj(subscriber.streamid, subscriber.userid);
+					formCtrl.subscribers[subscriber.streamid].splice(index, 1);
 					alerts.add("success", "Unsubscribed " + subscriber.userName + " from " + stream.name);
 				}
 				else {
