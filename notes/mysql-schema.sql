@@ -1,6 +1,5 @@
 drop table device;
 drop table subscription;
-drop table invitation;
 drop table streamimage;
 drop table stream;
 drop table image;
@@ -61,12 +60,7 @@ create table streamimage (
 create table subscription (
 	userid int,
 	streamid int,
+	state tinyint,
 	constraint foreign key(userid) references user(id),
 	constraint foreign key(streamid) references stream(id));
 --insert into subscription(userid, streamid) values (1, 1);
-
-create table invitation (
-	streamid int,
-	userid int,
-	constraint foreign key(streamid) references stream(id),
-	constraint foreign key(userid) references user(id));
