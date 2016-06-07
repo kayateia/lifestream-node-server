@@ -6,8 +6,18 @@
  */
 
 // This script will populate an empty database with usable sample data.
-// The database MUST be empty except for rows that were inserted automatically
-// during the DB creation process, or this script will not work correctly.
+//
+// Before starting, ensure that the database is in its initial state by
+// following these steps:
+//
+// 1. Recreate the database.
+//    - If using the SQLite driver, simply delete lifestream.db
+//    - If using the MySQL driver, source notes/mysql-schema.sql
+// 2. Stop and restart lifestream-node-server. This is important!
+// 3. Log in as admin for the first time, then log out.
+// 4. Run: rm -rf uploads/*
+// 5. Run: node sample-data.js
+
 var request = require("request");
 var fs = require("fs");
 var lscrypto = require("./lib/lscrypto");
@@ -15,6 +25,10 @@ var security = require("./lib/security");
 
 // Base URL
 var baseUrl = "http://localhost:3000"
+
+// Artificial delay to insert between each request, to ensure sequential processing
+var creep = 0;
+var creepIncrement = 100;
 
 // List of users
 var users = [
@@ -189,10 +203,6 @@ function createSubscription(streamid, userid) {
 	request(req, callback);
 }
 
-// This is a terrible hack. To avoid SQLITE_BUSY errors, insert an artificial delay between each request.
-var creep = 0;
-var creepIncrement = 600;
-
 users.forEach(function(user, index) {
 	// Associate user ID with login
 	mapUserIdToLogin[index + 2] = user.login;
@@ -206,10 +216,10 @@ users.forEach(function(user, index) {
 	};
 
 	// Create user
-	/*setTimeout(function() {
+	setTimeout(function() {
 		console.log("Creating user: " + user.login);
 		createUser(user.login, user.password, user.name, user.email, user.isAdmin);
-	}, creep += creepIncrement);*/
+	}, creep += creepIncrement);
 });
 
 users.forEach(function(user, userIndex) {
@@ -218,10 +228,10 @@ users.forEach(function(user, userIndex) {
 		mapStreamIdToUserId[(streamIndex + 2) + (userIndex * streams.length)] = mapUserLoginToId[user.login];
 
 		// Create stream
-		/*setTimeout(function() {
+		setTimeout(function() {
 			console.log("Creating stream: " + user.name + "'s " + stream.name);
 			createStream(mapUserLoginToId[user.login], user.name + "'s " + stream.name, stream.permission);
-		}, creep += creepIncrement);*/
+		}, creep += creepIncrement);
 	});
 });
 
@@ -237,7 +247,7 @@ users.forEach(function(user, userIndex) {
 				mapImageIdToUserId[imageId] = mapStreamIdToUserId[streamId];
 				mapImageIdToUserId[imageId + 10] = mapStreamIdToUserId[streamId];
 
-				/*setTimeout(function() {
+				setTimeout(function() {
 					console.log("Uploading image to " + user.name + "'s " + stream.name + " (id=" + streamId + ") as " + user.name + " (id=" + mapUserLoginToId[user.login] + "): " + __dirname + "/sample-images/" + user.login + "-landscape-" + ii + ".jpg");
 					uploadImage(streamId,
 						"sample-images/" + user.login + "-landscape-" + ii + ".jpg",
@@ -249,16 +259,16 @@ users.forEach(function(user, userIndex) {
 						 "sample-images/" + user.login + "-portrait-" + ii + ".jpg",
 						  ii % 3 == 0 ? ii + " stars, would take again" : ""
 					  );
-				}, creep += creepIncrement);*/
+				}, creep += creepIncrement);
 			}
 			else {
-				/*setTimeout(function() {
+				setTimeout(function() {
 					console.log("Associating image " + imageId + " with stream " + streamId);
 					assocImageWithStream(imageId, streamId);
 
 					console.log("Associating image " + (imageId + 10) + " with stream " + streamId);
 					assocImageWithStream(imageId + 10, streamId);
-				}, creep += creepIncrement);*/
+				}, creep += creepIncrement);
 			}
 		}
 	});
@@ -269,10 +279,10 @@ users.forEach(function(fromUser, fromUserIndex) {
 		users.forEach(function(toUser, toUserIndex) {
 			var streamId = (streamIndex + 2) + (toUserIndex * streams.length);
 			if (mapStreamIdToUserId[streamId] != mapUserLoginToId[fromUser.login]) {
-				/*setTimeout(function() {
+				setTimeout(function() {
 					console.log("Inviting " + fromUser.name + " to stream " + streamId);
 					createInvite(streamId, mapUserLoginToId[fromUser.login]);
-				}, creep += creepIncrement);*/
+				}, creep += creepIncrement);
 			}
 		});
 	});
