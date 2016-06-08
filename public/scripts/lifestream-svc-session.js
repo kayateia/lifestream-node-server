@@ -17,7 +17,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 			// This function is therefore responsible for informing the final
 			// instance of the login page where the user intended to go before
 			// reaching the login page.
-			var fromUrlStr = fromUrl ? "&fromUrl=." + encodeURIComponent(fromUrl) : "";
+			var fromUrlStr = fromUrl ? "&fromUrl=" + encodeURIComponent(fromUrl) : "";
 
 			$http.post("api/user/login/" + username, {
 				password: password
