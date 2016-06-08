@@ -20,10 +20,13 @@
 		<li ng-repeat="user in formCtrl.search.users">
 			<a href="#" ng-click="formCtrl.toggleUser(user.id, $event)">{{user.name}} ({{user.login}})</a>
 			<ul ng-if="formCtrl.search.userStreams[user.id].length > 0">
-				<li ng-repeat="stream in formCtrl.search.userStreams[user.id]">
+				<li ng-repeat="stream in formCtrl.search.userStreams[user.id]" ng-if="stream.subscription != 'active'">
 					<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
 					<a href="#" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream, $event)">subscribe</a>
-					<a href="#" ng-if="stream.permission == 2" ng-click="formCtrl.requestInvite(stream, $event)">request invite</a>
+					<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream, $event)">request invite</a>
+					<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream, $event)">cancel invite request</a>
+					<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.subscribe(stream, $event)">accept invite (subscribe)</a>
+					<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.uninvite(stream, $event)">reject invite</a>
 				</li>
 			</ul>
 		</li>
@@ -32,10 +35,13 @@
 <div class="search-result" ng-if="formCtrl.search.streams.length">
 	Matching streams:
 	<ul>
-		<li ng-repeat="stream in formCtrl.search.streams">
+		<li ng-repeat="stream in formCtrl.search.streams" ng-if="stream.subscription != 'active'">
 			<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
 			<a href="#" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream, $event)">subscribe</a>
-			<a href="#" ng-if="stream.permission == 2" ng-click="formCtrl.requestInvite(stream, $event)">request invite</a>
+			<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream, $event)">request invite</a>
+			<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream, $event)">cancel invite request</a>
+			<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.subscribe(stream, $event)">accept invite (subscribe)</a>
+			<a href="#" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.uninvite(stream, $event)">reject invite</a>
 		</li>
 	</ul>
 </div>

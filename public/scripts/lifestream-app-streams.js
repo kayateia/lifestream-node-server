@@ -82,6 +82,62 @@ angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", 
 		return name;
 	}
 
+	// streams.findIndex()
+	//
+	//   Given a stream ID and an array of objects or an object whose properties
+	//   properties are objects, find the index or key of an object inside with
+	//   a property of the specified name whose value matches the stream ID.
+	//
+	// Parameters:
+	//   id - the stream ID to look for
+	//   arr - the array or object to search
+	//   keyname - the name of the object property containing the stream ID
+	streams.findIndex = function(id, arr, keyname) {
+		if (typeof arr === "object") {
+			if (arr instanceof Array) {
+				for (var i = 0; i < arr.length; i++) {
+					if (arr[i][keyname] == id) {
+						return i;
+					}
+				}
+			}
+			else {
+				for (var key in arr) {
+					if (arr.hasOwnProperty(key) && arr[key][keyname] == id) {
+						return key;
+					}
+				}
+			}
+		}
+		return -1;
+	}
+
+	// streams.findStreamIndex()
+	//
+	//   Given a stream ID and an array of stream objects or object whose
+	//   properties are stream objects, find the index of an object with a
+	//   matching stream ID
+	//
+	// Parameters:
+	//   id - the stream ID to look for
+	//   arr - the array to search
+	streams.findStreamIndex = function(id, arr) {
+		return streams.findIndex(id, arr, "id");
+	};
+
+	// streams.findSubscriptionIndex()
+	//
+	//   Given a stream ID and an array of subscription objects or object whose
+	//   properties are subscription objects, find the index of an object with a
+	//   matching stream ID
+	//
+	// Parameters:
+	//   id - the stream ID to look for
+	//   arr - the array to search
+	streams.findSubscriptionIndex = function(id, arr) {
+		return streams.findIndex(id, arr, "streamid");
+	};
+
 	// Default to the add user tab if one wasn't specified in the URL.
 	if (!$location.path()) {
 		streams.activateTab("mine");
@@ -112,16 +168,6 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 
 	// Data structure containing list of streams from server
 	formCtrl.streams = [];
-
-	formCtrl.findStreamObj = function(id) {
-		for (var i = 0; i < formCtrl.streams.length; i++) {
-			if (formCtrl.streams[i].id == id) {
-				return i;
-			}
-		}
-
-		return -1;
-	};
 
 	formCtrl.loadInvites = function(streamId, callback) {
 		$http.get("api/invite/" + streamId).then(
@@ -215,7 +261,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.deleteStream = function(streamId, $index) {
-		var index = $index === undefined ? formCtrl.findStreamObj(streamId) : $index;
+		var index = $index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index;
 		var stream = formCtrl.streams[index];
 
 		var confirm = $window.confirm("Really delete the stream named \"" + stream.name + "\"?");
@@ -243,7 +289,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.invite = function(streamId, userLogin, $index) {
-		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
+		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
 		$http.get("api/user/info/" + stream.newInvite).then(
 			function done(response) {
@@ -284,7 +330,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.uninvite = function(streamId, userId, $index) {
-		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
+		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
 		$http.delete("api/invite/" + streamId + "?userid=" + userId).then(
 			function done(response) {
@@ -309,7 +355,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.renameStream = function(streamId, name, $index) {
-		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
+		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
 		// Bail if the user didn't specify a new name
 		if (name == stream.name) {
@@ -345,7 +391,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.showRenameStreamForm = function(streamId, $index) {
-		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
+		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
 		stream.newName = stream.name;
 		formCtrl.renameStreamFormShown[stream.id] = true;
@@ -355,13 +401,13 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.hideRenameStreamForm = function(streamId, $index) {
-		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
+		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
 		formCtrl.renameStreamFormShown[stream.id] = false;
 	};
 
 	formCtrl.setStreamPermission = function(streamId, permission, $index) {
-		var stream = formCtrl.streams[$index === undefined ? formCtrl.findStreamObj(streamId) : $index];
+		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
 		$http.put("api/stream/" + streamId,
 			{
@@ -425,6 +471,53 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	// List of existing subscriptions for current user
 	formCtrl.subscriptions = [];
 
+	// formCtrl.getSubscriptionState()
+	//
+	//   Given an array of stream objects, query the server the subscription
+	//   status of each stream in the array in relation to the current user.
+	//   Possible states that may be returned by the server include:
+	//     - "active": user is currently subscribed to a stream
+	//     - "invited": user is invited to a stream, but not yet subscribed
+	//     - "requested": user has requested an invite, but is not yet invited
+	//
+	// Parameters:
+	//   arr - An array of stream objects
+	formCtrl.getSubscriptionState = function(arr) {
+		// If arr isn't an array of stream objects, there's nothing to do
+		if (typeof arr !== "object" ||
+			!(arr instanceof Array) ||
+			arr.length < 1 ||
+			arr[0].id === undefined) {
+			return;
+		}
+
+		// Create comma-delimited list of stream IDs
+		var streamids = [];
+		arr.forEach(function(stream) {
+			streamids.push(stream.id);
+		});
+		streamids = streamids.join(",");
+
+		// Request subscription state for all streams in list
+		$http.get("api/subscription/" + streamids + "/state?userid=" + session.user.id).then(
+			function done(response) {
+				alerts.remove("getSubscriptionState", "persistent");
+				if (response.data.success) {
+					response.data.states.forEach(function(state) {
+						var index = streams.findStreamIndex(state.streamid, arr);
+						arr[index].subscription = state.state;
+					});
+				}
+				else {
+					alerts.add("danger", "Couldn't get subscription state: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error getting subscription state: " + response.status + " " + response.statusText, "getSubscriptionState", "persistent");
+			}
+		);
+	};
+
 	// formCtrl.submitSearch()
 	//
 	//   Searches for given search terms for substring matches of stream name,
@@ -457,6 +550,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		// Search user logins and user names for substring
 		$http.get("api/user/search?q=" + encodeURIComponent(terms)).then(
 			function done(response) {
+				alerts.remove("submitSearch", "persistent");
 				if (response.data.success) {
 					formCtrl.search.users = response.data.users;
 					if (formCtrl.search.users.length == 0) {
@@ -474,9 +568,13 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		// Search stream names for substring
 		$http.get("api/stream/search?q=" + encodeURIComponent(terms)).then(
 			function done(response) {
+				alerts.remove("submitSearch", "persistent");
 				if (response.data.success) {
-					formCtrl.search.streams = response.data.streams;
-					if (formCtrl.search.streams.length == 0) {
+					if (response.data.streams.length > 0) {
+						formCtrl.search.streams = response.data.streams;
+						formCtrl.getSubscriptionState(formCtrl.search.streams);
+					}
+					else {
 						alerts.add("info", "No matching streams");
 					}
 				}
@@ -493,6 +591,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	formCtrl.loadSubscriptions = function() {
 		$http.get("api/subscription/user/" + session.user.id).then(
 			function done(response) {
+				alerts.remove("loadSubscriptions", "persistent");
 				if (response.data.success) {
 					formCtrl.subscriptions = response.data.subscriptions;
 				}
@@ -513,15 +612,22 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	formCtrl.expandUser = function(id, $event) {
 		$http.get("api/stream/list?userid=" + id).then(
 			function done(response) {
+				alerts.remove("expandUser", "persistent");
 				if (response.data.success) {
-					formCtrl.search.userStreams[id] = response.data.streams;
+					if (response.data.streams.length > 0) {
+						formCtrl.search.userStreams[id] = response.data.streams;
+						formCtrl.getSubscriptionState(formCtrl.search.userStreams[id]);
+					}
+					else {
+						alerts.add("info", "User doesn't have any streams");
+					}
 				}
 				else {
 					alerts.add("danger", "Could not list streams from user: " + response.data.error);
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error listing streams from user: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+				alerts.add("danger", "Server error listing streams from user: " + response.status + " " + response.statusText, "expandUser", "persistent");
 			}
 		);
 	};
@@ -541,20 +647,6 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		}
 	};
 
-	formCtrl.requestInvite = function(stream) {
-		// TODO: implement invite request system
-	};
-
-	formCtrl.findSubscriptionObj = function(id) {
-		for (var i = 0; i < formCtrl.subscriptions.length; i++) {
-			if (formCtrl.subscriptions[i].streamid == id) {
-				return i;
-			}
-		}
-
-		return -1;
-	};
-
 	formCtrl.subscribe = function(stream, $event) {
 		// Don't actually go anywhere
 		$event.preventDefault();
@@ -565,6 +657,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 			}
 		).then(
 			function done(response) {
+				alerts.remove("subscribe", "persistent");
 				if (response.data.success) {
 					formCtrl.subscriptions.push({
 						streamid: stream.id,
@@ -580,7 +673,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error subscribing to stream: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+				alerts.add("danger", "Server error subscribing to stream: " + response.status + " " + response.statusText, "subscribe", "persistent");
 			}
 		);
 	};
@@ -591,8 +684,9 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 
 		$http.delete("api/subscription/" + subscription.streamid + "?userid=" + session.user.id).then(
 			function done(response) {
+				alerts.remove("unsubscribe", "persistent");
 				if (response.data.success) {
-					var index = formCtrl.findSubscriptionObj(subscription.streamid);
+					var index = streams.findSubscriptionIndex(subscription.streamid, formCtrl.subscriptions);
 					formCtrl.subscriptions.splice(index, 1);
 					alerts.add("success", "Unsubscribed from " + subscription.streamName);
 				}
@@ -601,7 +695,72 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "unsubscribe", "persistent");
+			}
+		);
+	};
+
+	formCtrl.requestInvite = function(stream, $event) {
+		// Don't actually go anywhere
+		$event.preventDefault();
+
+		$http.post("api/invite/" + stream.id + "/request",
+			{
+				userid: session.user.id
+			}
+		).then(
+			function done(response) {
+				alerts.remove("requestInvite", "persistent");
+				if (response.data.success) {
+					stream.subscription = "requested";
+				}
+				else {
+					alerts.add("danger", "Could not request invite: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error requesting invite: " + response.status + " " + response.statusText, "requestInvite", "persistent");
+			}
+		);
+	};
+
+	formCtrl.unrequestInvite = function(stream, $event) {
+		// Don't actually go anywhere
+		$event.preventDefault();
+
+		$http.delete("api/invite/" + stream.id + "/request?userid=" + session.user.id).then(
+			function done(response) {
+				alerts.remove("unrequestInvite", "persistent");
+				if (response.data.success) {
+					stream.subscription = "none";
+				}
+				else {
+					alerts.add("danger", "Could not request invite: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error requesting invite: " + response.status + " " + response.statusText, "unrequestInvite", "persistent");
+			}
+		);
+	};
+
+	formCtrl.uninvite = function(stream, $event) {
+		// Don't actually go anywhere
+		$event.preventDefault();
+
+		$http.delete("api/invite/" + stream.id + "?userid=" + session.user.id).then(
+			function done(response) {
+				alerts.remove("uninvite", "persistent");
+				if (response.data.success) {
+					stream.subscription = "none";
+					alerts.add("success", "Rejected invitation to " + stream.name + " from " + stream.userName);
+				}
+				else {
+					alerts.add("danger", "Could not reject invitation: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error rejecting invite: " + response.status + " " + response.statusText, "uninvite", "persistent");
 			}
 		);
 	};
@@ -672,6 +831,7 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 		formCtrl.streams.forEach(function(stream) {
 			$http.get("api/subscription/" + stream.id).then(
 				function done(response) {
+					alerts.remove("loadSubscribers", "persistent");
 					if (response.data.success) {
 						formCtrl.subscribers[stream.id] = response.data.subscriptions;
 					}
@@ -680,7 +840,7 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 					}
 				},
 				function fail(response) {
-					alerts.add("danger", "Server error loading subscribers: " + response.status + " " + response.statusText, "loadStreams", "persistent");
+					alerts.add("danger", "Server error loading subscribers: " + response.status + " " + response.statusText, "loadSubscribers", "persistent");
 				}
 			);
 		});
@@ -702,6 +862,7 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 
 		$http.delete("api/subscription/" + subscriber.streamid + "?userid=" + subscriber.userid).then(
 			function done(response) {
+				alerts.remove("unsubscribe", "persistent");
 				if (response.data.success) {
 					var index = formCtrl.findSubscriberObj(subscriber.streamid, subscriber.userid);
 					formCtrl.subscribers[subscriber.streamid].splice(index, 1);
@@ -712,7 +873,7 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "unsubscribe", "persistent");
 			}
 		);
 	};
