@@ -20,11 +20,27 @@ router.get("/:id/request", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.inviteRequestList(Number(req.params.id), function(err, invites) {
+		dbmod.inviteRequestListByStreamId(Number(req.params.id), function(err, requests) {
 			if (err) {
 				return res.json(err);
 			}
-			res.json(models.inviteRequestList(invites));
+			res.json(models.inviteRequestList(requests));
+		});
+	});
+});
+
+// Get list of invite requests for the given user
+router.get("/user/:id/request", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		dbmod.inviteRequestListByUserId(Number(req.params.id), function(err, requests) {
+			if (err) {
+				return res.json(err);
+			}
+			res.json(models.inviteRequestList(requests));
 		});
 	});
 });
@@ -36,7 +52,23 @@ router.get("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.inviteList(Number(req.params.id), function(err, invites) {
+		dbmod.inviteListByStreamId(Number(req.params.id), function(err, invites) {
+			if (err) {
+				return res.json(err);
+			}
+			res.json(models.inviteList(invites));
+		});
+	});
+});
+
+// Get list of invites for the given user
+router.get("/user/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		dbmod.inviteListByUserId(Number(req.params.id), function(err, invites) {
 			if (err) {
 				return res.json(err);
 			}
