@@ -5,11 +5,15 @@ body {
 	font-family: "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-a {
+a,
+button.btn-link {
 	color: #00B7FF;
 	text-decoration: none;
 }
-a:hover {
+a:hover,
+a:active,
+button.btn-link:hover,
+button.btn-link:active {
 	color: #7FDAFF;
 	text-decoration: underline;
 }
