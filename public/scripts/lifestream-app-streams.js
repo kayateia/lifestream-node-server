@@ -177,11 +177,29 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 					callback(response.data.invites);
 				}
 				else {
-					alerts.add("danger", "Invite status could not be loaded: " + response.data.error);
+					alerts.add("danger", "Invites could not be loaded: " + response.data.error);
 				}
 			},
 			function fail(response) {
 				alerts.add("danger", "Server error loading invites: " + response.status + " " + response.statusText, "loadInvites", "persistent");
+			}
+		);
+	};
+
+	formCtrl.loadInviteRequests = function(streamId, callback) {
+		$http.get("api/invite/" + streamId + "/request").then(
+			function done(response) {
+				alerts.remove("loadInviteRequests", "persistent");
+				if (response.data.success) {
+					console.log(response.data);
+					callback(response.data.requests);
+				}
+				else {
+					alerts.add("danger", "Invite requests could not be loaded: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error loading invite requests: " + response.status + " " + response.statusText, "loadInviteRequests", "persistent");
 			}
 		);
 	};
@@ -209,6 +227,12 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 						// stream.
 						formCtrl.loadInvites(stream.id, function(invites) {
 							stream.invites = invites;
+						});
+
+						// Make separate API call to load invite requests for this
+						// stream.
+						formCtrl.loadInviteRequests(stream.id, function(requests) {
+							stream.requests = requests;
 						});
 					});
 				}
@@ -291,7 +315,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	formCtrl.invite = function(streamId, userLogin, $index) {
 		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
-		$http.get("api/user/info/" + stream.newInvite).then(
+		$http.get("api/user/info/" + userLogin).then(
 			function done(response) {
 				alerts.remove("invite", "persistent");
 				if (response.data.success) {
@@ -302,6 +326,16 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 					).then(
 						function done(response2) {
 							if (response2.data.success) {
+								// Remove from list of requests in UI (in case
+								// this invite was created by accepting an
+								// invite request)
+								stream.requests.forEach(function(request, index) {
+									if (request.userid == response.data.id) {
+										removed = stream.requests.splice(index, 1);
+									}
+								});
+
+								// Update list of invites in UI
 								stream.invites.push({
 									streamid: streamId,
 									userLogin: userLogin,
@@ -336,6 +370,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 			function done(response) {
 				alerts.remove("uninvite", "persistent");
 				if (response.data.success) {
+					// Remove invite from list in UI
 					var removed = undefined;
 					stream.invites.forEach(function(invite, index) {
 						if (invite.userid == userId) {
@@ -350,6 +385,32 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 			},
 			function fail(response) {
 				alerts.add("danger", "Server error revoking invite: " + response.status + " " + response.statusText, "uninvite", "persistent");
+			}
+		);
+	};
+
+	formCtrl.unrequest = function(streamId, userId, $index) {
+		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
+
+		$http.delete("api/invite/" + streamId + "/request?userid=" + userId).then(
+			function done(response) {
+				alerts.remove("unrequest", "persistent");
+				if (response.data.success) {
+					// Remove from request from list in UI
+					var removed = undefined;
+					stream.requests.forEach(function(request, index) {
+						if (request.userid == userId) {
+							removed = stream.requests.splice(index, 1);
+						}
+					});
+					alerts.add("success", "Rejeted " + removed[0].userName + "'s request for an invite to " + stream.name);
+				}
+				else {
+					alerts.add("danger", "Could not reject invite request: " + response.data.error);
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error rejecting invite request: " + response.status + " " + response.statusText, "unrequest", "persistent");
 			}
 		);
 	};

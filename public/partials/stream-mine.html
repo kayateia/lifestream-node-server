@@ -64,13 +64,27 @@
 					</span>
 				</div>
 			</form>
+			<div ng-if="stream.requests.length > 0" class="pending">
+				Interested in subscribing:
+				<ul>
+					<li ng-repeat="request in stream.requests">
+						<label for="revokeInviteBtn-{{stream.id}}-{{request.userid}}" class="control-label">{{request.userName}} ({{request.userLogin}})</label>
+						<button id="revokeInviteBtn-{{stream.id}}-{{request.userid}}" name="revokeInviteBtn-{{stream.id}}-{{request.userid}}" ng-click="formCtrl.invite(stream.id, request.userLogin, streamIndex)" class="btn btn-link">
+							<span class="text-success glyphicon glyphicon-ok" />
+						</button>
+						<button id="revokeInviteBtn-{{stream.id}}-{{request.userid}}" name="revokeInviteBtn-{{stream.id}}-{{request.userid}}" ng-click="formCtrl.unrequest(stream.id, request.userid, streamIndex)" class="btn btn-link">
+							<span class="text-danger glyphicon glyphicon-remove" />
+						</button>
+					</li>
+				</ul>
+			</div>
 			<div ng-if="stream.invites.length > 0" class="pending">
 				Pending invites:
 				<ul>
 					<li ng-repeat="invite in stream.invites">
 						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userName}} ({{invite.userLogin}})</label>
 						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" ng-click="formCtrl.uninvite(stream.id, invite.userid, streamIndex)" class="btn btn-link">
-							<span class="glyphicon glyphicon-remove" />
+							<span class="text-danger glyphicon glyphicon-remove" />
 						</button>
 					</li>
 				</ul>
