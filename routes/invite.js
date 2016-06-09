@@ -185,7 +185,10 @@ router.delete("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.query.userid === undefined || Number(req.query.userid) < 1) {
+		if (req.query.userid !== undefined) {
+			req.query.userid = Number(req.query.userid);
+		}
+		if (!req.query.userid || Number.isNaN(req.query.userid)) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
@@ -194,12 +197,13 @@ router.delete("/:id", function(req, res, next) {
 				return res.json(err);
 			}
 
-			// Only the owner of a stream may revoke invites
-			if (stream.userid != tokenContents.id) {
+			// Only the owner of a stream may revoke invites to others,
+			// but the recipient of an invite can revoke their own invite
+			if (stream.userid != tokenContents.id && req.query.userid != tokenContents.id) {
 				return res.json(models.error("Permission denied"));
 			}
 			else {
-				dbmod.inviteDelete(Number(req.params.id), Number(req.query.userid), function(err) {
+				dbmod.inviteDelete(Number(req.params.id), req.query.userid, function(err) {
 					if (err) {
 						return res.json(err);
 					}
