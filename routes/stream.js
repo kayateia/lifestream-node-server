@@ -80,6 +80,12 @@ router.get("/:id/contents", function(req, res, next) {
 			olderThan = null;
 		}
 
+		// Return images with IDs lower than the specfied ID
+		var olderThanId = Number(req.query.olderThanId);
+		if (!Number.isInteger(olderThanId) || olderThanId < 1) {
+			olderThanId = null;
+		}
+
 		// Supposing the :id parameter is a comma-delimited string, convert it
 		// into an array, and keep only the numbers
 		var ids = [];
@@ -92,7 +98,7 @@ router.get("/:id/contents", function(req, res, next) {
 		// Rejoin numeric IDs into sanitised comma-delimited string
 		req.params.id = ids.join(",");
 
-		dbmod.streamContents(req.params.id, count, olderThan, function(err, rows) {
+		dbmod.streamContents(req.params.id, count, olderThan, olderThanId, function(err, rows) {
 			if (err) {
 				return res.json(err);
 			}

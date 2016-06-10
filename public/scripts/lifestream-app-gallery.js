@@ -64,13 +64,14 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	//
 	// Parameters:
 	//   count - (optional) Number of images to load.
-	//   olderThan - (optional) UNIX time. Only load images older than this.
+	//   olderThanId - (optional) Image ID. Only images with lower IDs will be
+	//      loaded.
 	//   callback - (optional) Function to be called when server response has
 	//      been successfully processed.
-	gallery.loadImages = function(count, olderThan, callback) {
+	gallery.loadImages = function(count, olderThanId, callback) {
 		$http.get("api/stream/" +  gallery.streams.join(",") + "/contents?"
 			+ (count ? "&count=" + count : "")
-			+ (olderThan ? "&olderThan=" + olderThan : "")
+			+ (olderThanId ? "&olderThanId=" + olderThanId : "")
 		).then(
 			function done(response) {
 				alerts.remove("loadImages", "persistent");
@@ -133,7 +134,7 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 			return;
 		}
 
-		gallery.loadImages(gallery.numImagesPerRow, gallery.images[gallery.images.length - 1].uploadTime, function() {
+		gallery.loadImages(gallery.numImagesPerRow, gallery.images[gallery.images.length - 1].id, function() {
 			// angular-inview only triggers the in-view check one time when
 			// the element enters or leaves the viewport.
 			//
@@ -172,7 +173,7 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 		// aren't currently enough images to fill the first row, load
 		// more images to fill the blanks.
 		if (blanks > 0 && (gallery.expanded || gallery.images.length < gallery.numImagesPerRow)) {
-			gallery.loadImages(blanks, gallery.images[gallery.images.length - 1].uploadTime);
+			gallery.loadImages(blanks, gallery.images[gallery.images.length - 1].id);
 		}
 
 		// If the gallery is collapsed, and the current number of
