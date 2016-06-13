@@ -545,7 +545,6 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	//     object
 	//   state - "active", "invited", "requested", or "none"
 	formCtrl.setSubscriptionState = function(obj, state) {
-		console.log("setSubscriptionState: ", obj, ", ", state);
 		var index;
 		var streamid = obj.id ? obj.id : obj.streamid;
 
