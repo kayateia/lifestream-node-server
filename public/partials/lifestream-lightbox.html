@@ -1,0 +1,51 @@
+<div ng-controller="LifeStreamLightboxController as lightboxCtrl" class="modal-body">
+	<div class="lightbox-nav">
+		<button class="close" aria-hidden="true" ng-click="$dismiss()">×</button>
+		<button class="prev" aria-hidden="true" ng-click="Lightbox.prevImage()">&lt;</button>
+		<button class="next" aria-hidden="true" ng-click="Lightbox.nextImage()">&gt;</button>
+	</div>
+	<div class="lightbox-image-container" ng-swipe-left="lightbox.nextImage()" ng-swipe-right="lightbox.prevImage()">
+		<a href="{{Lightbox.imageUrl}}" target="_blank"><img lightbox-src="{{Lightbox.imageUrl}}" /></a>
+	</div>
+	<div class="lightbox-image-details">
+		<div ng-hide="lightboxCtrl.commentFormShown" class="lightbox-image-caption">
+			<div class="streams">
+				<div class="collapsed" ng-hide="lightboxCtrl.streamsExpanded">
+					<a href="#" ng-click="lightboxCtrl.expandStreams($event)">
+						{{Lightbox.images[Lightbox.index].streams.length}}
+						<span ng-if="Lightbox.images[Lightbox.index].streams.length == 1">stream contains</span>
+						<span ng-if="Lightbox.images[Lightbox.index].streams.length != 1">streams contain</span>
+						this image »
+					</a>
+				</div>
+				<div class="expanded" ng-show="lightboxCtrl.streamsExpanded">
+					<a href="#" ng-click="lightboxCtrl.collapseStreams($event)">
+						Streams containing this image «
+					</a>
+					<ul>
+						<li ng-repeat="stream in Lightbox.images[Lightbox.index].streams">{{stream.name}}</li>
+					</ul>
+				</div>
+			</div>
+			<div class="comment">{{Lightbox.images[Lightbox.index].comment}}</div>
+		</div>
+		<div class="lightbox-edit" ng-if="lightboxCtrl.isMyImage" ng-hide="lightboxCtrl.commentFormShown">
+			<label class="control-label">Edit:</label>
+			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showCommentForm($event)" class="btn-link">
+				<span class="glyphicon glyphicon-comment" />
+				Comment
+			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showCommentForm($event)" class="btn-link">
+				<span class="glyphicon glyphicon-tags" />
+				Streams
+			</button>
+		</div>
+		<form ng-show="lightboxCtrl.commentFormShown" ng-submit="lightboxCtrl.saveComment()">
+			<div id="commentInputGroup" class="input-group">
+				<input id="newComment" name="newComment" ng-model="lightboxCtrl.newComment" type="text" class="form-control" />
+				<span class="input-group-btn">
+					<button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" /></button>
+				</span>
+			</div>
+		</form>
+	</div>
+</div>

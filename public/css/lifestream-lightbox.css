@@ -1,0 +1,146 @@
+.lightbox-nav {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+}
+.lightbox-nav .close,
+.lightbox-nav .next,
+.lightbox-nav .prev {
+	appearance: none;
+	-moz-appearance: none;
+	-webkit-appearance: none;
+	position: absolute;
+}
+.lightbox-nav .close:focus,
+.lightbox-nav .next:focus,
+.lightbox-nav .prev:focus {
+	outline: none;
+}
+.lightbox-nav .close {
+	background-color: black;
+	border-color: #eeeeee;
+	border-radius: 15px;
+	border-style: solid;
+	border-width: 2px;
+	box-shadow: 0 1px 2px black;
+	color: #eeeeee;
+	opacity: 1.0;
+	padding: 0 4px 4px 4px;
+	top: -15px;
+	right: -15px;
+	z-index: 2; /* layer above navigation controls */
+}
+.lightbox-nav .next,
+.lightbox-nav .prev {
+	background: none;
+	background-clip: content-box;
+	border: none;
+	font-size: 60px;
+	width: 45%;
+	height: 100%;
+	text-shadow: 0 2px 4px black;
+	z-index: 1; /* layer below comment text and close button */
+}
+.lightbox-nav .next:hover,
+.lightbox-nav .prev:hover {
+	background-color: rgba(102, 102, 102, 0.67);
+}
+.lightbox-nav .next {
+	padding: 30% 10% 30% 20%;
+	top: 0;
+	right: -25%;
+}
+.lightbox-nav .prev {
+	padding: 30% 20% 30% 10%;
+	top: 0;
+	left: -25%;
+}
+@media (max-width: 768px) {
+	.lightbox-nav .next {
+		padding: 30% 2% 30% 10%;
+		text-align: right;
+		width: 25%;
+		right: -15px;
+	}
+	.lightbox-nav .prev {
+		padding: 30% 10% 30% 2%;
+		text-align: left;
+		width: 25%;
+		left: -15px;
+	}
+}
+
+.lightbox-image-details {
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	top: inherit; /* top needs to be specified here to override the value in  angular-bootstra-lightbox.css */
+	z-index: 2; /* layer above navigation controls */
+	padding: 1.5em;
+	width: 100%;
+}
+
+.lightbox-image-caption {
+	position: relative;
+	color: #eeeeee;
+	font-size: 20px;
+	margin: 0;
+	text-shadow: 0 0 0.2em #222222, 0 0 0.4em #444444;
+}
+.lightbox-image-caption span {
+	background: none;
+	box-shadow: none;
+}
+.lightbox-image-caption .streams {
+	font-size: 0.7em;
+	font-weight: normal;
+}
+.lightbox-image-caption .streams ul {
+	list-style: none;
+	margin-left: 0;
+	padding-left: 0;
+}
+.lightbox-image-caption .streams li {
+	display: inline-block;
+	margin-left: 10px;
+}
+.lightbox-image-caption .streams li:not(:last-child):after {
+	content: ",";
+}
+
+.lightbox-edit {
+	position: relative;
+	background-color: rgba(34, 34, 34, 0.67);
+	border-radius: 5px;
+	display: inline-block;
+	padding: 0 5px;
+	text-shadow: 0 0 0.2em #222222, 0 0 0.4em #444444;
+}
+.lightbox-image-caption .streams a,
+.lightbox-edit .btn-link {
+	color: #eeeeee;
+	text-shadow: 0 0 0.2em #222222, 0 0 0.4em #444444;
+}
+.lightbox-image-caption .streams a:hover,
+.lightbox-edit .btn-link:hover {
+	color: #7FDAFF;
+	text-decoration: underline;
+}
+.lightbox-edit .popover {
+	background-color: #222222;
+	white-space: nowrap;
+}
+.lightbox-edit .popover.top > .arrow:after {
+	border-top-color: #222222;
+}
+
+.lightbox-image-details form {
+	position: relative;
+}
+
+.lightbox-image-details form input[type=text] {
+	background-color: rgba(34, 34, 34, 0.67);
+	color: #eeeeee;
+}

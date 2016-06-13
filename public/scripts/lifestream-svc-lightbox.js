@@ -3,7 +3,7 @@ angular.module("LifeStreamLightbox", [ "ui.bootstrap", "bootstrapLightbox", "Lif
 // Configure angular-bootstrap-lightbox for use by LifeStreamGalleryController
 angular.module("LifeStreamLightbox").config(["LightboxProvider", function(LightboxProvider) {
 	// Custom template (for comment display and editing functionality).
-	LightboxProvider.templateUrl = "partials/lightbox.html";
+	LightboxProvider.templateUrl = "partials/lifestream-lightbox.html";
 
 	// Our image caption property is called "comment".
 	LightboxProvider.getImageCaption = function(image) {
@@ -72,6 +72,7 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 	lightboxCtrl.commentFormShown = false; // true when comment editor is shown
 	lightboxCtrl.isMyImage = false; // true when the current image was uploaded by the logged-in user
 	lightboxCtrl.newComment = ""; // edited comment is saved here
+	lightboxCtrl.streamsExpanded = false; // true if list of streams is expanded
 
 	lightboxCtrl.hideCommentForm = function() {
 		lightboxCtrl.commentFormShown = false;
@@ -134,6 +135,16 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		);
 
 		lightboxCtrl.hideCommentForm();
+	};
+
+	lightboxCtrl.expandStreams = function($event) {
+		$event.preventDefault();
+		lightboxCtrl.streamsExpanded = true;
+	};
+
+	lightboxCtrl.collapseStreams = function($event) {
+		$event.preventDefault();
+		lightboxCtrl.streamsExpanded = false;
 	};
 
 	// Watch which image is currently focused in the Lightbox. By defaut, the
