@@ -8,7 +8,7 @@
 		<a href="{{Lightbox.imageUrl}}" target="_blank"><img lightbox-src="{{Lightbox.imageUrl}}" /></a>
 	</div>
 	<div class="lightbox-image-details">
-		<div ng-hide="lightboxCtrl.commentFormShown" class="lightbox-image-caption">
+		<div ng-hide="lightboxCtrl.commentFormShown || lightboxCtrl.streamsFormShown" class="lightbox-image-caption">
 			<div class="streams">
 				<div class="collapsed" ng-hide="lightboxCtrl.streamsExpanded">
 					<a href="#" ng-click="lightboxCtrl.expandStreams($event)">
@@ -29,12 +29,12 @@
 			</div>
 			<div class="comment">{{Lightbox.images[Lightbox.index].comment}}</div>
 		</div>
-		<div class="lightbox-edit" ng-if="lightboxCtrl.isMyImage" ng-hide="lightboxCtrl.commentFormShown">
-			<label class="control-label">Edit:</label>
-			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showCommentForm($event)" class="btn-link">
+		<div class="lightbox-edit" ng-if="lightboxCtrl.isMyImage" ng-hide="lightboxCtrl.commentFormShown || lightboxCtrl.streamsFormShown">
+			Edit:
+			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showCommentForm($event)" class="btn btn-link">
 				<span class="glyphicon glyphicon-comment" />
 				Comment
-			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showCommentForm($event)" class="btn-link">
+			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showStreamsForm($event)" class="btn btn-link">
 				<span class="glyphicon glyphicon-tags" />
 				Streams
 			</button>
@@ -45,6 +45,21 @@
 				<span class="input-group-btn">
 					<button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-floppy-disk" /></button>
 				</span>
+			</div>
+		</form>
+		<form id="streamsForm" ng-show="lightboxCtrl.streamsFormShown" ng-submit="lightboxCtrl.hideStreamsForm()">
+			<div class="scrolling-container">
+				<div class="checkbox" ng-repeat="stream in lightboxCtrl.userStreams">
+					<label>
+						<input type="checkbox" ng-model="stream.associated" ng-change="lightboxCtrl.streamToggled(stream)" />
+						{{stream.name}}
+						<span ng-if="stream.permission == 2">(needs approval)</span>
+						<span ng-if="stream.permission == 3">(hidden)</span>
+					</label>
+				</div>
+			</div>
+			<div class="text-right">
+				<button type="submit" class="btn btn-default">Done</button>
 			</div>
 		</form>
 	</div>

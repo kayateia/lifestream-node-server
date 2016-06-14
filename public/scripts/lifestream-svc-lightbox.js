@@ -69,10 +69,24 @@ angular.module("LifeStreamLightbox").factory("lsLightbox", [ "Lightbox", functio
 angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "$http", "lsAlerts", "lsLightbox", "lsSession", "$timeout", function($scope, $http, alerts, lsLightbox, session, $timeout) {
 	var lightboxCtrl = this;
 
-	lightboxCtrl.commentFormShown = false; // true when comment editor is shown
-	lightboxCtrl.isMyImage = false; // true when the current image was uploaded by the logged-in user
-	lightboxCtrl.newComment = ""; // edited comment is saved here
-	lightboxCtrl.streamsExpanded = false; // true if list of streams is expanded
+	// true when comment editor is shown
+	lightboxCtrl.commentFormShown = false;
+
+	// true when stream association editor is shown
+	lightboxCtrl.streamsFormShown = false;
+
+	// true when the current image was uploaded by the logged-in user
+	lightboxCtrl.isMyImage = false;
+
+	// New comment is saved here from the comment editor form is saved here
+	lightboxCtrl.newComment = "";
+
+	// True if the list of streams containing the current image is expanded
+	lightboxCtrl.streamsExpanded = false;
+
+	// Array of streams belonging to the user. It becomes populated when the
+	// user chooses to edit streams associated with an image
+	lightboxCtrl.userStreams = [];
 
 	lightboxCtrl.hideCommentForm = function() {
 		lightboxCtrl.commentFormShown = false;
@@ -124,6 +138,9 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 				if (response.data.success) {
 					// Update the local data model
 					lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].comment = newComment;
+
+					// Only hide comment form if save is successful
+					lightboxCtrl.hideCommentForm();
 				}
 				else {
 					alerts.add("danger", "Comment update failed: " + response.data.error);
@@ -133,8 +150,6 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 				alerts.add("danger", "Server error updating comment: " + response.status + " " + response.statusText, "saveComment", "persistent");
 			}
 		);
-
-		lightboxCtrl.hideCommentForm();
 	};
 
 	lightboxCtrl.expandStreams = function($event) {
@@ -146,6 +161,163 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		$event.preventDefault();
 		lightboxCtrl.streamsExpanded = false;
 	};
+
+	lightboxCtrl.hideStreamsForm = function() {
+		lightboxCtrl.streamsFormShown = false;
+
+		// Remove the event that caused clicking outside of the streams form to
+		// hide it
+		$(document).off("click.hideStreamsForm");
+		$("#streamsForm").off("click.stopPropagation");
+	}
+
+	// lightboxCtrl.isCurrentImageInStream()
+	//
+	//   Look for a stream object with the given ID within a given array, and
+	//   return the array index of the object if one is found.
+	//
+	//   If no matching stream object is found, return -1.
+	//
+	// Parameters:
+	//   id - stream ID
+	//   arr - Array to search
+	lightboxCtrl.findStreamIndex = function(id, arr) {
+		var retval = -1;
+
+		for (var i = 0; i < arr.length; i++) {
+			if (arr[i].id == id) {
+				retval = i;
+				break;
+			}
+		}
+
+		return retval;
+	}
+
+	lightboxCtrl.showStreamsForm = function() {
+		// Confirm that the uploader is the same as the current user
+		if (lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].userLogin == session.user.login) {
+			lightboxCtrl.streamsFormShown = true;
+
+			$http.get("api/stream/list?userid=" + session.user.id).then(
+				function done(response) {
+					alerts.remove("showStreamsForm", "persistent");
+					if (response.data.success) {
+						// Clear userStreams array before repopulating it, or
+						// there'll be duplicate streams each time the user
+						// hides and reshows the form
+						lightboxCtrl.userStreams = [];
+
+						// For each stream in response...
+						response.data.streams.forEach(function(stream) {
+							// Check whether the current image is associated
+							// with the stream
+							var index = lightboxCtrl.findStreamIndex(stream.id, lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams);
+
+							lightboxCtrl.userStreams.push({
+								id: stream.id,
+								name: stream.name,
+								permission: stream.permission,
+								associated: index != -1
+							});
+						});
+
+						// Clicking anywhere outside of the streams form will
+						// close it, but prevent clicking INSIDE the streams
+						// form from triggering a close
+						$("#streamsForm").on("click.stopPropagation", function(event) {
+							event.stopPropagation();
+						});
+						$(document).on("click.hideStreamsForm", function() {
+							lightboxCtrl.hideStreamsForm();
+						});
+					}
+					else {
+						alerts.add("danger", "Couldn't list available streams: " + response.data.error);
+
+						// Don't show streams form if listing is unsuccessful
+						lightboxCtrl.hideStreamsForm();
+					}
+				},
+				function fail(response) {
+					alerts.add("danger", "Server error listing available streams: " + response.status + " " + response.statusText, "showStreamsForm", "persistent");
+
+					// Don't show streams form if listing is unsuccessful
+					lightboxCtrl.hideStreamsForm();
+				}
+			);
+		}
+	};
+
+	lightboxCtrl.streamToggled = function(stream) {
+		// true if server-side update is successful
+		var successful = false;
+
+		// Check whether current image is associated with the toggled stream
+		var index = lightboxCtrl.findStreamIndex(stream.id, lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams);
+
+		// If the image's state of association with the toggled stream already
+		// matches what the checkbox indicates, there's nothing to do
+		if ((stream.associated && index != -1) ||
+			!stream.associated && index == -1) {
+			return;
+		}
+
+		// Otherwise, notify the server about the change in association
+		if (stream.associated) {
+			$http.post(
+				"api/image/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id + "/streams",
+				{
+					streamid: stream.id
+				}
+			).then(
+				function done(response) {
+					alerts.remove("streamToggled", "persistent");
+					if (response.data.success) {
+						successful = true;
+						lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams.push(stream);
+						alerts.add("success", "Added image to " + stream.name);
+					}
+					else {
+						alerts.add("danger", "Couldn't add image to stream: " + response.data.error);
+
+						// If server-side data couldn't be updated, revert model
+						stream.associated = false;
+					}
+				},
+				function fail(response) {
+					alerts.add("danger", "Server error adding image to stream: " + response.status + " " + response.statusText, "streamToggled", "persistent");
+
+					// If server-side data couldn't be updated, revert model
+					stream.associated = false;
+				}
+			);
+		}
+		else {
+			$http.delete("api/image/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id + "/streams?streamid=" + stream.id).then(
+				function done(response) {
+					alerts.remove("streamToggled", "persistent");
+					if (response.data.success) {
+						successful = true;
+						lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams.splice(index, 1);
+						alerts.add("success", "Removed image from " + stream.name);
+					}
+					else {
+						alerts.add("danger", "Couldn't remove image from stream: " + response.data.error);
+
+						// If server-side data couldn't be updated, revert model
+						stream.associated = true;
+					}
+				},
+				function fail(response) {
+					alerts.add("danger", "Server error removing image from stream: " + response.status + " " + response.statusText, "streamToggled", "persistent");
+
+					// If server-side data couldn't be updated, revert model
+					stream.associated = true;
+				}
+			);
+		}
+	}
 
 	// Watch which image is currently focused in the Lightbox. By defaut, the
 	// Lightbox wraps around to the first image when advancing past the last
@@ -160,6 +332,16 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		// Invalid state if lightbox has never been opened
 		if (newValue === -1) {
 			return;
+		}
+
+		// If any edit forms are shown, close them. The information from a
+		// previous image's edit form is not necessarily correct for the current
+		// image
+		if (lightboxCtrl.commentFormShown) {
+			lightboxCtrl.hideCommentForm();
+		}
+		if (lightboxCtrl.streamsFormShown) {
+			lightboxCtrl.hideStreamsForm();
 		}
 
 		// Check if current image was uploaded by the logged-in user.
