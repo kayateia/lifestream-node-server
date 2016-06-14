@@ -23,11 +23,11 @@
 			<ul ng-if="formCtrl.search.userStreams[user.id].length > 0">
 				<li ng-repeat="stream in formCtrl.search.userStreams[user.id]" ng-if="stream.subscription && stream.subscription != 'active'">
 					<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
-					<button class="btn-link" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream)">subscribe</button>
-					<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream)">request invite</button>
-					<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream)">cancel invite request</button>
-					<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.subscribe(stream)">accept invite (subscribe)</button>
-					<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.uninvite(stream)">reject invite</button>
+					<button class="btn btn-link" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream)">subscribe</button>
+					<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream)">request invite</button>
+					<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream)">cancel invite request</button>
+					<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.subscribe(stream)">accept invite (subscribe)</button>
+					<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.uninvite(stream)">reject invite</button>
 				</li>
 			</ul>
 		</li>
@@ -38,11 +38,11 @@
 	<ul>
 		<li ng-repeat="stream in formCtrl.search.streams" ng-if="stream.subscription && stream.subscription != 'active'">
 			<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
-			<button class="btn-link" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream)">subscribe</button>
-			<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream)">request invite</button>
-			<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream)">cancel invite request</button>
-			<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.subscribe(stream)">accept invite (subscribe)</button>
-			<button class="btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.uninvite(stream)">reject invite</button>
+			<button class="btn btn-link" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream)">subscribe</button>
+			<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream)">request invite</button>
+			<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream)">cancel invite request</button>
+			<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.subscribe(stream)">accept invite (subscribe)</button>
+			<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'invited'" ng-click="formCtrl.uninvite(stream)">reject invite</button>
 		</li>
 	</ul>
 </div>
@@ -51,8 +51,8 @@
 	<ul>
 		<li ng-repeat="invite in formCtrl.invites">
 			{{invite.streamName}} from {{invite.userName}} ({{invite.userLogin}})
-			<button class="btn-link" ng-click="formCtrl.subscribe(invite)">accept invite (subscribe)</button>
-			<button class="btn-link" ng-click="formCtrl.uninvite(invite)">reject invite</button>
+			<button class="btn btn-link" ng-click="formCtrl.subscribe(invite)">accept invite (subscribe)</button>
+			<button class="btn btn-link" ng-click="formCtrl.uninvite(invite)">reject invite</button>
 		</li>
 	</ul>
 </div>
@@ -61,7 +61,7 @@
 	<ul>
 		<li ng-repeat="request in formCtrl.requests">
 			{{request.streamName}} from {{request.userName}} ({{request.userLogin}})
-			<button class="btn-link" ng-click="formCtrl.unrequestInvite(request)">cancel invite request</button>
+			<button class="btn btn-link" ng-click="formCtrl.unrequestInvite(request)">cancel invite request</button>
 		</li>
 	</ul>
 </div>
@@ -70,7 +70,7 @@
 	<ul>
 		<li ng-repeat="subscription in formCtrl.subscriptions">
 			<ls-gallery streamid="{{subscription.streamid}}" thumb-size="192" title="{{subscription.streamName}} from {{subscription.userName}} ({{subscription.userLogin}})"></ls-gallery>
-			<button class="btn-link" ng-click="formCtrl.unsubscribe(subscription)">unsubscribe</button>
+			<button class="btn btn-link" ng-click="formCtrl.unsubscribe(subscription)">unsubscribe</button>
 		</li>
 	</ul>
 </div>
