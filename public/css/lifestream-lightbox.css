@@ -128,13 +128,6 @@
 	color: #7FDAFF;
 	text-decoration: underline;
 }
-.lightbox-edit .popover {
-	background-color: #222222;
-	white-space: nowrap;
-}
-.lightbox-edit .popover.top > .arrow:after {
-	border-top-color: #222222;
-}
 
 .lightbox-image-details form {
 	position: relative;

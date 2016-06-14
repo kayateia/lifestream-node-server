@@ -48,6 +48,15 @@ button.btn-link:active {
 	background-color: rgba(15, 15, 15, 0.1);
 }
 
+/* uib-popover should use dark colour scheme like rest of site */
+.popover {
+	background-color: #222222;
+	white-space: nowrap;
+}
+.popover.top > .arrow:after {
+	border-top-color: #222222;
+}
+
 /* Fix for angular-bootstrap: https://angular-ui.github.io/bootstrap/ */
 .nav,
 .pagination,
