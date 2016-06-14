@@ -20,6 +20,7 @@
 
 var request = require("request");
 var fs = require("fs");
+var config = require("./config");
 var lscrypto = require("./lib/lscrypto");
 var security = require("./lib/security");
 
@@ -92,7 +93,7 @@ var streams = [
 // Authorization tokens for each user
 var auth = {
 	admin: {
-		Authorization: "Bearer cf4c5b42c7da52bfb622424dd69715ac808029eae14e7b070aa14dc0586836b00707ebdd88f895bea2f9375a50a2e6d1ed6c62ec5b664d335ab503855f04febe802b3754960f0e367132dcaaff252902667c3f906694cca6a44bb7f49045c54aa5c5e7cc14eb70e326"
+		Authorization: "Bearer " + security.makeToken(1, config.adminLogin, lscrypto.hash(config.adminPassword))
 	}
 };
 
