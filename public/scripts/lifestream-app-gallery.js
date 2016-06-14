@@ -40,11 +40,6 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	//   }
 	gallery.images = [];
 
-	// Any time an image is added to the array, that image's ID should be added
-	// to this array, to make it easier to find whether a given image is already
-	// in this gallery's grid
-	gallery.ids = [];
-
 	// True when the gallery is expanded
 	gallery.expanded = false;
 
@@ -53,6 +48,30 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	//   Should be called whenever user activity is detected.
 	gallery.keepAlivePing = function() {
 		keepalive.ping();
+	};
+
+	// gallery.loadImageStreams()
+	//
+	//   Loads list of streams containing image. Populates the stream property
+	//   of the specified image object with an array of stream objects.
+	//
+	// Parameters:
+	//   image - image object
+	gallery.loadImageStreams = function(image) {
+		$http.get("api/image/" + image.id + "/streams").then(
+			function done(response) {
+				alerts.remove("loadImageStreams", "persistent");
+				if (response.data.success) {
+					image.streams = response.data.streams;
+				}
+				else {
+					alerts.add("danger", "Couldn't get list of streams containing image");
+				}
+			},
+			function fail(response) {
+				alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImageStreams", "persistent");
+			}
+		);
 	};
 
 	// gallery.loadImages()
@@ -77,8 +96,7 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 				alerts.remove("loadImages", "persistent");
 				if (response.data.success) {
 					response.data.images.forEach(function(image) {
-						// Add this image's info to the target array
-						gallery.images.push({
+						var image = {
 							id: image.id,
 							thumbUrl: "api/image/get/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
 							url: "api/image/get/" + image.id,
@@ -86,12 +104,13 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 							userName: image.userName,
 							uploadTime: image.uploadTime,
 							comment: image.comment
-						});
+						};
 
-						// Record this image's ID into a separate
-						// array, to make it quicker to identify
-						// whether a given image ID is already known
-						gallery.ids.push(image.id);
+						// Find out which streams contain this image
+						gallery.loadImageStreams(image);
+
+						// Add this image's info to the model
+						gallery.images.push(image);
 					});
 
 					// If a callback function was specified, call it
@@ -115,7 +134,6 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	gallery.unloadImages = function(count) {
 		for (var i = 0; i < count; i++) {
 			gallery.images.pop();
-			gallery.ids.pop();
 		}
 	};
 
