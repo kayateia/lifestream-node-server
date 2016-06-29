@@ -139,7 +139,7 @@ router.get("/get/:id", function(req, res, next) {
 					// Image is resized asynchronously; send buffer as result
 					var sendFromBuffer = function(err, buffer) {
 						if (err) {
-							res.json(err);
+							return res.json(err);
 						}
 						res.set("Content-Type", "image/" + path.extname(imageFile).substring(1));
 						res.send(buffer);
