@@ -1,10 +1,10 @@
-drop table device;
-drop table subscription;
-drop table streamimage;
-drop table stream;
-drop table image;
-drop table user;
-drop table meta;
+drop table if exists device;
+drop table if exists subscription;
+drop table if exists streamimage;
+drop table if exists stream;
+drop table if exists image;
+drop table if exists user;
+drop table if exists meta;
 
 create table meta (
 	id integer auto_increment primary key,
