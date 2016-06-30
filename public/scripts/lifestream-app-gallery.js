@@ -1,7 +1,7 @@
 // Define the gallery controller
 angular.module("LifeStreamGallery", [ "LifeStreamAlerts", "LifeStreamLightbox", "LifeStreamKeepAlive" ]);
 
-angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", function($scope, $element, $http, alerts, lsLightbox, keepalive, $timeout) {
+angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "$interval", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", function($scope, $element, $http, $interval, alerts, lsLightbox, keepalive, $timeout) {
 	var gallery = this;
 
 	// streamid from directive. May be a comma-separated list. Split the list
@@ -273,6 +273,13 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// After page is fully rendered and there is valid position and width for
 	// the container element...
 	$timeout(function() {
+		// Load most recent images
+		gallery.loadImages(gallery.numImagesPerRow);
+	}, 0);
+
+	// Recalculate where the gallery header should be affixed at regular
+	// intervals; this is the best we can do without position:sticky.
+	$interval(function() {
 		// Obtain offset of gallery relative to document
 		gallery.elementOffset = gallery.element.offset();
 
@@ -282,10 +289,8 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 				top: gallery.elementOffset.top
 			}
 		});
+	}, 10000);
 
-		// Load most recent images
-		gallery.loadImages(gallery.numImagesPerRow);
-	}, 0);
 
 	// Cancel keepalive timers when the app closes.
 	$scope.$on("$destroy", function() {
