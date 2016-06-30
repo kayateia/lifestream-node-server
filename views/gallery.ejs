@@ -7,7 +7,9 @@
 <script src="scripts/lifestream-app-gallerypage.js"></script>
 
 <div ng-controller="LifeStreamGalleryPageController as galleryPage">
-	<ls-gallery ng-if="galleryPage.myStreams.length > 0" streamid="{{galleryPage.myStreamsToString()}}" thumb-size="192" title="Your uploads"></ls-gallery>
+	<ls-gallery ng-if="galleryPage.myStreams.length > 0" streamid="{{galleryPage.propertiesToString(galleryPage.myStreams, 'id')}}" thumb-size="192" title="Your uploads"></ls-gallery>
+	<ls-gallery ng-if="galleryPage.subscriptions.length > 0" streamid="{{galleryPage.propertiesToString(galleryPage.subscriptions, 'streamid')}}" thumb-size="192" title="Recent additions to your subscriptions"></ls-gallery>
+	<ls-gallery ng-repeat="subscription in galleryPage.subscriptions" streamid="{{subscription.streamid}}" thumb-size="192" title="{{subscription.streamName}}"></ls-gallery>
 </div>
 
 <% include footer %>

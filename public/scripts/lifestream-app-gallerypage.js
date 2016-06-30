@@ -7,15 +7,10 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 	// List of the current user's subscriptions
 	galleryPage.subscriptions = [];
 
-	galleryPage.myStreamsToString = function() {
-		var retval = [];
-
-		galleryPage.myStreams.forEach(function(stream) {
-			retval.push(stream.id);
-		});
-		retval = retval.join(",");
-
-		return retval;
+	galleryPage.propertiesToString = function(arr, property) {
+		return arr.map(function(obj) {
+			return obj[property];
+		}).join(",");
 	};
 
 	galleryPage.loadMyStreams = function() {
