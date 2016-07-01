@@ -36,7 +36,7 @@ var upload = multer({ storage: storage }).any();
 // Upload an image to the server.
 // Required: token, streamid, a file.
 // Optional: comment
-router.post("/post", function(req, res, next) {
+router.post("/", function(req, res, next) {
 	upload(req, res, function(err) {
 		if (err) {
 			console.log("error is",err);
@@ -108,7 +108,7 @@ router.post("/post", function(req, res, next) {
 	});
 });
 
-router.get("/get/:id", function(req, res, next) {
+router.get("/:id", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
 			return res.json(err);

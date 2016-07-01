@@ -98,8 +98,8 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 					response.data.images.forEach(function(image) {
 						var image = {
 							id: image.id,
-							thumbUrl: "api/image/get/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
-							url: "api/image/get/" + image.id,
+							thumbUrl: "api/image/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
+							url: "api/image/" + image.id,
 							userLogin: image.userLogin,
 							userName: image.userName,
 							uploadTime: image.uploadTime,
