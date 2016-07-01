@@ -91,7 +91,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 				);
 		}
 		else {
-			alerts.add("danger", "Username is required", "validateLoginIsNew", "persistent");
+			alerts.add("danger", "Login is required", "validateLoginIsNew", "persistent");
 		}
 
 		return login.$valid;
@@ -125,7 +125,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 				);
 		}
 		else {
-			alerts.add("danger", "Username is required", "validateLoginExists", "persistent");
+			alerts.add("danger", "Login is required", "validateLoginExists", "persistent");
 		}
 
 		return login.$valid
@@ -145,7 +145,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 	usermgr.validateName = function(name) {
 		if (name.$invalid) {
 		 	if (name.$error.required) {
-				alerts.add("danger", "Name is required", "validateName", "persistent");
+				alerts.add("danger", "Display name is required", "validateName", "persistent");
 			}
 		}
 		else {
@@ -205,7 +205,7 @@ lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($
 		},
 		{
 			id: "name",
-			label: "Name",
+			label: "Display name",
 			required: true,
 			type: "text",
 			validator: usermgr.validateName
@@ -294,7 +294,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 		},
 		{
 			id: "name",
-			label: "Name",
+			label: "Display name",
 			required: true,
 			type: "text",
 			validator: usermgr.validateName
@@ -326,7 +326,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 					alerts.add("success", "User " + formCtrl.login + " successfully updated", "submitFunc", "persistent");
 				}
 				else {
-					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "persistent");
+					alerts.add("danger", "User " + formCtrl.login + " could not be updated: " + response.data.error, "submitFunc", "persistent");
 				}
 			},
 			function fail(response) {

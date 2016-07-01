@@ -5,7 +5,6 @@
 		<ul ng-if="formCtrl.subscribers[stream.id].length > 0">
 			<li ng-repeat="subscriber in formCtrl.subscribers[stream.id]">
 				{{subscriber.userName}}
-				({{subscriber.userLogin}})
 				<a href="#" ng-click="formCtrl.unsubscribe(subscriber, stream, $event)">unsubscribe</a>
 			</li>
 		</ul>

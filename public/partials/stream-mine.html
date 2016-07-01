@@ -68,7 +68,7 @@
 				Interested in subscribing:
 				<ul>
 					<li ng-repeat="request in stream.requests">
-						<label for="revokeInviteBtn-{{stream.id}}-{{request.userid}}" class="control-label">{{request.userName}} ({{request.userLogin}})</label>
+						<label for="revokeInviteBtn-{{stream.id}}-{{request.userid}}" class="control-label">{{request.userName}}</label>
 						<button id="revokeInviteBtn-{{stream.id}}-{{request.userid}}" name="revokeInviteBtn-{{stream.id}}-{{request.userid}}" ng-click="formCtrl.invite(stream.id, request.userLogin, streamIndex)" class="btn btn-link">
 							<span class="text-success glyphicon glyphicon-ok" />
 						</button>
@@ -82,7 +82,7 @@
 				Pending invites:
 				<ul>
 					<li ng-repeat="invite in stream.invites">
-						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userName}} ({{invite.userLogin}})</label>
+						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userName}}</label>
 						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" ng-click="formCtrl.uninvite(stream.id, invite.userid, streamIndex)" class="btn btn-link">
 							<span class="text-danger glyphicon glyphicon-remove" />
 						</button>

@@ -181,7 +181,6 @@ router.put("/info/:login", function(req, res, next) {
 		var pwdhash = pwd ? lscrypto.hash(pwd) : null;
 		var email = req.body.email ? req.body.email : "";
 		var isadmin = req.body.isadmin ? 1 : 0;
-		console.log("Would create with hash",pwdhash);
 
 		dbmod.userUpdate(login, pwdhash, name, email, isadmin, function(err) {
 			if (err) {
