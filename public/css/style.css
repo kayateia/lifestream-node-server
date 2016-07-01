@@ -119,11 +119,6 @@ table.streams-editor .pending label {
 	list-style: none;
 }
 
-.search-result .gallery-tile,
-.subscription-list .gallery-tile {
-	font-size: 8px;
-}
-
 table.streams-editor .pending.ng-enter,
 table.streams-editor .pending li.ng-enter,
 .subscription-list li.ng-enter {
