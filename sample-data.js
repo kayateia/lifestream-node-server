@@ -129,7 +129,7 @@ function createUser(login, password, name, email, isAdmin) {
 			password: password,
 			name: name,
 			email: email,
-			isadmin: isAdmin
+			isAdmin: isAdmin
 		}
 	};
 

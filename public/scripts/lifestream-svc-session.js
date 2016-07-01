@@ -55,7 +55,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 								login: response.data.login,
 								name: response.data.name,
 								email: response.data.email,
-								isAdmin: response.data.isadmin
+								isAdmin: response.data.isAdmin
 							};
 							if (callback) {
 								callback(session.user);

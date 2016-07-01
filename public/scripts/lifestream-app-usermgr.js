@@ -218,7 +218,7 @@ lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($
 			validator: usermgr.validateEmail
 		},
 		{
-			id: "isadmin",
+			id: "isAdmin",
 			label: "Is admin?",
 			required: false,
 			type: "checkbox"
@@ -231,7 +231,7 @@ lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email,
-			isadmin: formCtrl.isadmin
+			isAdmin: formCtrl.isAdmin
 		}).then(
 			function done(response) {
 				if (response.data.success) {
@@ -264,7 +264,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 			// Prefill edit form info based on user info from server.
 			formCtrl.name = data.name;
 			formCtrl.email = data.email;
-			formCtrl.isadmin = data.isadmin ? true : false;
+			formCtrl.isAdmin = data.isAdmin ? true : false;
 			formCtrl.userid = data.id;
 		});
 	};
@@ -309,7 +309,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 			validator: usermgr.validateEmail
 		},
 		{
-			id: "isadmin",
+			id: "isAdmin",
 			label: "Is admin?",
 			required: false,
 			type: "checkbox"
@@ -325,7 +325,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email,
-			isadmin: formCtrl.isadmin
+			isAdmin: formCtrl.isAdmin
 		}).then(
 			function done(response) {
 				if (response.data.success) {
