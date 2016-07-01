@@ -315,7 +315,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	formCtrl.invite = function(streamId, userLogin, $index) {
 		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
-		$http.get("api/user/info/" + userLogin).then(
+		$http.get("api/user/login/" + userLogin).then(
 			function done(response) {
 				alerts.remove("invite", "persistent");
 				if (response.data.success) {

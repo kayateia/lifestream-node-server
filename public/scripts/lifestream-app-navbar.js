@@ -1,10 +1,10 @@
 lsApp.controller("LifeStreamNavbarController", [ "$scope", "lsSession", "$window", function($scope, session, $window) {
 	var navbar = this;
-	navbar.loginLabel = serverData.userLogin ? "Logout " + serverData.userLogin : "Login";
+	navbar.loginLabel = serverData.userid ? "Logout " + serverData.userLogin : "Login";
 	navbar.page = ""; // name of the current page
 
-	if (serverData.userLogin) {
-		session.queryUserInfo(serverData.userLogin);
+	if (serverData.userid) {
+		session.queryUserInfo(serverData.userid);
 	}
 
 	navbar.toggleLogin = function() {

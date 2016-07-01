@@ -101,8 +101,8 @@ router.post("/register-device", function(req, res, next) {
 	});
 });
 
-// Retrieve information about a user.
-router.get("/info/:login", function(req, res, next) {
+// Retrieve information about a user by user login.
+router.get("/login/:login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
 			return res.json(err);
@@ -115,7 +115,7 @@ router.get("/info/:login", function(req, res, next) {
 
 			res.json(models.userInfo({
 				id: row.id,
-				login: req.params.login,
+				login: row.login,
 				name: row.name,
 				email: row.email,
 				isadmin: row.isadmin
@@ -124,8 +124,31 @@ router.get("/info/:login", function(req, res, next) {
 	});
 });
 
-// Add a user
-router.post("/info/:login", function(req, res, next) {
+// Retrieve information about a user by ID.
+router.get("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		dbmod.userGetById(req.params.id, function(err, row) {
+			if (err) {
+				return res.json(err);
+			}
+
+			res.json(models.userInfo({
+				id: row.id,
+				login: row.login,
+				name: row.name,
+				email: row.email,
+				isadmin: row.isadmin
+			}));
+		});
+	});
+});
+
+// Modify a user.
+router.put("/:id", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		if (err) {
 			return res.json(err);
@@ -135,7 +158,63 @@ router.post("/info/:login", function(req, res, next) {
 			return res.json(models.error("Permission denied"));
 		}
 
-		var login = req.params.login;
+		var id = Number(req.params.id);
+		if (Number.isNaN(id) || id < 1)
+			return res.json(models.error("Invalid 'id'"));
+		var name = req.body.name;
+		if (!name)
+			return res.json(models.error("Missing 'name'"));
+		var pwd = req.body.password; // optional; leave password unchanged if blank
+		var pwdhash = pwd ? lscrypto.hash(pwd) : null;
+		var email = req.body.email ? req.body.email : "";
+		var isadmin = req.body.isadmin ? 1 : 0;
+
+		dbmod.userUpdate(id, pwdhash, name, email, isadmin, function(err) {
+			if (err) {
+				return res.json(err);
+			}
+
+			res.json(models.success());
+		});
+	});
+});
+
+router.delete("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (!isAdmin) {
+			return res.json(models.error("Permission denied"));
+		}
+
+		var id = Number(req.params.id);
+		if (Number.isNaN(id) || id < 1)
+			return res.json(models.error("Invalid 'id'"));
+
+		dbmod.userDelete(id, function(err) {
+			if (err) {
+				return res.json(err);
+			}
+
+			res.json(models.success());
+		});
+	});
+});
+
+// Add a user
+router.post("/", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		if (err) {
+			return res.json(err);
+		}
+
+		if (!isAdmin) {
+			return res.json(models.error("Permission denied"));
+		}
+
+		var login = req.body.login;
 		if (!login)
 			return res.json(models.error("Missing 'login'"));
 		var name = req.body.name;
@@ -156,62 +235,6 @@ router.post("/info/:login", function(req, res, next) {
 			}
 
 			res.json(models.insertSuccess(id));
-		});
-	});
-});
-
-// Modify a user.
-router.put("/info/:login", function(req, res, next) {
-	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
-		if (err) {
-			return res.json(err);
-		}
-
-		if (!isAdmin) {
-			return res.json(models.error("Permission denied"));
-		}
-
-		var login = req.params.login;
-		if (!login)
-			return res.json(models.error("Missing 'login'"));
-		var name = req.body.name;
-		if (!name)
-			return res.json(models.error("Missing 'name'"));
-		var pwd = req.body.password; // optional; leave password unchanged if blank
-		var pwdhash = pwd ? lscrypto.hash(pwd) : null;
-		var email = req.body.email ? req.body.email : "";
-		var isadmin = req.body.isadmin ? 1 : 0;
-
-		dbmod.userUpdate(login, pwdhash, name, email, isadmin, function(err) {
-			if (err) {
-				return res.json(err);
-			}
-
-			res.json(models.success());
-		});
-	});
-});
-
-router.delete("/info/:login", function(req, res, next) {
-	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
-		if (err) {
-			return res.json(err);
-		}
-
-		if (!isAdmin) {
-			return res.json(models.error("Permission denied"));
-		}
-
-		var login = req.params.login;
-		if (!login)
-			return res.json(models.error("Missing 'login'"));
-
-		dbmod.userDelete(login, function(err) {
-			if (err) {
-				return res.json(err);
-			}
-
-			res.json(models.success());
 		});
 	});
 });

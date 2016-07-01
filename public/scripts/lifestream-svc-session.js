@@ -5,7 +5,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 		// Keep track of information about the logged-in user
 		session.user = {};
 
-		session.login = function(username, password, fromUrl) {
+		session.login = function(login, password, fromUrl) {
 			// If the user arrived at the login page via an expired session
 			// when trying to access another page, the login page needs to be
 			// aware of the URL the user was trying to reach.
@@ -19,7 +19,7 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 			// reaching the login page.
 			var fromUrlStr = fromUrl ? "&fromUrl=" + encodeURIComponent(fromUrl) : "";
 
-			$http.post("api/user/login/" + username, {
+			$http.post("api/user/login/" + login, {
 				password: password
 			}).then(
 				function done(response) {
@@ -44,8 +44,8 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 			$window.location.replace("login?reason=logout");
 		};
 
-		session.queryUserInfo = function(username, callback) {
-			$http.get("api/user/info/" + username)
+		session.queryUserInfo = function(userid, callback) {
+			$http.get("api/user/" + userid)
 				.then(
 					function done(response) {
 						if (response.data.success) {

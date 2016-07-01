@@ -122,9 +122,10 @@ function callback(error, response, body) {
 function createUser(login, password, name, email, isAdmin) {
 	var req = {
 		method: "POST",
-		url: baseUrl + "/api/user/info/" + login,
+		url: baseUrl + "/api/user",
 		headers: auth.admin,
 		form: {
+			login: login,
 			password: password,
 			name: name,
 			email: email,

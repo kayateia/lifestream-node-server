@@ -16,6 +16,7 @@ router.get("/", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
 			isAdmin: isAdmin ? true: false,
+			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,
 			title: "LifeStream"
 		}
@@ -26,6 +27,7 @@ router.get("/gallery", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
 			isAdmin : isAdmin ? true: false,
+			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,
 			title: "LifeStream - Gallery"
 		}
@@ -48,6 +50,7 @@ router.get("/login", function(req, res, next) {
 			fromUrl: req.query.fromUrl,
 			isAdmin: isAdmin ? true : false,
 			message: null,
+			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,
 			title: "LifeStream - Sign in"
 		};
@@ -98,7 +101,8 @@ router.get("/streams", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
 			isAdmin: isAdmin ? true: false,
-			userLogin: tokenContents ? tokenContents.login: null,
+			userid: tokenContents ? tokenContents.id : null,
+			userLogin: tokenContents ? tokenContents.login : null,
 			title: "LifeStream - Streams"
 		}
 
@@ -114,7 +118,8 @@ router.get("/usermgr", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
 			isAdmin: isAdmin ? true: false,
-			userLogin: tokenContents ? tokenContents.login: null,
+			userid: tokenContents ? tokenContents.id : null,
+			userLogin: tokenContents ? tokenContents.login : null,
 			title: "LifeStream - User manager"
 		}
 

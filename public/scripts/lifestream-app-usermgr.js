@@ -72,7 +72,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 		// If local validation passes, check whether the user already exists
 		// on the server side.
 		if (login.$viewValue) {
-			$http.get("api/user/info/" + login.$viewValue)
+			$http.get("api/user/login/" + login.$viewValue)
 				.then(
 					function done(response) {
 						if (response.data.success) {
@@ -102,7 +102,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 		// If local validation passes, check whether the user already exists
 		// on the server side.
 		if (login.$viewValue) {
-			$http.get("api/user/info/" + login.$viewValue)
+			$http.get("api/user/login/" + login.$viewValue)
 				.then(
 					function done(response) {
 						if (response.data.success) {
@@ -226,7 +226,8 @@ lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($
 	];
 
 	formCtrl.submit = function() {
-		$http.post("api/user/info/" + formCtrl.login, {
+		$http.post("api/user", {
+			login: formCtrl.login,
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email,
@@ -264,6 +265,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 			formCtrl.name = data.name;
 			formCtrl.email = data.email;
 			formCtrl.isadmin = data.isadmin ? true : false;
+			formCtrl.userid = data.id;
 		});
 	};
 
@@ -311,11 +313,15 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 			label: "Is admin?",
 			required: false,
 			type: "checkbox"
+		},
+		{
+			id: "userid",
+			type: "hidden"
 		}
 	];
 
 	formCtrl.submit = function() {
-		$http.put("api/user/info/" + formCtrl.login, {
+		$http.put("api/user/" + formCtrl.userid, {
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email,
@@ -367,17 +373,30 @@ lsApp.controller("UserDelController", [ "$scope", "lsAlerts", "$http", function(
 	];
 
 	formCtrl.submit = function() {
-		$http.delete("api/user/info/" + formCtrl.login, {}).then(
+		$http.get("api/user/login/" + formCtrl.login).then(
 			function done(response) {
 				if (response.data.success) {
-					alerts.add("success", "User " + formCtrl.login + " successfully deleted", "submitFunc", "persistent");
+					alerts.remove("submitFunc", "persistent");
+					$http.delete("api/user/" + response.data.id).then(
+						function done(response) {
+							if (response.data.success) {
+								alerts.add("success", "User " + formCtrl.login + " successfully deleted", "submitFunc", "persistent");
+							}
+							else {
+								alerts.add("danger", "User " + formCtrl.login + " could not be deleted: " + response.data.error, "submitFunc", "persistent");
+							}
+						},
+						function fail(response) {
+							alerts.add("danger", "Server error deleting user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
+						}
+					);
 				}
 				else {
 					alerts.add("danger", "User " + formCtrl.login + " could not be deleted: " + response.data.error, "submitFunc", "persistent");
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error deleting user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
+				alerts.add("danger", "Server error getting user ID: " + response.status + " " + response.statusText, "submitFunc", "persistent");
 			}
 		);
 	};

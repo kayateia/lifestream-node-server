@@ -64,6 +64,7 @@ sal.init(mysql);
 		res.status(err.status || 500);
 		res.render('error', {
 			isAdmin: false,
+			userid: null,
 			userLogin: null,
 			message: err.message,
 			error: err,

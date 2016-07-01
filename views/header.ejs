@@ -32,6 +32,11 @@
 		This site requires JavaScript to work properly. Without JavaScript enabled, you will not be able to access any features of this site. Follow this link for instructions on <a href="http://www.enable-javascript.com/" target="_blank">how to enable JavaScript in your web browser</a>.
 	</div>
 </noscript>
+<script>
+	// Initialise global variable that will be used to hold data paased to
+	// the template from the server
+	var serverData = {};
+</script>
 <div id="alerts-containers-container" class="col-lg-offset-8 col-md-offset-7 col-sm-offset-6 col-xs-offset-5 col-lg-4 col-md-5 col-sm-6 col-xs-7">
 	<ls-alerts id="persistent-alerts" collapsible="bottom" dodge  collapse-on-timeout="4000" container="persistent"></ls-alerts>
 	<ls-alerts id="global-alerts" dodge dismiss-on-timeout="4000"></ls-alerts>
