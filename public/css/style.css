@@ -159,3 +159,33 @@ table.streams-editor tr.ng-leave.ng-leave-active,
 .subscriber-list li.ng-leave.ng-leave-active {
 	opacity: 0;
 }
+
+.upload-form .file-drop {
+	margin-left: 20px;
+}
+.upload-form .file-drop .drop-target {
+	background-color: #cccccc;
+	border: 4px dashed #666666;
+	color: #666666;
+	display: table-cell;
+	font-size: 2em;
+	font-weight: bold;
+	text-align: center;
+	vertical-align: middle;
+	transition: all 0.25s;
+	width: 500px;
+	height: 128px;
+}
+.upload-form .file-drop .drop-target.dragover {
+	background-color: #ccffcc;
+}
+.upload-form .file-select {
+	margin-left: 20px;
+}
+.upload-form .file-drop + p,
+.upload-form .file-select + p {
+	margin-top: 20px;
+}
+.upload-form .checkbox {
+	margin-left: 20px;
+}

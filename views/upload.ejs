@@ -1,0 +1,40 @@
+<% include header %>
+
+<script src="scripts/lifestream-app-upload.js"></script>
+
+<form ng-controller="LifeStreamUploadController as formCtrl" ng-submit="formCtrl.upload()" class="upload-form">
+	<div class="row">
+		<div class="col-md-6 col-sm-12">
+			<h2>Image</h2>
+			<p>Select a file to upload:</p>
+			<div class="file-select" ng-repeat="input in formCtrl.fileInputs track by $index">
+				<input type="file" ngf-select="formCtrl.fileSelected($file)" ng-if="input === null" />
+				<span ng-if="input !== null">
+					{{input.name}} ({{input.size | bytes}})
+					<button class="btn btn-link" ng-click="formCtrl.removeFile($index, $event)">
+						<span class="glyphicon glyphicon-remove"></span>
+					</button>
+				</span>
+			</div>
+			<p>Or drag and drop a file:</p>
+			<div class="file-drop">
+				<div class="drop-target" ngf-drag-over-class="'dragover'" ngf-drop="formCtrl.filesDropped($files)" ngf-multiple="true">Drop file here</div>
+			</div>
+			<p>Maximum total size: {{formCtrl.maxTotalSize | bytes}}</p>
+			<button class="btn btn-default" type="submit" ng-disabled="formCtrl.isUploading">Upload</button>
+			<span ng-show="formCtrl.isUploading">Upload in progress... {{formCtrl.progress}}</span>
+			<uib-alert ng-repeat="alert in formCtrl.alerts" type="{{alert.type}}" close="formCtrl.removeAlert($index)">{{alert.msg}}</uib-alert>
+		</div>
+		<div class="col-md-6 col-sm-12">
+			<h2>Streams</h2>
+			<p>Select at least one stream that will contain this image:</p>
+			<div ng-repeat="stream in formCtrl.streams" class="checkbox">
+				<label>
+					<input type="checkbox" ng-model="stream.checked" />{{stream.name}}
+				</label>
+			</div>
+		</div>
+	</div>
+</form>
+
+<% include footer %>

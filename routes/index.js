@@ -114,6 +114,23 @@ router.get("/streams", function(req, res, next) {
 		res.render("streams", templateVars);
 	});
 });
+router.get("/upload", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		var templateVars = {
+			isAdmin: isAdmin ? true: false,
+			userid: tokenContents ? tokenContents.id : null,
+			userLogin: tokenContents ? tokenContents.login : null,
+			title: "LifeStream - Upload"
+		}
+
+		// Not logged in; redirect to login page
+		if (!tokenContents) {
+			return res.redirect(302, "login?reason=session_timeout&fromUrl=" + encodeURIComponent(req.originalUrl));
+		}
+
+		res.render("upload", templateVars);
+	});
+});
 router.get("/usermgr", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
