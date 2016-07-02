@@ -100,6 +100,7 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 							id: image.id,
 							thumbUrl: "api/image/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
 							url: "api/image/" + image.id,
+							userid: image.userid,
 							userLogin: image.userLogin,
 							userName: image.userName,
 							uploadTime: image.uploadTime,
