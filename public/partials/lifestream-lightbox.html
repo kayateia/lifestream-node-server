@@ -23,12 +23,12 @@
 						Streams containing this image «
 					</a>
 					<ul>
-						<li ng-repeat="stream in Lightbox.images[Lightbox.index].streams">{{stream.name}}</li>
+						<li ng-repeat="stream in Lightbox.images[Lightbox.index].streams"><a href="gallery#/stream/{{stream.id}}">{{stream.name}}</a></li>
 					</ul>
 				</div>
 			</div>
 			<div class="comment">{{Lightbox.images[Lightbox.index].comment}}</div>
-			<div class="author">by {{Lightbox.images[Lightbox.index].userName}}</div>
+			<div class="author">by <a href="gallery#/user/{{Lightbox.images[Lightbox.index].userid}}">{{Lightbox.images[Lightbox.index].userName}}</a></div>
 		</div>
 		<div class="lightbox-edit" ng-if="lightboxCtrl.isMyImage" ng-hide="lightboxCtrl.commentFormShown || lightboxCtrl.streamsFormShown">
 			Edit:
