@@ -11,8 +11,10 @@ button.btn-link {
 	text-decoration: none;
 }
 a:hover,
+a:focus,
 a:active,
 button.btn-link:hover,
+button.btn-link:focus,
 button.btn-link:active {
 	color: #7FDAFF;
 	text-decoration: underline;
@@ -46,6 +48,13 @@ button.btn-link:active {
 }
 .navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
 	background-color: rgba(15, 15, 15, 0.1);
+}
+
+.breadcrumb {
+	background-image: linear-gradient(to right, #333333, #222222 25%);
+}
+.breadcrumb > li + li:before {
+	content: '»';
 }
 
 /* uib-popover should use dark colour scheme like rest of site */

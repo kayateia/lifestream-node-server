@@ -213,11 +213,20 @@ angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$s
 					streamIds.push(subscription.streamid);
 				});
 
-				// Display all stream IDs belonging to user in a single
-				// gallery section
+				// Display aggregate gallery section of recent additions to any
+				// stream to which the user is subscribed
 				galleryPage.sections.push({
 					title: "Recent additions to your subscriptions",
 					streamIds: streamIds
+				});
+
+				// Display a row for each gallery to which the user is
+				// subscribed
+				subscriptions.forEach(function(subscription) {
+					galleryPage.sections.push({
+						title: subscription.streamName,
+						streamIds: [ subscription.streamid ]
+					});
 				});
 			});
 		}
@@ -246,6 +255,14 @@ angular.module("LifeStreamWebApp").controller("UserGalleryPageController", [ "$s
 				streamIds: streamIds
 			});
 
+			// Display an additional gallery section for each stream belonging
+			// to the user
+			streams.forEach(function(stream) {
+				galleryPage.sections.push({
+					title: stream.name,
+					streamIds: [ stream.id ]
+				});
+			});
 		});
 	});
 }]);
