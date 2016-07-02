@@ -20,6 +20,11 @@ router.get("/user/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
+		var userid = Number(req.params.id);
+		if (Number.isNaN(userid) || userid < 1) {
+			return res.json(models.error("Invalid 'userid'"));
+		}
+
 		dbmod.subscriptionListByUserId(Number(req.params.id), function(err, subscriptions) {
 			if (err) {
 				return res.json(err);
@@ -38,11 +43,8 @@ router.get("/:id/state", function(req, res, next) {
 			return res.json(err);
 		}
 
-		// Validate user ID
-		if (req.query.userid !== undefined) {
-			req.query.userid = Number(req.query.userid);
-		}
-		if (!req.query.userid || Number.isNaN(req.query.userid)) {
+		var userid = Number(req.query.userid);
+		if (Number.isNaN(userid) || userid < 1) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
@@ -50,13 +52,13 @@ router.get("/:id/state", function(req, res, next) {
 		var ids = [];
 		req.params.id.split(",").forEach(function(value, index, arr) {
 			value = Number(value);
-			if (!Number.isNaN(value)) {
+			if (!Number.isNaN(value) && value > 0) {
 				ids.push(value);
 			}
 		});
 		var idsStr = ids.join(",");
 
-		dbmod.subscriptionState(idsStr, req.query.userid, function(err, states) {
+		dbmod.subscriptionState(idsStr, userid, function(err, states) {
 			if (err) {
 				return res.json(err);
 			}
@@ -108,7 +110,12 @@ router.get("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.subscriptionListByStreamId(Number(req.params.id), function(err, subscriptions) {
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		dbmod.subscriptionListByStreamId(streamid, function(err, subscriptions) {
 			if (err) {
 				return res.json(err);
 			}
@@ -124,7 +131,13 @@ router.post("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.body.userid === undefined || Number(req.body.userid) < 1) {
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		var userid = Number(req.body.userid);
+		if (Number.isNaN(userid) || userid < 1) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
@@ -133,11 +146,11 @@ router.post("/:id", function(req, res, next) {
 			return res.json(models.error("Permission denied"));
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
-			dbmod.subscriptionCreate(Number(req.params.id), Number(req.body.userid), function(err, subscriptions) {
+			dbmod.subscriptionCreate(streamid, userid, function(err, subscriptions) {
 				if (err) {
 					return res.json(err);
 				}
@@ -154,11 +167,17 @@ router.delete("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.query.userid === undefined || Number(req.query.userid) < 1) {
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		var userid = Number(req.query.userid);
+		if (Number.isNaN(userid) || userid < 1) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
@@ -166,12 +185,12 @@ router.delete("/:id", function(req, res, next) {
 			// Any user may unsubscribe themselves from a stream.
 			// Only the owner of a stream may unsubscribe other users.
 			if (stream.userid != tokenContents.id &&
-				req.query.userid != tokenContents.id &&
+				userid != tokenContents.id &&
 				!isAdmin) {
 				return res.json(models.error("Permission denied"));
 			}
 			else {
-				dbmod.subscriptionDelete(Number(req.params.id), Number(req.query.userid), function(err) {
+				dbmod.subscriptionDelete(streamid, userid, function(err) {
 					if (err) {
 						return res.json(err);
 					}

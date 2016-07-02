@@ -48,14 +48,14 @@ router.post("/", function(req, res, next) {
 				return res.json(err);
 			}
 
-			var streamid = req.body.streamid;
-			if (!streamid)
-				return res.json(models.error("Missing 'streamid'"));
+			// Validate stream ID
+			var streamid = Number(req.body.streamid);
+			if (Number.isNaN(streamid) || streamid < 1) {
+				return res.json(models.error("Invalid 'streamid'"));
+			}
 
-			// This one is optional.
-			var comment = req.body.comment;
-			if (!comment)
-				comment = "";
+			// Comment is optional is optional.
+			var comment = req.body.comment ? req.body.comment : "";
 
 			if (!req.files || req.files.length != 1)
 				return res.json(models.error("Must be exactly one file present"));
@@ -73,7 +73,7 @@ router.post("/", function(req, res, next) {
 
 				// If we got here, then the file already exists - just bail.
 				console.log("   File", fullFilename, " already exists - bailing");
-				return res.json(models.success());
+				return res.json(models.error("File already exists"));
 			} catch (e) {
 			}
 
@@ -114,12 +114,18 @@ router.get("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.imageCheckViewPermission(req.params.id, tokenContents.id, function(err) {
+		// Validate image ID
+		var imageid = Number(req.params.id);
+		if (Number.isNaN(imageid) || imageid < 1) {
+			return res.json(models.error("Invalid 'imageid'"));
+		}
+
+		dbmod.imageCheckViewPermission(imageid, tokenContents.id, function(err) {
 			if (err) {
 				return res.json(err);
 			}
 
-			dbmod.imageGet(req.params.id, function(err, img) {
+			dbmod.imageGet(imageid, function(err, img) {
 				if (err) {
 					return res.json(err);
 				}
@@ -210,12 +216,21 @@ router.post("/:id/comment", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.imageCheckEditPermission(req.params.id, tokenContents.id, function(err) {
+		// Validate image ID
+		var imageid = Number(req.params.id);
+		if (Number.isNaN(imageid) || imageid < 1) {
+			return res.json(models.error("Invalid 'imageid'"));
+		}
+
+		// Comment is optional
+		var comment = req.body.comment ? req.body.comment : "";
+
+		dbmod.imageCheckEditPermission(imageid, tokenContents.id, function(err) {
 			if (err) {
 				return res.json(err);
 			}
 
-			dbmod.imageComment(req.params.id, req.body.comment, function(err) {
+			dbmod.imageComment(imageid, comment, function(err) {
 				if (err) {
 					return res.json(err);
 				}
@@ -232,7 +247,13 @@ router.get("/:id/streams", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.imageGetStreams(req.params.id, function(err, rows) {
+		// Validate image ID
+		var imageid = Number(req.params.id);
+		if (Number.isNaN(imageid) || imageid < 1) {
+			return res.json(models.error("Invalid 'imageid'"));
+		}
+
+		dbmod.imageGetStreams(imageid, function(err, rows) {
 			if (err) {
 				return res.json(err);
 			}
@@ -248,17 +269,25 @@ router.post("/:id/streams", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.body.streamid === undefined || Number(req.body.streamid) < 1) {
+		// Validate image ID
+		var imageid = Number(req.params.id);
+		if (Number.isNaN(imageid) || imageid < 1) {
+			return res.json(models.error("Invalid 'imageid'"));
+		}
+
+		// Validate stream ID
+		var streamid = Number(req.body.streamid);
+		if (Number.isNaN(streamid) || streamid < 1) {
 			return res.json(models.error("Invalid 'streamid'"));
 		}
 
-		dbmod.imageCheckEditPermission(req.params.id, tokenContents.id, function(err) {
+		dbmod.imageCheckEditPermission(imageid, tokenContents.id, function(err) {
 			if (err) {
 				return res.json(err);
 			}
 
 			console.log(req.body.streamid);
-			dbmod.imageAddStream(req.params.id, req.body.streamid, function(err) {
+			dbmod.imageAddStream(imageid, streamid, function(err) {
 				if (err) {
 					return res.json(err);
 				}
@@ -275,16 +304,24 @@ router.delete("/:id/streams", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.query.streamid === undefined || Number(req.query.streamid) < 1) {
+		// Validate image ID
+		var imageid = Number(req.params.id);
+		if (Number.isNaN(imageid) || imageid < 1) {
+			return res.json(models.error("Invalid 'imageid'"));
+		}
+
+		// Validate stream ID
+		var streamid = Number(req.query.streamid);
+		if (Number.isNaN(streamid) || streamid < 1) {
 			return res.json(models.error("Invalid 'streamid'"));
 		}
 
-		dbmod.imageCheckEditPermission(req.params.id, tokenContents.id, function(err) {
+		dbmod.imageCheckEditPermission(imageid, tokenContents.id, function(err) {
 			if (err) {
 				return res.json(err);
 			}
 
-			dbmod.imageRemoveStream(req.params.id, req.query.streamid, function(err) {
+			dbmod.imageRemoveStream(imageid, streamid, function(err) {
 				if (err) {
 					return res.json(err);
 				}

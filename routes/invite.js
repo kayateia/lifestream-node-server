@@ -20,7 +20,13 @@ router.get("/:id/request", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.inviteRequestListByStreamId(Number(req.params.id), function(err, requests) {
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		dbmod.inviteRequestListByStreamId(streamid, function(err, requests) {
 			if (err) {
 				return res.json(err);
 			}
@@ -36,7 +42,13 @@ router.get("/user/:id/request", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.inviteRequestListByUserId(Number(req.params.id), function(err, requests) {
+		// Validate user ID
+		var userid = Number(req.params.id);
+		if (Number.isNaN(userid) || userid < 1) {
+			return res.json(models.error("Invalid 'userid'"));
+		}
+
+		dbmod.inviteRequestListByUserId(userid, function(err, requests) {
 			if (err) {
 				return res.json(err);
 			}
@@ -52,7 +64,13 @@ router.get("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.inviteListByStreamId(Number(req.params.id), function(err, invites) {
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		dbmod.inviteListByStreamId(streamid, function(err, invites) {
 			if (err) {
 				return res.json(err);
 			}
@@ -68,7 +86,13 @@ router.get("/user/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.inviteListByUserId(Number(req.params.id), function(err, invites) {
+		// Validate user ID
+		var userid = Number(req.params.id);
+		if (Number.isNaN(userid) || userid < 1) {
+			return res.json(models.error("Invalid 'userid'"));
+		}
+
+		dbmod.inviteListByUserId(userid, function(err, invites) {
 			if (err) {
 				return res.json(err);
 			}
@@ -84,11 +108,19 @@ router.post("/:id/request", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.body.userid === undefined || Number(req.body.userid) < 1) {
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		// Validate user ID
+		var userid = Number(req.body.userid);
+		if (Number.isNaN(userid) || userid < 1) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
@@ -98,7 +130,7 @@ router.post("/:id/request", function(req, res, next) {
 				return res.json(models.error("Permission denied"));
 			}
 			else {
-				dbmod.inviteRequestCreate(Number(req.params.id), Number(req.body.userid), function(err) {
+				dbmod.inviteRequestCreate(streamid, userid, function(err) {
 					if (err) {
 						return res.json(err);
 					}
@@ -116,11 +148,19 @@ router.post("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.body.userid === undefined || Number(req.body.userid) < 1) {
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		// Validate user ID
+		var userid = Number(req.body.userid);
+		if (Number.isNaN(userid) || userid < 1) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
@@ -130,7 +170,7 @@ router.post("/:id", function(req, res, next) {
 				return res.json(models.error("Permission denied"));
 			}
 			else {
-				dbmod.inviteCreate(Number(req.params.id), Number(req.body.userid), function(err) {
+				dbmod.inviteCreate(streamid, userid, function(err) {
 					if (err) {
 						return res.json(err);
 					}
@@ -148,26 +188,30 @@ router.delete("/:id/request", function(req, res, next) {
 			return res.json(err);
 		}
 
-		// Validate user ID
-		if (req.query.userid !== undefined) {
-			req.query.userid = Number(req.query.userid);
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
 		}
-		if (!req.query.userid || Number.isNaN(req.query.userid)) {
+
+		// Validate user ID
+		var userid = Number(req.query.userid);
+		if (Number.isNaN(userid) || userid < 1) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
 
 			// Only the owner of a stream can delete others' invite requests.
 			// Requestors can delete their own invite requests.
-			if (req.query.userid != tokenContents.id && stream.userid != tokenContents.id) {
+			if (stream.userid != tokenContents.id && userid != tokenContents.id) {
 				return res.json(models.error("Permission denied"));
 			}
 			else {
-				dbmod.inviteRequestDelete(Number(req.params.id), Number(req.query.userid), function(err) {
+				dbmod.inviteRequestDelete(streamid, userid, function(err) {
 					if (err) {
 						return res.json(err);
 					}
@@ -185,25 +229,30 @@ router.delete("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.query.userid !== undefined) {
-			req.query.userid = Number(req.query.userid);
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
 		}
-		if (!req.query.userid || Number.isNaN(req.query.userid)) {
+
+		// Validate user ID
+		var userid = Number(req.query.userid);
+		if (Number.isNaN(userid) || userid < 1) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
 
 			// Only the owner of a stream may revoke invites to others,
 			// but the recipient of an invite can revoke their own invite
-			if (stream.userid != tokenContents.id && req.query.userid != tokenContents.id) {
+			if (stream.userid != tokenContents.id && userid != tokenContents.id) {
 				return res.json(models.error("Permission denied"));
 			}
 			else {
-				dbmod.inviteDelete(Number(req.params.id), req.query.userid, function(err) {
+				dbmod.inviteDelete(streamid, userid, function(err) {
 					if (err) {
 						return res.json(err);
 					}

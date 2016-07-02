@@ -91,7 +91,7 @@ router.get("/:id/contents", function(req, res, next) {
 		var ids = [];
 		req.params.id.split(",").forEach(function(value) {
 			value = Number(value);
-			if (!Number.isNaN(value)) {
+			if (!Number.isNaN(value) && value > 0) {
 				ids.push(value);
 			}
 		});
@@ -118,7 +118,13 @@ router.get("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
@@ -134,15 +140,17 @@ router.post("/", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (req.body.name == "") {
+		// Validate stream name
+		if (!req.body.name) {
 			return res.json(models.error("Stream name cannot be blank"));
 		}
 
+		// Non-admin users can only create streams belonging to themselves
 		if (req.body.userid != tokenContents.id && !isAdmin) {
 			return res.json(models.error("Permission denied"));
 		}
 
-		dbmod.streamCreate(req.body.userid, req.body.name, Number(req.body.permission), function(err, id) {
+		dbmod.streamCreate(Number(req.body.userid), req.body.name, Number(req.body.permission), function(err, id) {
 			if (err) {
 				return res.json(err);
 			}
@@ -158,12 +166,19 @@ router.put("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'streamid'"));
+		}
+
+		// Check whether any changes were requested
 		if (!req.body.name && !Number(req.body.permission)) {
 			// Nothing to do
 			res.json(models.error("No changes requested"));
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
@@ -189,7 +204,13 @@ router.delete("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		dbmod.streamInfo(req.params.id, function(err, stream) {
+		// Validate stream ID
+		var streamid = Number(req.params.id);
+		if (Number.isNaN(streamid) || streamid < 1) {
+			return res.json(models.error("Invalid 'id'"));
+		}
+
+		dbmod.streamInfo(streamid, function(err, stream) {
 			if (err) {
 				return res.json(err);
 			}
@@ -198,7 +219,7 @@ router.delete("/:id", function(req, res, next) {
 				return res.json(models.error("Permission denied"));
 			}
 
-			dbmod.streamDelete(req.params.id, function(err) {
+			dbmod.streamDelete(streamid, function(err) {
 				if (err) {
 					return res.json(err);
 				}
