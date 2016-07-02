@@ -1,7 +1,7 @@
 // Define the gallery controller
 angular.module("LifeStreamGallery", [ "LifeStreamAlerts", "LifeStreamLightbox", "LifeStreamKeepAlive" ]);
 
-angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "$interval", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", function($scope, $element, $http, $interval, alerts, lsLightbox, keepalive, $timeout) {
+angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "$interval", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $http, $interval, alerts, lsLightbox, keepalive, $timeout, $window) {
 	var gallery = this;
 
 	// streamid from directive. May be a comma-separated list. Split the list
@@ -220,6 +220,9 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 
 		gallery.expanded = false;
 		gallery.adjustImageRows();
+
+		// Scroll back to the top of this gallery on collapse
+		$(window).scrollTop(gallery.element.offset().top);
 	};
 
 	// gallery.expandGrid()
@@ -274,6 +277,20 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// Begin keepalive timers
 	keepalive.begin();
 
+	// Calculate appropriate placement for the affixed header of an expanded
+	// gallery
+	gallery.adjustAffixPosition = function() {
+		// Obtain offset of gallery relative to document
+		gallery.elementOffset = gallery.element.offset();
+
+		// Activate affixing of header
+		gallery.element.children("h2.expanded").affix({
+			offset: {
+				top: gallery.elementOffset.top
+			}
+		});
+	};
+
 	// After page is fully rendered and there is valid position and width for
 	// the container element...
 	$timeout(function() {
@@ -285,20 +302,14 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 				gallery.expandGrid();
 			}
 		});
+
+		gallery.adjustAffixPosition();
 	}, 0);
 
 	// Recalculate where the gallery header should be affixed at regular
 	// intervals; this is the best we can do without position:sticky.
 	$interval(function() {
-		// Obtain offset of gallery relative to document
-		gallery.elementOffset = gallery.element.offset();
-
-		// Activate affixing of header
-		gallery.element.children("h2.expanded").affix({
-			offset: {
-				top: gallery.elementOffset.top
-			}
-		});
+		gallery.adjustAffixPosition();
 	}, 10000);
 
 
