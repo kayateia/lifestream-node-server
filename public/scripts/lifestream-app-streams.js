@@ -12,6 +12,7 @@ angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routePro
 			controller: "SubscribersController",
 			templateUrl: "./partials/stream-subscribers.html"
 		})
+		.otherwise("/mine");
 }]);
 
 angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsAlerts", "lsKeepAlive", "$timeout", function($scope, $location, $http, alerts, keepalive, $timeout) {

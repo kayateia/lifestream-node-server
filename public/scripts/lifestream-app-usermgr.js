@@ -415,5 +415,6 @@ lsApp.config([ "$routeProvider", function($routeProvider) {
 		.when("/user/del", {
 			controller: "UserDelController",
 			templateUrl: "./partials/horizontal-form.html"
-		});
+		})
+		.otherwise("/user/add");
 }]);
