@@ -1,4 +1,4 @@
-lsApp.controller("LoginController", [ "lsSession", function(session) {
+angular.module("LifeStreamWebApp").controller("LoginController", [ "lsSession", function(session) {
 	var loginController = this;
 
 	loginController.login = function() {

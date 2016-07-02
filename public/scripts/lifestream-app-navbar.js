@@ -1,4 +1,4 @@
-lsApp.controller("LifeStreamNavbarController", [ "$scope", "lsSession", "$window", function($scope, session, $window) {
+angular.module("LifeStreamWebApp").controller("LifeStreamNavbarController", [ "$scope", "lsSession", "$window", function($scope, session, $window) {
 	var navbar = this;
 	navbar.loginLabel = serverData.userid ? "Logout " + serverData.userLogin : "Login";
 	navbar.page = ""; // name of the current page

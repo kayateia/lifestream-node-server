@@ -1,4 +1,4 @@
-lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "$http", "lsKeepAlive", function($scope, alerts, $location, $http, keepalive) {
+angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "$http", "lsKeepAlive", function($scope, alerts, $location, $http, keepalive) {
 	var usermgr = this;
 
 	usermgr.operations = [
@@ -168,7 +168,7 @@ lsApp.controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "
 	});
 }]);
 
-lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
+angular.module("LifeStreamWebApp").controller("UserAddController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -248,7 +248,7 @@ lsApp.controller("UserAddController", ["$scope", "lsAlerts", "$http", function($
 	};
 }]);
 
-lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
+angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -342,7 +342,7 @@ lsApp.controller("UserEditController", ["$scope", "lsAlerts", "$http", function(
 	};
 }]);
 
-lsApp.controller("UserDelController", [ "$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
+angular.module("LifeStreamWebApp").controller("UserDelController", [ "$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -402,7 +402,7 @@ lsApp.controller("UserDelController", [ "$scope", "lsAlerts", "$http", function(
 	};
 }]);
 
-lsApp.config([ "$routeProvider", function($routeProvider) {
+angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routeProvider) {
 	$routeProvider
 		.when("/user/add", {
 			controller: "UserAddController",
