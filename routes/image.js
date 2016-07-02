@@ -48,9 +48,15 @@ router.post("/", function(req, res, next) {
 				return res.json(err);
 			}
 
-			// Validate stream ID
-			var streamid = Number(req.body.streamid);
-			if (Number.isNaN(streamid) || streamid < 1) {
+			// Validate stream ID(s)
+			var streamIds = [];
+			req.body.streamid.split(",").forEach(function(value) {
+				var id = Number(value);
+				if (!Number.isNaN(id) && id > 0) {
+					streamIds.push(id);
+				}
+			});
+			if (!streamIds.length) {
 				return res.json(models.error("Invalid 'streamid'"));
 			}
 
@@ -92,13 +98,13 @@ router.post("/", function(req, res, next) {
 
 			fs.writeFileSync(fullFilename, req.files[0].buffer);
 
-			dbmod.imageAdd(tokenContents.id, [streamid], req.files[0].originalname, comment,
+			dbmod.imageAdd(tokenContents.id, streamIds, req.files[0].originalname, comment,
 				function(err, id) {
 					if (err)
 						res.json(err);
 					else {
 						// Notify the appropriate push services of new messages available.
-						device.notify([streamid], function(err) {
+						device.notify(streamIds, function(err) {
 							res.json(models.insertSuccess(id));
 						});
 					}
