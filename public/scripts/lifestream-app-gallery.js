@@ -32,9 +32,12 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	//
 	// Each element in the array is an object of the form:
 	//   {
+	//     id: image ID
 	//     thumbUrl: URL of a thumbnail image
 	//     url: URL to a corresponding full size image
-	//     uploader: the username of the image's uploader
+	//     userid: user ID of the uploader
+	//     userLogin: login of the uploader
+	//     userName: display name of the uploader
 	//     uploadTime: the time the image was uploaded (seconds since epoch)
 	//     comment: a string that the uploader may optionally add
 	//   }

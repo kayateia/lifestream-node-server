@@ -88,6 +88,19 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 	// user chooses to edit streams associated with an image
 	lightboxCtrl.userStreams = [];
 
+	// lightboxCtrl.delayedDismiss()
+	//
+	//   When clicking on a link whose ngClick event dismisses the lightbox,
+	//   variables affecting the destination of the link may be unset before the
+	//   browser navigates to the link. This function ensures that the browser
+	//   attempts to navigate to the link before any lightbox variables are
+	//   unset.
+	lightboxCtrl.delayedDismiss = function() {
+		$timeout(function() {
+			$scope.$dismiss();
+		}, 0);
+	};
+
 	lightboxCtrl.hideCommentForm = function() {
 		lightboxCtrl.commentFormShown = false;
 		lightboxCtrl.newComment = "";

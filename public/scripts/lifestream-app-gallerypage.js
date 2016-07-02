@@ -173,6 +173,9 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$scope", "$interval", "lsSession", function($scope, $interval, session) {
 	var galleryPage = $scope.galleryPage;
 
+	// Clear any streams shown by the previous controller
+	galleryPage.sections = [];
+
 	// Initialise page by loading information about the current user's
 	// streams and subscriptions.
 	//
@@ -187,9 +190,6 @@ angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$s
 			// First, load streams owned by the current user
 			galleryPage.loadStreams(session.user.id, function(streams) {
 				var streamIds = [];
-
-				// Clear array of streams to be shown on page
-				galleryPage.sections = [];
 
 				// Produce array of stream IDs belonging to user
 				streams.forEach(function(stream) {
@@ -227,31 +227,34 @@ angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$s
 angular.module("LifeStreamWebApp").controller("UserGalleryPageController", [ "$scope", "$routeParams", function($scope, $routeParams) {
 	var galleryPage = $scope.galleryPage;
 
+	// Clear any streams shown by the previous controller
+	galleryPage.sections = [];
+
 	// Load targetted user's info
 	galleryPage.getGalleryUserInfo($routeParams.userid, function() {
 		galleryPage.loadStreams(galleryPage.targetUser.id, function(streams) {
 			var streamIds = [];
-
-			// Clear array of streams to be shown on page
-			galleryPage.sections = [];
 
 			// Produce array of stream IDs belonging to user
 			streams.forEach(function(stream) {
 				streamIds.push(stream.id);
 			});
 
-			// Display all stream IDs belonging to user in a single
-			// gallery section
+			// Display aggregate gallery section containing all user activity
 			galleryPage.sections.push({
 				title: "Recent additions from " + galleryPage.targetUser.name,
 				streamIds: streamIds
 			});
+
 		});
 	});
 }]);
 
 angular.module("LifeStreamWebApp").controller("StreamGalleryPageController", [ "$scope", "$routeParams", function($scope, $routeParams) {
 	var galleryPage = $scope.galleryPage;
+
+	// Clear any streams shown by the previous controller
+	galleryPage.sections = [];
 
 	// Load targetted stream's info
 	galleryPage.getGalleryStreamInfo($routeParams.streamid, function() {
