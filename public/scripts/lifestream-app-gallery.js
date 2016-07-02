@@ -275,7 +275,13 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// the container element...
 	$timeout(function() {
 		// Load most recent images
-		gallery.loadImages(gallery.numImagesPerRow);
+		gallery.loadImages(gallery.numImagesPerRow, undefined, function() {
+			// If the expanded attribute was set on the directive, expand the
+			// gallery grid by default
+			if ($element[0].attributes.expanded) {
+				gallery.expandGrid();
+			}
+		});
 	}, 0);
 
 	// Recalculate where the gallery header should be affixed at regular
@@ -305,6 +311,7 @@ angular.module("LifeStreamGallery").directive("lsGallery", [ "$timeout", functio
 		controllerAs: "gallery",
 		templateUrl: "partials/lifestream-gallery.html",
 		scope: {
+			expanded: '<',
 			streamid: "@",
 			thumbSize: "@",
 			title: "@"
