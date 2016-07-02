@@ -22,7 +22,7 @@
 			<a href="#" ng-click="formCtrl.toggleUser(user.id, $event)">{{user.name}} ({{user.login}})</a>
 			<ul ng-if="formCtrl.search.userStreams[user.id].length > 0">
 				<li ng-repeat="stream in formCtrl.search.userStreams[user.id]" ng-if="stream.subscription && stream.subscription != 'active'">
-					<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
+					<ls-gallery streamid="{{stream.id}}" thumb-size="96" title="{{stream.name}}"></ls-gallery>
 					<button class="btn btn-link" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream)">subscribe</button>
 					<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream)">request invite</button>
 					<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream)">cancel invite request</button>
@@ -37,7 +37,7 @@
 	Matching streams:
 	<ul>
 		<li ng-repeat="stream in formCtrl.search.streams" ng-if="stream.subscription && stream.subscription != 'active'">
-			<ls-gallery streamid="{{stream.id}}" thumb-size="64" title="{{stream.name}}"></ls-gallery>
+			<ls-gallery streamid="{{stream.id}}" thumb-size="96" title="{{stream.name}}"></ls-gallery>
 			<button class="btn btn-link" ng-if="stream.permission == 1" ng-click="formCtrl.subscribe(stream)">subscribe</button>
 			<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'none'" ng-click="formCtrl.requestInvite(stream)">request invite</button>
 			<button class="btn btn-link" ng-if="stream.permission == 2 && stream.subscription == 'requested'" ng-click="formCtrl.unrequestInvite(stream)">cancel invite request</button>

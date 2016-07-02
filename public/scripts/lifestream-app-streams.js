@@ -192,7 +192,6 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 			function done(response) {
 				alerts.remove("loadInviteRequests", "persistent");
 				if (response.data.success) {
-					console.log(response.data);
 					callback(response.data.requests);
 				}
 				else {

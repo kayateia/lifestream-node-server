@@ -112,6 +112,10 @@ table.streams-editor .pending label {
 	margin-bottom: 0;
 }
 
+.search-result .gallery-section .gallery-tile {
+	font-size: 10px;
+}
+
 .search-result .gallery-section > h2,
 .subscription-list .gallery-section > h2 {
 	font-size: 20px;
