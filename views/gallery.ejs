@@ -1,15 +1,14 @@
 <% include header %>
 
-<script>
-	// Template variables from server
-	var userLogin = '<%= userLogin %>';
-</script>
 <script src="scripts/lifestream-app-gallerypage.js"></script>
 
 <div ng-controller="LifeStreamGalleryPageController as galleryPage">
-	<ls-gallery ng-if="galleryPage.myStreams.length > 0" streamid="{{galleryPage.propertiesToString(galleryPage.myStreams, 'id')}}" thumb-size="192" title="Your uploads"></ls-gallery>
-	<ls-gallery ng-if="galleryPage.subscriptions.length > 0" streamid="{{galleryPage.propertiesToString(galleryPage.subscriptions, 'streamid')}}" thumb-size="192" title="Recent additions to your subscriptions"></ls-gallery>
-	<ls-gallery ng-repeat="subscription in galleryPage.subscriptions" streamid="{{subscription.streamid}}" thumb-size="192" title="{{subscription.streamName}} from {{subscription.userName}}"></ls-gallery>
+	<ol class="breadcrumb">
+		<li class="active"><a href="#/">Main</a></li>
+		<li ng-if="$routeParams.userid || $routeParams.streamid"><a href="#/user/{{galleryPage.targetUser.id}}">{{galleryPage.targetUser.name}}</a></li>
+		<li ng-if="$routeParams.streamid"><a href="#/stream/{{galleryPage.targetStream.id}}">{{galleryPage.targetStream.name}}</a></li>
+	</ol>
+	<div ng-view></div>
 </div>
 
 <% include footer %>
