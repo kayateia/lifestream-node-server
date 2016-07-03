@@ -1,5 +1,28 @@
 # LifeStream REST API
 
+## Table of contents
+
+- [General notes](#general-notes)
+	- [Parameter types](#parameter-types)
+	- [Stream permissions](#stream-permissions)
+	- [Failure conditions](#failure-conditions)
+- [Image](#image)
+	- [POST api/image](#post-apiimage)
+	- [GET api/image/:imageid](#get-apiimageimageid)
+	- [PUT api/image/:imageid/comment](#put-apiimageimageidcomment)
+	- [GET api/image/:imageid/streams](#get-apiimageimageidstreams)
+	- [POST api/image/:imageid/streams](#post-apiimageimageidstreams)
+	- [DELETE api/image/:imageid/streams](#delete-apiimageimageidstreams)
+- [Invite](#invite)
+	- [GET api/invite/:streamid](#get-apiinvitestreamid)
+	- [GET api/invite/user/:userid](#get-apiinviteuseruserid)
+	- [POST api/invite/:streamid](#post-apiinvitestreamid)
+	- [DELETE api/invite/:streamid](#delete-apiinvitestreamid)
+	- [GET api/invite/:streamid/request](#get-apiinvitestreamidrequest)
+	- [GET api/invite/user/:userid/request](#get-apiinviteuseruseridrequest)
+	- [POST api/invite/:streamid/request](#post-apiinvitestreamidrequest)
+	- [DELETE api/invite/:streamid/request](#delete-apiinvitestreamidrequest)
+
 ## General notes
 
 ### Parameter types
