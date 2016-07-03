@@ -53,7 +53,6 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 		var totalSize = 0;
 		var files = [];
 		var streamIds = [];
-		var streamIdStr = "";
 
 		// Examine files to be uploaded
 		formCtrl.fileInputs.forEach(function(file) {
@@ -76,7 +75,6 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 				streamIds.push(stream.id);
 			}
 		});
-		streamIdStr = streamIds.join(",");
 
 		formCtrl.isUploading = true;
 		Upload.upload({
@@ -87,7 +85,7 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 				// TODO: Currently, POST /api/image only supports a single
 				//       stream ID even though the backend code can handle an
 				//       array of IDs
-				streamid: streamIdStr
+				streamid: streamIds[0]
 			}
 		}).then(
 			function done(response) {
@@ -99,6 +97,53 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 
 					// On successful upload, reset upload form
 					formCtrl.fileInputs = [ null ];
+
+					// If more than one stream was selected, the upload
+					// operation would only have associated the image with the
+					// first seleted stream.
+					//
+					// Make additional queries to associate the image with each
+					// additional selected stream.
+					streamIds.forEach(function(streamid, index) {
+						// Image was already associated with the first selected
+						// stream during the upload process.
+						if (index == 0) {
+							return;
+						}
+
+						// Get name of this stream, for error reporting
+						var i, streamName;
+						for (i = 0; i < formCtrl.streams.length; i++) {
+							if (formCtrl.streams[i].id == streamid) {
+								streamName = formCtrl.streams[i].name;
+								break;
+							}
+						}
+
+						// Associate newly uploaded image with stream
+						$http.post(
+							"api/image/" + response.data.id + "/streams",
+							{
+								streamid: streamid
+							}
+						).then(
+							function done(response) {
+								alerts.remove("uploadStreamAssoc", "persistent");
+								if (!response.data.success) {
+									alerts.add("danger", "Couldn't add image to " +  streamName + ": " + response.data.error, "uploadStreamAssoc", "persistent");
+
+									// If server-side data couldn't be updated, revert model
+									stream.associated = false;
+								}
+							},
+							function fail(response) {
+								alerts.add("danger", "Server error adding image to " + streamName + ": " + response.status + " " + response.statusText, "uploadStreamAssoc", "persistent");
+
+								// If server-side data couldn't be updated, revert model
+								stream.associated = false;
+							}
+						);
+					});
 				}
 				else {
 					alerts.add("danger", "Upload failed: " + response.data.error, "upload", "persistent");

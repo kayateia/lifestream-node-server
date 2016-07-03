@@ -48,68 +48,76 @@ router.post("/", function(req, res, next) {
 				return res.json(err);
 			}
 
-			// Validate stream ID(s)
-			var streamIds = [];
-			req.body.streamid.split(",").forEach(function(value) {
-				var id = Number(value);
-				if (!Number.isNaN(id) && id > 0) {
-					streamIds.push(id);
-				}
-			});
-			if (!streamIds.length) {
+			// Validate stream ID
+			var streamid = Number(req.body.streamid);
+			if (Number.isNaN(streamid) || streamid < 1) {
 				return res.json(models.error("Invalid 'streamid'"));
 			}
 
-			// Comment is optional is optional.
+			// Comment is optional
 			var comment = req.body.comment ? req.body.comment : "";
 
 			if (!req.files || req.files.length != 1)
 				return res.json(models.error("Must be exactly one file present"));
 
-			console.log(req.files);
-
-			if (!(/^([A-Za-z0-9_-\s]+\.)+[A-Za-z]+$/.test(req.files[0].originalname))) {
-				return res.json(models.error("File name was invalid"));
-			}
-
-			var fullFilename = "./uploads/" + tokenContents.id + "/" + req.files[0].originalname;
-
-			try {
-				fs.accessSync(fullFilename, fs.F_OK);
-
-				// If we got here, then the file already exists - just bail.
-				console.log("   File", fullFilename, " already exists - bailing");
-				return res.json(models.error("File already exists"));
-			} catch (e) {
-			}
-
-			try {
-				fs.accessSync("./uploads", fs.F_OK);
-			} catch (e) {
-				fs.mkdirSync("./uploads");
-			}
-
-			var uploadPath = "./uploads/" + tokenContents.id;
-			try {
-				fs.accessSync(uploadPath, fs.F_OK);
-			} catch (e) {
-				fs.mkdirSync(uploadPath);
-			}
-
-			fs.writeFileSync(fullFilename, req.files[0].buffer);
-
-			dbmod.imageAdd(tokenContents.id, streamIds, req.files[0].originalname, comment,
-				function(err, id) {
-					if (err)
-						res.json(err);
-					else {
-						// Notify the appropriate push services of new messages available.
-						device.notify(streamIds, function(err) {
-							res.json(models.insertSuccess(id));
-						});
-					}
+			dbmod.streamInfo(streamid, function(err, stream) {
+				if (err) {
+					return res.json(err);
 				}
-			);
+
+				// Uploaded image can only be associated with streams owned by
+				// current user
+				//
+				// FIXME: Special case allows anyone to upload to Stream ID 1,
+				//        the Global Stream. This is due to a limitation in the
+				//        LifeSharp client, and will eventually be removed
+				if (streamid != 1 && stream.userid != tokenContents.id) {
+					return res.json(models.error("Permission denied"));
+				}
+
+				if (!(/^([A-Za-z0-9_-\s]+\.)+[A-Za-z]+$/.test(req.files[0].originalname))) {
+					return res.json(models.error("File name was invalid"));
+				}
+
+				var fullFilename = "./uploads/" + tokenContents.id + "/" + req.files[0].originalname;
+
+				try {
+					fs.accessSync(fullFilename, fs.F_OK);
+
+					// If we got here, then the file already exists - just bail.
+					console.log("   File", fullFilename, " already exists - bailing");
+					return res.json(models.success());
+				} catch (e) {
+				}
+
+				try {
+					fs.accessSync("./uploads", fs.F_OK);
+				} catch (e) {
+					fs.mkdirSync("./uploads");
+				}
+
+				var uploadPath = "./uploads/" + tokenContents.id;
+				try {
+					fs.accessSync(uploadPath, fs.F_OK);
+				} catch (e) {
+					fs.mkdirSync(uploadPath);
+				}
+
+				fs.writeFileSync(fullFilename, req.files[0].buffer);
+
+				dbmod.imageAdd(tokenContents.id, [streamid], req.files[0].originalname, comment,
+					function(err, id) {
+						if (err)
+							res.json(err);
+						else {
+							// Notify the appropriate push services of new messages available.
+							device.notify([streamid], function(err) {
+								res.json(models.insertSuccess(id));
+							});
+						}
+					}
+				);
+			});
 		});
 	});
 });
@@ -307,7 +315,10 @@ router.post("/:id/streams", function(req, res, next) {
 						return res.json(err);
 					}
 
-					res.json(models.success());
+					// Notify the appropriate push services of new messages available.
+					device.notify([streamid], function(err) {
+						res.json(models.success());
+					});
 				});
 			});
 		});
