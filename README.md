@@ -6,7 +6,7 @@ Copyright &copy; 2016 Kayateia and Deciare
 
 **LifeStream** is a photo sharing service intended to be used in conjunction with a mobile client. The reference mobile client implementation is [LifeSharp](https://github.com/kayateia/lifesharp).
 
-**lifestream-node-server** implements a RESTful API with which clients interact in order to make use of the service. It also bundles a Web client that implements the API.
+**lifestream-node-server** implements a [RESTful API](https://github.com/kayateia/lifestream-node-server/blob/master/API.md) with which clients interact in order to make use of the service. It also bundles a Web client that implements the API.
 
 ## Installation
 
