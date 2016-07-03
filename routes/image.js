@@ -216,7 +216,7 @@ router.get("/:id", function(req, res, next) {
 	});
 });
 
-router.post("/:id/comment", function(req, res, next) {
+router.put("/:id/comment", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {
 			return res.json(err);

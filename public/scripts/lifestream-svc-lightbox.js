@@ -143,7 +143,7 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		var newComment = lightboxCtrl.newComment;
 
 		// Save new comment to the server
-		$http.post("api/image/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id + "/comment", {
+		$http.put("api/image/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id + "/comment", {
 			comment: newComment
 		}).then(
 			function done(response) {
