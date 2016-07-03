@@ -292,13 +292,23 @@ router.post("/:id/streams", function(req, res, next) {
 				return res.json(err);
 			}
 
-			console.log(req.body.streamid);
-			dbmod.imageAddStream(imageid, streamid, function(err) {
+			dbmod.streamInfo(streamid, function(err, stream) {
 				if (err) {
 					return res.json(err);
 				}
 
-				res.json(models.success());
+				// Image owner can only associate image with streams they own
+				if (stream.userid != tokenContents.id) {
+					return res.json(models.error("Permission denied"));
+				}
+
+				dbmod.imageAddStream(imageid, streamid, function(err) {
+					if (err) {
+						return res.json(err);
+					}
+
+					res.json(models.success());
+				});
 			});
 		});
 	});
