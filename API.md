@@ -14,20 +14,22 @@ Uploads an image file to the server and associates it with one or more streams. 
 
 #### Result
 
-- If successful, the following response is sent:
+If successful, the following response is sent:
 ```javascript
 {
 	"success": true,
 	"id": // (number) ID of uploaded image
 }
 ```
-- If the file already existed in the server's uploads directory, no changes are made to the server. The following repsonse is sent:
+
+If the file already existed in the server's uploads directory, no changes are made to the server. The following repsonse is sent:
 ```javascript
 {
 	"success": true
 }
 ```
-- If unsuccessful,
+
+If unsuccessful, the following response is sent:
 ```javascript
 {
 	"success": false,
