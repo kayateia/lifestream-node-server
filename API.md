@@ -57,18 +57,26 @@ Database errors may cause any request to fail, and are therefore always a potent
 
 ### POST api/image
 
-Uploads an image file to the server and associates it with one or more streams. Optionally, a descriptive comment may also be associated with the image.
+Uploads an image file to the server and associates it with a stream. Optionally, a descriptive comment may also be associated with the image.
+
+If an image needs to be associated with more than one stream, that can be achieved using subsequent calls to [POST api/image/:imageid/streams](#post-apiimageimageidstreams).
 
 #### Parameters
 
 - Request body:
 	- **image**: Image file as _multipart/form-data_
-	- **streamid**: Stream ID. May be a comma-delimited list of stream IDs.
+	- **streamid**: Stream ID
 	- **comment** _(optional)_: Comment text
+
+#### Permissions
+
+A user can upload an image to a stream they own.
+
+**DEPRECATED:** A user can also upload an image to stream ID 1, the "Global Stream".
 
 #### Result
 
-If successful, the following response is sent:
+If successful, the image is written to disk on the server, a notification is sen to all mobile clients watching the stream to which the image was uploaded, and the following response is sent:
 ```javascript
 {
 	"success": true,
@@ -76,7 +84,7 @@ If successful, the following response is sent:
 }
 ```
 
-If the file already existed in the server's uploads directory, no changes are made to the server. The following repsonse is sent:
+If the file already existed in the server's uploads directory, no changes are made to the server. The following response is sent:
 ```javascript
 {
 	"success": true
@@ -218,7 +226,7 @@ The user who uploaded an image may associate that image with other streams they 
 
 #### Result
 
-If successful, an association is created between the specified image and stream, and the following response is sent:
+If successful, an association is created between the specified image and stream, a notification is sent to all mobile clients watching the specified stream, and the following response is sent:
 ```javascript
 {
 	"success": true
