@@ -154,10 +154,6 @@ router.put("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (!isAdmin) {
-			return res.json(models.error("Permission denied"));
-		}
-
 		var id = Number(req.params.id);
 		if (Number.isNaN(id) || id < 1)
 			return res.json(models.error("Invalid 'id'"));
@@ -167,9 +163,22 @@ router.put("/:id", function(req, res, next) {
 		var pwd = req.body.password; // optional; leave password unchanged if blank
 		var pwdhash = pwd ? lscrypto.hash(pwd) : null;
 		var email = req.body.email ? req.body.email : "";
-		var isAdmin = req.body.isAdmin ? 1 : 0;
 
-		dbmod.userUpdate(id, pwdhash, name, email, isAdmin, function(err) {
+		// Only administrators should be able to modify the isAdmin flag.
+		// Administrators cannot revoke their own administrator status.
+		var admin = isAdmin;
+		if (isAdmin && id != tokenContents.id) {
+			admin = req.body.isAdmin ? 1 : 0;
+		}
+
+		// Any user can edit their own info, but only admins can edit other
+		// users' info
+		if (tokenContents.id != id && !isAdmin) {
+			return res.json(models.error("Permission denied"));
+		}
+
+
+		dbmod.userUpdate(id, pwdhash, name, email, admin, function(err) {
 			if (err) {
 				return res.json(err);
 			}

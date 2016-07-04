@@ -1262,7 +1262,13 @@ Modify existing user.
 
 #### Permissions
 
-Admins can modify existing users.
+Users can modify their own user info.
+
+Users cannot modify their own isAdmin flag.
+
+Admins can modify any existing user.
+
+Admins can modify the isAdmin flag for other users.
 
 #### Result
 
@@ -1286,7 +1292,7 @@ If unsuccessful, no changes are made on the server and the following response is
 #### Failure conditions
 
 - Specified name would be non-unique after the change
-- Requesting user is not an admin
+- Requesting user is not an admin and is trying to edit another user
 
 ### DELETE api/user/:userid
 
