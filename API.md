@@ -37,12 +37,36 @@
 	- [POST api/subscription/:streamid](#post-apisubscriptionstreamid)
 	- [DELETE api/subscription/:streamid](#delete-apisubscriptionstreamid)
 - [User](#user)
+	- [POST api/user/login/:login](#post-apiuserloginlogin)
+	- [GET api/user/search](#get-apiusersearch)
+	- [GET api/user/new-token](#get-apiusernewtoken)
+	- [GET api/user/login/:login](#get-apiuserloginlogin)
+	- [GET api/user/:userid](#get-apiuseruserid)
+	- [POST api/user](#post-apiuser)
+	- [PUT api/user/:userid](#put-apiuseruserid)
+	- [DELETE api/user/:userid](#delete-apiuseruserid)
+	- [POST api/user/register-device](#post-apiuserregisterdevice)
 
 ## General notes
+
+### Authentication
+
+All API calls require a valid authorisation token. The token is provided by [POST api/user/login/:login](#post-apiuserloginlogin) in response to a successful sign-in attempt.
+
+Once a token has been obtained, it can be used 2 ways:
+
+1. Include an Authorization HTTP header with each request, of the form:
+
+    > Authorization: Bearer token\_content\_goes\_here
+
+2. Include a cookie called "**authorization**" with each request. The cookie's content should have the form:
+
+    > Bearer%20token\_content\_goes\_here
 
 ### Parameter types
 
 This document mentions 3 different kinds of parameters.
+
 - **Path component**: These parameters are part of the URL. For example, in _GET_ `api/image/:imageid`, `:imageid` is a path component specifying the numeric ID of the requested image.
 - **Query string**: This is how parameters are passed when making _GET_ and _DELETE_ requests. These parameters are appended to the end of the URL. For example, in _GET_ `api/image/15?scaleTo=192&scaleMode=cover`, `scaleTo` and `scaleMode` are query string parameters.
 - **Request body**: This is how parameters are passed when making _POST_ and _PUT_ requests. These parameters are received by the server as though they were fields included with a form submission.
@@ -50,6 +74,7 @@ This document mentions 3 different kinds of parameters.
 ### Stream permissions
 
 A stream may have 1 of 3 kinds of permissions. Each permission type is mutually exclusive.
+
 1. **Public**: Anyone may search for, view the contents of, and subscribe to the stream.
 2. **Needs Approval**: Anyone may search for the stream, but cannot view images associated with the stream unless those images are associated with at least one _Public_ stream, or at least one other stream to which the viewing user is subscribed. Users cannot directly subscribe to the stream; they must first request an invite, which the stream owner then has to approve.
 3. **Hidden**: The stream does not appear in search results, and nobody can view images associated with the stream unless those images are associated with at least one _Public_ stream, or at least one other stream to which the viewing user is subscribed.
@@ -82,6 +107,7 @@ A user can upload an image to a stream they own.
 #### Result
 
 If successful, the image is written to disk on the server, a notification is sen to all mobile clients watching the stream to which the image was uploaded, and the following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -90,6 +116,7 @@ If successful, the image is written to disk on the server, a notification is sen
 ```
 
 If the file already existed in the server's uploads directory, no changes are made to the server. The following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -97,6 +124,7 @@ If the file already existed in the server's uploads directory, no changes are ma
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -136,6 +164,7 @@ Users subscribed to at least one stream associated with a given image can view t
 If successful, the requested image is sent to the client.
 
 If unsuccessful, the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -167,12 +196,15 @@ The user who uploaded an image can set the comment on that image.
 #### Result
 
 If successful, the comment is saved on the server and the following response is sent:
+
 ```javascript
 {
 	"success": true
 }
 ```
+
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -196,6 +228,7 @@ Gets a list of streams with which an image is associated.
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -232,6 +265,7 @@ The user who uploaded an image may associate that image with other streams they 
 #### Result
 
 If successful, an association is created between the specified image and stream, a notification is sent to all mobile clients watching the specified stream, and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -239,6 +273,7 @@ If successful, an association is created between the specified image and stream,
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -269,6 +304,7 @@ The user who uploaded an image may dissociate that image from streams.
 #### Result
 
 If successful, any existing association between the specified image and stream is removed, and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -276,6 +312,7 @@ If successful, any existing association between the specified image and stream i
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -301,6 +338,7 @@ Gets a list of users who have been invited to the specified stream, who haven't 
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -328,6 +366,7 @@ Gets a list of streams to which the specified user has been invited, where the u
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -361,6 +400,7 @@ A user may send invitations for streams they own.
 #### Result
 
 If successful, an invitation is created for the specified stream is created for the specified user, and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -368,6 +408,7 @@ If successful, an invitation is created for the specified stream is created for 
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -401,6 +442,7 @@ The recipient of an invitation may revoke their own invitation.
 #### Result
 
 If successful, any outstanding invitation to the specified stream for the specified user is deleted, and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -408,6 +450,7 @@ If successful, any outstanding invitation to the specified stream for the specif
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -432,6 +475,7 @@ Gets a list of users who have requested an invitation to the specified stream.
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -460,6 +504,7 @@ Gets a list of streams to which the specified user has requested an invitation.
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -494,6 +539,7 @@ A user may request an invitation to any stream whose permission setting is _Need
 #### Result
 
 If successful, an invitation request from the specified user is created for the specified stream, and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -501,6 +547,7 @@ If successful, an invitation request from the specified user is created for the 
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -534,6 +581,7 @@ A stream owner may cancel invitation requests to their own streams.
 #### Result
 
 If successful, any outstanding invitation request to the specified stream from the specified user is deleted, and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -541,6 +589,7 @@ If successful, any outstanding invitation request to the specified stream from t
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -569,6 +618,7 @@ Gets a list of streams known to the server. The result set excludes _Hidden_ str
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -602,6 +652,7 @@ Streams whose permission setting is _Public_ or _Needs Approval_ will appear in 
 #### Result
 
 If successful, the following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -618,6 +669,7 @@ If successful, the following response is sent:
 	]
 }
 ```
+
 The above response is sent even if no matching streams are found; in that case, the `streams` array in the result set will be zero-length array.
 
 #### Failure conditions
@@ -644,6 +696,7 @@ Any user may request a list of contents from any stream, but the actual image wi
 #### Result
 
 If successful, the following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -681,6 +734,7 @@ Admins can create streams where `userid` is not their own user ID.
 #### Result
 
 If successful, a stream belonging to the given user is created, and the following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -704,6 +758,7 @@ Gets information about a stream.
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -737,6 +792,7 @@ An admin may modify any stream.
 #### Result
 
 If successful, the stream is modified as requested and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -744,6 +800,7 @@ If successful, the stream is modified as requested and the following response is
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -774,6 +831,7 @@ An admin may delete any stream.
 #### Result
 
 If successful, all of the following are deleted:
+
 - The specified stream
 - Subscriptions to the specified stream
 - Invitations to the specified stream
@@ -781,6 +839,7 @@ If successful, all of the following are deleted:
 - Associations of images to the specified stream
 
 And the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -788,6 +847,7 @@ And the following response is sent:
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -813,6 +873,7 @@ Get list of streams to which the specified user is subscribed.
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -841,6 +902,7 @@ Get list of users subscribed to the specified stream.
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -862,6 +924,7 @@ The following response is sent:
 Get the state of a the specified user's subscription relative to the specified stream(s).
 
 Subscriptions may be 1 of 3 states (i.e. they are mutually exclusive):
+
 1. **active**: User is currently subscribed to stream
 2. **invited**: User has been invited to stream
 3. **requested**: User has requested invitation to stream
@@ -876,6 +939,7 @@ Subscriptions may be 1 of 3 states (i.e. they are mutually exclusive):
 #### Result
 
 The following response is sent:
+
 ```javascript
 {
 	"success": true,
@@ -910,6 +974,7 @@ Users can subscribe themselves to _Needs Approval_ and _Hidden_ streams for whic
 #### Result
 
 If successful, the specified user is subscribed to the specified stream. Any existing invitation for the user to join that stream, or invite request from the user for that stream, is consumed and replaced by the subscription. The following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -917,6 +982,7 @@ If successful, the specified user is subscribed to the specified stream. Any exi
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -950,6 +1016,7 @@ A stream owner can unsubscribe other users from streams they own.
 #### Result
 
 If successful, the specified user is unsubscribed from the specified stream, and the following response is sent:
+
 ```javascript
 {
 	"success": true
@@ -957,6 +1024,7 @@ If successful, the specified user is unsubscribed from the specified stream, and
 ```
 
 If unsuccessful, no changes are made on the server and the following response is sent:
+
 ```javascript
 {
 	"success": false,
@@ -970,3 +1038,329 @@ If unsuccessful, no changes are made on the server and the following response is
 - User's ID does not match `userid`, and user is not the stream owner
 
 ## User
+
+### POST api/user/login/:login
+
+Obtains an authorisation token for further requests.
+
+#### Parameters
+
+- Path component:
+    - **login**: Username
+- Request body:
+    - **password**: Password in cleartext
+
+#### Permissions
+
+This is the only API call that can be accessed without providing a valid authorisation token.
+
+#### Result
+
+If successful, the following response is sent:
+
+```javascript
+{
+    "success": true,
+    "token": /* (string) Authorisation token */
+}
+```
+
+If unsucessful, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- Login or password were not specified
+- Login and password don't match any users in the database
+
+### GET api/user/search
+
+Search for users whose login or display name matches a given substring.
+
+#### Parameters
+
+- Query string:
+    - **q**: Search terms
+
+#### Result
+
+The following response is sent:
+
+```javascript
+{
+    "success": true,
+    "users": [
+        {
+            "id": /* (number) User ID */,
+            "login": /* (string) User's login */,
+            "name": /* (string) User's display name */
+        },
+        ...
+    ]
+}
+```
+
+If no users matching the given search terms were found, then the `users` array in the response is blank.
+
+### GET api/user/new-token
+
+An authorisation token expires an hour after it is issued (**TODO: This functionality is implemented but not currently enabled in the code**), so it needs to be periodically refreshed.
+
+The server responds to this request with a newly-generated authorisation token, effectively extending the lifetime of the user's session as long as the request is made before the user's current authorisation token expires.
+
+#### Result
+
+The following response is sent:
+
+```javascript
+{
+    "success": true,
+    "token": /* (string) Authorisation token */
+}
+```
+
+#### Failure conditions
+
+- User does not currently have a valid authorisation token
+
+### GET api/user/login/:login
+
+Gets information about the user associated with the specified login.
+
+#### Parameters
+
+- Path component:
+    - **login**: Username
+
+#### Result
+
+If successful, the following response is sent:
+
+```javascript
+{
+    "success":true,
+    "id": /* (number) User ID */,
+    "login": /* (string) User login */,
+    "name": /* (string) User's display name */,
+    "email": /* (string) User's email address */,
+    "isAdmin": /* (boolean) true if the user is an admin, false otherwise */
+}
+```
+
+If unsucessful, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- No user with the given login exists
+
+### GET api/user/:userid
+
+Gets information about the user associated with the specified user ID.
+
+#### Parameters
+
+- Path component:
+    - **userid**: User ID
+
+#### Result
+
+If successful, the following response is sent:
+
+```javascript
+{
+    "success":true,
+    "id": /* (number) User ID */,
+    "login": /* (string) User login */,
+    "name": /* (string) User's display name */,
+    "email": /* (string) User's email address */,
+    "isAdmin": /* (boolean) true if the user is an admin, false otherwise */
+}
+```
+
+If unsucessful, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- No user with the given user ID exists
+
+### POST api/user
+
+Creates a user.
+
+#### Parameters
+
+- Request body:
+    - **login**: Username
+    - **password**: Password in cleartext
+    - **name**: Display name
+    - **email** _(optional)_: Email address
+    - **isAdmin** _(optional)_: `true` if user is admin, `false` otherwise
+
+#### Permissions
+
+Admins can create new users.
+
+#### Result
+
+If successful, a new user is created and the following response is sent:
+
+```javascript
+{
+    "success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- Specified login already exists
+- Specified name already exists
+- Requesting user is not an admin
+
+### PUT api/user/:userid
+
+Modify existing user.
+
+#### Parameters
+
+- Path component:
+    - **userid**: User ID
+- Request body:
+    - **password**: Password in cleartext
+    - **name**: Display name
+    - **email** _(optional)_: Email address
+    - **isAdmin** _(optional)_: `true` if user is admin, `false` otherwise
+
+#### Permissions
+
+Admins can modify existing users.
+
+#### Result
+
+If successful, the specified user's information on the server is updated, and the following response is sent:
+
+```javascript
+{
+    "success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- Specified name would be non-unique after the change
+- Requesting user is not an admin
+
+### DELETE api/user/:userid
+
+Deletes a user.
+
+#### Parameters
+
+- Path component:
+    - **userid**: User ID
+
+#### Permissions
+
+Admins can delete users.
+
+#### Result
+
+If successful, all of the following are deleted:
+
+- All subscriptions, invites, and invite requests relating to the specified user
+- All subscriptions invites, and invite requests relating to the specified user's streams
+- All associations between images and the specified user's streams
+- All streams owned by the specified user
+- All images uploaded by the specified user
+- The specified user
+
+The following response is sent:
+
+```javascript
+{
+    "success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+### POST api/user/register-device
+
+Register a device for push notifications.
+
+#### Parameters
+
+- Request body:
+    - **id**: Unique identifier from the device
+    - **type**: Push notification service. Supported types include:
+        - google
+        - apple **(TODO: not implemented)**
+        - microsoft **(TODO: not implemented)**
+    - **token**: Token provided to the mobile app by the upstream push service provider
+
+#### Result
+
+If successful, the following response is sent:
+
+```javascript
+{
+    "success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- Unrecognised service `type`
