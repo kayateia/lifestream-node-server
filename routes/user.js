@@ -225,9 +225,7 @@ router.post("/", function(req, res, next) {
 			return res.json(models.error("Missing 'password'"));
 		var email = req.body.email ? req.body.email : "";
 		var isAdmin = req.body.isAdmin ? 1 : 0;
-		console.log("Create user",login,name,pwd);
 		var pwdhash = lscrypto.hash(pwd);
-		console.log("Would create with hash",pwdhash);
 
 		dbmod.userCreate(login, pwdhash, name, email, isAdmin, function(err, id) {
 			if (err) {
