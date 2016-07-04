@@ -22,6 +22,16 @@
 	- [GET api/invite/user/:userid/request](#get-apiinviteuseruseridrequest)
 	- [POST api/invite/:streamid/request](#post-apiinvitestreamidrequest)
 	- [DELETE api/invite/:streamid/request](#delete-apiinvitestreamidrequest)
+- [Stream](#stream)
+	- [GET api/stream/list](#get-apistreamlist)
+	- [GET api/stream/search](#get-apistreamsearch)
+	- [GET api/stream/:streamid/contents](#get-apistreamstreamidcontents)
+	- [POST api/stream](#post-apistream)
+	- [GET api/stream/:streamid](#get-apistreamstreamid)
+	- [PUT api/stream/:streamid](#put-apistreamstreamid)
+	- [DELETE api/stream/:streamid](#delete-apistreamstreamid)
+- [Subscription](#subscription)
+- [User](#user)
 
 ## General notes
 
@@ -533,6 +543,248 @@ If unsuccessful, no changes are made on the server and the following response is
 - Specified user is already subscribed to the stream
 
 ## Stream
+
+### GET api/stream/list
+
+Gets a list of streams known to the server. The result set excludes _Hidden_ streams unless `userid` is specified and is the same as the current user.
+
+#### Parameters
+
+- Query string:
+	- **userid** _(optional)_: User ID of user whose streams to list. If specified, and it is the user ID of the current user, then _Hidden_ streams will be included in the result set.
+
+#### Result
+
+The following response is sent:
+```javascript
+{
+	"success": true,
+	"streams": [
+		{
+			"id": /* (number) Stream ID */,
+			"userid": /* (number) User ID of stream owner */,
+			"name": /* (string) Stream name */,
+			"permission": /* (number) Stream permission setting */,
+			"userLogin": /* (string) Login of stream owner */,
+			"userName": /* (string) Display name of stream owner */
+		},
+		...
+	]
+}
+```
+
+### GET api/stream/search
+
+Search for streams whose names match a given substring. _Hidden_ streams are excluded from results.
+
+#### Parameters
+
+- Query string:
+	- q: Substring to match
+
+#### Permissions
+
+Streams whose permission setting is _Public_ or _Needs Approval_ will appear in search results.
+
+#### Result
+
+If successful, the following response is sent:
+```javascript
+{
+	"success": true,
+	"streams": [
+		{
+			"id": /* (number) Stream ID */,
+			"userid": /* (number) User iD of stream owner */,
+			"name": /* (string) Stream name */,
+			"permission": /* (number) Stream permission setting */,
+			"userLogin": /* (string) Login of stream owner */,
+			"userName": /* (string) Display name of stream owner */
+		},
+		...
+	]
+}
+```
+The above response is sent even if no matching streams are found; in that case, the `streams` array in the result set will be zero-length array.
+
+#### Failure conditions
+
+- `q` is blank
+
+### GET api/stream/:streamid/contents
+
+Get list of images in the specified stream. Images are sorted in reverse chronological order of upload time.
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID. May be a comma-delimited list of stream IDs
+- Query string:
+	- **olderThan** _(optional)_: Number of seconds since the UNIX epoch. Only images whose upload time is older than this will be included in the result set
+	- **olderThanId** _(optional)_: Image ID. Only images whose image ID is lower than this will be included in the result set
+	- **count** _(optional)_: Number of images to include in the result set. The result set contains newer images first.
+
+#### Permissions
+
+Any user may request a list of contents from any stream, but the actual image will not be displayable unless it passes permission checks in [GET api/image/:imageid](#get-apiimageimageid).
+
+#### Result
+
+If successful, the following response is sent:
+```javascript
+{
+	"success": true,
+	"images": [
+		{
+			"id": /* (number) Image ID */,
+			"userid": /* (number) User ID of uploader */,
+			"userLogin": /* (string) Login of uploader */,
+			"userName": /* (string) Display name of uploader */,
+			"uploadTime": /* (number) When the image was uploaded, in number of seconds since the UNIX epoch */,
+			"comment": /* (string) Descriptive comment */
+		},
+		...
+	]
+}
+```
+
+### POST api/stream
+
+Create a stream. The newly created stream will be owned by the current user.
+
+#### Parameters
+
+- Request body:
+	- **userid**: User ID of stream owner
+	- **name**: Name of stream
+	- **permission**: [Stream permission](#stream-permissions) setting
+
+#### Permissions
+
+A user can only create a stream where `userid` is their own user ID.
+
+Admins can create streams where `userid` is not their own user ID.
+
+#### Result
+
+If successful, a stream belonging to the given user is created, and the following response is sent:
+```javascript
+{
+	"success": true,
+	"id": /* (number) ID of the newly created stream*/
+}
+```
+
+#### Failure conditions
+
+- `userid` does not match the current user's ID, and current user is not an admin
+
+### GET api/stream/:streamid
+
+Gets information about a stream.
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID
+
+#### Result
+
+The following response is sent:
+```javascript
+{
+	"success": true,
+	"id": /* (number) Stream ID */,
+	"userid": /* (number) User ID of stream owner */,
+	"name": /* (string) Stream name */,
+	"permission": /* (number) Stream permission setting */,
+	"userLogin": /* (string) Login of stream owner */,
+	"userName": /* (string) Display name of stream owner */
+}
+```
+
+### PUT api/stream/:streamid
+
+Modifies the specified stream, provided that it exists.
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID
+- Request body:
+	- **name** _(optional)_: Stream name
+	- **permission** _(optional)_: [Stream permission](#stream-permissions) setting
+
+#### Permissions
+
+A user may modify their own stream.
+
+An admin may modify any stream.
+
+#### Result
+
+If successful, the stream is modified as requested and the following response is sent:
+```javascript
+{
+	"success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- No changes were requested (e.g. none of the optional parameters were provided)
+- User does not own the specified stream and user is not an admin
+
+### DELETE api/stream/:streamid
+
+Deletes the specified stream
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID
+
+#### Permissions
+
+A user may delete streams they own.
+
+An admin may delete any stream.
+
+#### Result
+
+If successful, all of the following are deleted:
+- The specified stream
+- Subscriptions to the specified stream
+- Invitations to the specified stream
+- Invitation requests for the specified stream
+- Associations of images to the specified stream
+
+And the following response is sent:
+```javascript
+{
+	"success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- The user is not the stream owner and is not an admin
 
 ## Subscription
 
