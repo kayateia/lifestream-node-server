@@ -110,12 +110,16 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 							login.$setValidity("exists", true);
 
 							if (callback) {
-								callback(response.data);
+								callback(null, response.data);
 							}
 						}
 						else {
 							alerts.add("danger", "User " + login.$viewValue + " doesn't exist", "validateLoginExists", "persistent");
 							login.$setValidity("exists", false);
+
+							if (callback) {
+								callback(response.data.error);
+							}
 						}
 					},
 					function fail(response) {
@@ -260,12 +264,19 @@ angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "
 	usermgr.activateTab("edit");
 
 	formCtrl.autofillForm = function(login) {
-		usermgr.validateLoginExists(login, function(data) {
-			// Prefill edit form info based on user info from server.
-			formCtrl.name = data.name;
-			formCtrl.email = data.email;
-			formCtrl.isAdmin = data.isAdmin ? true : false;
-			formCtrl.userid = data.id;
+		// As soon as username is changed, invalidate all fields until updated
+		// response is received from the server
+		formCtrl.name = "";
+		formCtrl.email = "";
+		formCtrl.isAdmin = false;
+
+		usermgr.validateLoginExists(login, function(err, data) {
+			if (!err) {
+				// Prefill edit form info based on user info from server.
+				formCtrl.name = data.name;
+				formCtrl.email = data.email;
+				formCtrl.isAdmin = data.isAdmin ? true : false;
+			}
 		});
 	};
 
@@ -310,33 +321,43 @@ angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "
 		},
 		{
 			id: "isAdmin",
+			help: "If you are editing your own account, this option is ignored",
 			label: "Is admin?",
 			required: false,
 			type: "checkbox"
-		},
-		{
-			id: "userid",
-			type: "hidden"
 		}
 	];
 
 	formCtrl.submit = function() {
-		$http.put("api/user/" + formCtrl.userid, {
-			password: formCtrl.password,
-			name: formCtrl.name,
-			email: formCtrl.email,
-			isAdmin: formCtrl.isAdmin
-		}).then(
+		$http.get("api/user/login/" + formCtrl.login).then(
 			function done(response) {
 				if (response.data.success) {
-					alerts.add("success", "User " + formCtrl.login + " successfully updated", "submitFunc", "persistent");
+					alerts.remove("submitFunc", "persistent");
+					$http.put("api/user/" + response.data.id, {
+						password: formCtrl.password,
+						name: formCtrl.name,
+						email: formCtrl.email,
+						isAdmin: formCtrl.isAdmin
+					}).then(
+						function done(response2) {
+							if (response2.data.success) {
+								alerts.add("success", "User " + formCtrl.login + " successfully updated", "submitFunc", "persistent");
+							}
+							else {
+								alerts.add("danger", "User " + formCtrl.login + " could not be updated: " + response2.data.error, "submitFunc", "persistent");
+							}
+						},
+						function fail(response2) {
+							alerts.add("danger", "Server error updating user: " + response2.status + " " + response2.statusText, "submitFunc", "persistent");
+						}
+					);
 				}
 				else {
 					alerts.add("danger", "User " + formCtrl.login + " could not be updated: " + response.data.error, "submitFunc", "persistent");
 				}
 			},
 			function fail(response) {
-				alerts.add("danger", "Server error updating user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
+				alerts.add("danger", "Server error getting user ID: " + response.status + " " + response.statusText, "submitFunc", "persistent");
 			}
 		);
 	};
