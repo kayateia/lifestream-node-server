@@ -7,6 +7,7 @@
 
 var express = require("express");
 var router = express.Router();
+var config = require("./../config");
 var models = require("./../lib/models");
 var lscrypto = require("./../lib/lscrypto");
 var security = require("./../lib/security");
@@ -15,6 +16,7 @@ var security = require("./../lib/security");
 router.get("/", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
+			webClient: config.webClient,
 			isAdmin: isAdmin ? true: false,
 			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,
@@ -26,6 +28,7 @@ router.get("/", function(req, res, next) {
 router.get("/gallery", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
+			webClient: config.webClient,
 			isAdmin : isAdmin ? true: false,
 			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,
@@ -47,6 +50,7 @@ router.get("/gallery", function(req, res, next) {
 router.get("/login", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
+			webClient: config.webClient,
 			fromUrl: req.query.fromUrl,
 			isAdmin: isAdmin ? true : false,
 			message: null,
@@ -100,6 +104,7 @@ router.get("/login", function(req, res, next) {
 router.get("/streams", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
+			webClient: config.webClient,
 			isAdmin: isAdmin ? true: false,
 			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,
@@ -117,6 +122,7 @@ router.get("/streams", function(req, res, next) {
 router.get("/upload", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
+			webClient: config.webClient,
 			isAdmin: isAdmin ? true: false,
 			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,
@@ -134,6 +140,7 @@ router.get("/upload", function(req, res, next) {
 router.get("/usermgr", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {
+			webClient: config.webClient,
 			isAdmin: isAdmin ? true: false,
 			userid: tokenContents ? tokenContents.id : null,
 			userLogin: tokenContents ? tokenContents.login : null,

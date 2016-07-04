@@ -44,4 +44,6 @@
 	<ls-alerts id="global-alerts" dodge dismiss-on-timeout="4000"></ls-alerts>
 </div>
 
-<% include navbar %>
+<% if (typeof webClient !== "undefined" && webClient === true) {  %>
+	<% include navbar %>
+<% } %>

@@ -11,6 +11,7 @@ var favicon = require('serve-favicon');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
+var config = require("./config");
 var routes = require('./routes/index');
 var stream = require('./routes/stream');
 var image = require("./routes/image");
@@ -19,8 +20,7 @@ var invite = require("./routes/invite");
 var subscription = require("./routes/subscription");
 
 var sal = require("./lib/sal");
-var sqlite = require("./lib/drivers/sqlite");
-var mysql = require("./lib/drivers/mysql");
+var dbDriver = require("./lib/drivers/" + config.databaseDriver);
 
 var app = express();
 
@@ -35,12 +35,16 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', routes);
 app.use('/api/stream', stream);
 app.use("/api/image", image);
 app.use("/api/user", user);
 app.use("/api/invite", invite);
 app.use("/api/subscription", subscription);
+
+// Also accept non-API routes if Web client is enabled in config
+if (config.webClient === true) {
+	app.use('/', routes);
+}
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -50,8 +54,7 @@ app.use(function(req, res, next) {
 });
 
 // Set up database
-// sal.init(sqlite);
-sal.init(mysql);
+sal.init(dbDriver);
 
 // error handlers
 
@@ -61,6 +64,7 @@ sal.init(mysql);
 	app.use(function(err, req, res, next) {
 		res.status(err.status || 500);
 		res.render('error', {
+			webClient: config.webClient,
 			isAdmin: false,
 			userid: null,
 			userLogin: null,

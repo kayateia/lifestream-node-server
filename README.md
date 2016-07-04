@@ -6,16 +6,18 @@ Copyright &copy; 2016 Kayateia and Deciare
 
 **LifeStream** is a photo sharing service intended to be used in conjunction with a mobile client. The reference mobile client implementation is [LifeSharp](https://github.com/kayateia/lifesharp).
 
-**lifestream-node-server** implements a [RESTful API](https://github.com/kayateia/lifestream-node-server/blob/master/API.md) with which clients interact in order to make use of the service. It also bundles a Web client that implements the API.
+**lifestream-node-server** implements a [RESTful API](https://github.com/kayateia/lifestream-node-server/blob/master/API.md) with which clients interact in order to make use of the service. It also bundles a Web client that uses the API.
 
 ## Installation
 
 Make a copy of `config.template.js` and modify it to suit your environment.
+
 ```bash
 cp config.template.js config.js
 ```
 
 Install dependencies from npm and bower.
+
 ```bash
 npm install -g bower
 npm install
@@ -27,17 +29,20 @@ You may also need to install **GraphicsMagick** on your host operating system if
 ## Usage
 
 To start the server, run:
+
 ```bash
 node bin/www
 ```
 
 For development, it is recommended to use [nodemon](https://www.npmjs.com/package/nodemon) to automatically restart the server when code changes are made.
+
 ```bash
 npm install -g nodemon
 nodemon
 ```
 
 For production, it is recommended to use [forever](https://www.npmjs.com/package/forever) to immediately restart the server if it goes down.
+
 ```bash
 npm install -g forever
 forever -w --watchDirectory . --watchIgnore 'uploads/*' bin/www
@@ -49,13 +54,18 @@ By default, **lifestream-node-server** expects to connect to a **MySQL** databas
 
 There is an option to use **SQLite** instead, which may be simpler for development purposes. Due to concurrency issues, doing so is _not recommended_ for production use.
 
-To enable SQLite, you'll need to edit `app.js`. Change the following line:
+To enable SQLite, edit `config.js` to specify "sqlite" as the `databaseDriver`:
+
 ```javascript
-sal.init(mysql);
+	databaseDriver: "sqlite",
 ```
-To:
+
+## Web client
+
+By default, **lifestream-node-server** bundles a Web client that runs as part of the same node process as the APIs. If you wish, you can disable the Web client by editing `config.js`:
+
 ```javascript
-sal.init(sqlite);
+	webClient: false,
 ```
 
 ## Dependencies

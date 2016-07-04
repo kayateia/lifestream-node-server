@@ -48,7 +48,7 @@ router.get("/:id/state", function(req, res, next) {
 			return res.json(models.error("Invalid 'userid'"));
 		}
 
-		// Sanitise comma-delimieted list by removing all non-numbers
+		// Sanitise comma-delimited list by removing all non-numbers
 		var ids = [];
 		req.params.id.split(",").forEach(function(value, index, arr) {
 			value = Number(value);
