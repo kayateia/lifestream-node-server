@@ -58,11 +58,11 @@ Once a token has been obtained, it can be used 2 ways:
 
 1. Include an Authorization HTTP header with each request, of the form:
 
-    > Authorization: Bearer token\_content\_goes\_here
+	> Authorization: Bearer token\_content\_goes\_here
 
 2. Include a cookie called "**authorization**" with each request. The cookie's content should have the form:
 
-    > Bearer%20token\_content\_goes\_here
+	> Bearer%20token\_content\_goes\_here
 
 ### Parameter types
 
@@ -1047,9 +1047,9 @@ Obtains an authorisation token for further requests.
 #### Parameters
 
 - Path component:
-    - **login**: Username
+	- **login**: Username
 - Request body:
-    - **password**: Password in cleartext
+	- **password**: Password in cleartext
 
 #### Permissions
 
@@ -1061,8 +1061,8 @@ If successful, the following response is sent:
 
 ```javascript
 {
-    "success": true,
-    "token": /* (string) Authorisation token */
+	"success": true,
+	"token": /* (string) Authorisation token */
 }
 ```
 
@@ -1087,7 +1087,7 @@ Search for users whose login or display name matches a given substring.
 #### Parameters
 
 - Query string:
-    - **q**: Search terms
+	- **q**: Search terms
 
 #### Result
 
@@ -1095,15 +1095,15 @@ The following response is sent:
 
 ```javascript
 {
-    "success": true,
-    "users": [
-        {
-            "id": /* (number) User ID */,
-            "login": /* (string) User's login */,
-            "name": /* (string) User's display name */
-        },
-        ...
-    ]
+	"success": true,
+	"users": [
+		{
+			"id": /* (number) User ID */,
+			"login": /* (string) User's login */,
+			"name": /* (string) User's display name */
+		},
+		...
+	]
 }
 ```
 
@@ -1121,8 +1121,8 @@ The following response is sent:
 
 ```javascript
 {
-    "success": true,
-    "token": /* (string) Authorisation token */
+	"success": true,
+	"token": /* (string) Authorisation token */
 }
 ```
 
@@ -1137,7 +1137,7 @@ Gets information about the user associated with the specified login.
 #### Parameters
 
 - Path component:
-    - **login**: Username
+	- **login**: Username
 
 #### Result
 
@@ -1145,12 +1145,12 @@ If successful, the following response is sent:
 
 ```javascript
 {
-    "success":true,
-    "id": /* (number) User ID */,
-    "login": /* (string) User login */,
-    "name": /* (string) User's display name */,
-    "email": /* (string) User's email address */,
-    "isAdmin": /* (boolean) true if the user is an admin, false otherwise */
+	"success":true,
+	"id": /* (number) User ID */,
+	"login": /* (string) User login */,
+	"name": /* (string) User's display name */,
+	"email": /* (string) User's email address */,
+	"isAdmin": /* (boolean) true if the user is an admin, false otherwise */
 }
 ```
 
@@ -1174,7 +1174,7 @@ Gets information about the user associated with the specified user ID.
 #### Parameters
 
 - Path component:
-    - **userid**: User ID
+	- **userid**: User ID
 
 #### Result
 
@@ -1182,12 +1182,12 @@ If successful, the following response is sent:
 
 ```javascript
 {
-    "success":true,
-    "id": /* (number) User ID */,
-    "login": /* (string) User login */,
-    "name": /* (string) User's display name */,
-    "email": /* (string) User's email address */,
-    "isAdmin": /* (boolean) true if the user is an admin, false otherwise */
+	"success":true,
+	"id": /* (number) User ID */,
+	"login": /* (string) User login */,
+	"name": /* (string) User's display name */,
+	"email": /* (string) User's email address */,
+	"isAdmin": /* (boolean) true if the user is an admin, false otherwise */
 }
 ```
 
@@ -1211,11 +1211,11 @@ Creates a user.
 #### Parameters
 
 - Request body:
-    - **login**: Username
-    - **password**: Password in cleartext
-    - **name**: Display name
-    - **email** _(optional)_: Email address
-    - **isAdmin** _(optional)_: `true` if user is admin, `false` otherwise
+	- **login**: Username
+	- **password**: Password in cleartext
+	- **name**: Display name
+	- **email** _(optional)_: Email address
+	- **isAdmin** _(optional)_: `true` if user is admin, `false` otherwise
 
 #### Permissions
 
@@ -1227,7 +1227,7 @@ If successful, a new user is created and the following response is sent:
 
 ```javascript
 {
-    "success": true
+	"success": true
 }
 ```
 
@@ -1253,12 +1253,12 @@ Modify existing user.
 #### Parameters
 
 - Path component:
-    - **userid**: User ID
+	- **userid**: User ID
 - Request body:
-    - **password**: Password in cleartext
-    - **name**: Display name
-    - **email** _(optional)_: Email address
-    - **isAdmin** _(optional)_: `true` if user is admin, `false` otherwise
+	- **password**: Password in cleartext
+	- **name**: Display name
+	- **email** _(optional)_: Email address
+	- **isAdmin** _(optional)_: `true` if user is admin, `false` otherwise
 
 #### Permissions
 
@@ -1270,7 +1270,7 @@ If successful, the specified user's information on the server is updated, and th
 
 ```javascript
 {
-    "success": true
+	"success": true
 }
 ```
 
@@ -1295,7 +1295,7 @@ Deletes a user.
 #### Parameters
 
 - Path component:
-    - **userid**: User ID
+	- **userid**: User ID
 
 #### Permissions
 
@@ -1316,7 +1316,7 @@ The following response is sent:
 
 ```javascript
 {
-    "success": true
+	"success": true
 }
 ```
 
@@ -1336,12 +1336,12 @@ Register a device for push notifications.
 #### Parameters
 
 - Request body:
-    - **id**: Unique identifier from the device
-    - **type**: Push notification service. Supported types include:
-        - google
-        - apple **(TODO: not implemented)**
-        - microsoft **(TODO: not implemented)**
-    - **token**: Token provided to the mobile app by the upstream push service provider
+	- **id**: Unique identifier from the device
+	- **type**: Push notification service. Supported types include:
+		- google
+		- apple **(TODO: not implemented)**
+		- microsoft **(TODO: not implemented)**
+	- **token**: Token provided to the mobile app by the upstream push service provider
 
 #### Result
 
@@ -1349,7 +1349,7 @@ If successful, the following response is sent:
 
 ```javascript
 {
-    "success": true
+	"success": true
 }
 ```
 
