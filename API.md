@@ -31,6 +31,11 @@
 	- [PUT api/stream/:streamid](#put-apistreamstreamid)
 	- [DELETE api/stream/:streamid](#delete-apistreamstreamid)
 - [Subscription](#subscription)
+	- [GET api/subscription/user/:userid](#get-apisubscriptionuseruserid)
+	- [GET api/subscription/:streamid](#get-apisubscriptionstreamid)
+	- [GET api/subscription/:streamid/state](#get-apisubscriptionstreamidstate)
+	- [POST api/subscription/:streamid](#post-apisubscriptionstreamid)
+	- [DELETE api/subscription/:streamid](#delete-apisubscriptionstreamid)
 - [User](#user)
 
 ## General notes
@@ -340,7 +345,7 @@ The following response is sent:
 
 ### POST api/invite/:streamid
 
-Sends an invitation for the specified stream to the specified user.
+Sends an invitation for the specified stream to the specified user. If the user had previously requested an invitation to the stream, that request is consumed in the process of creating the invitation.
 
 #### Parameters
 
@@ -795,5 +800,173 @@ If unsuccessful, no changes are made on the server and the following response is
 - The user is not the stream owner and is not an admin
 
 ## Subscription
+
+### GET api/subscription/user/:userid
+
+Get list of streams to which the specified user is subscribed.
+
+#### Parameters
+
+- Path component:
+	- **userid**: User ID
+
+#### Result
+
+The following response is sent:
+```javascript
+{
+	"success": true,
+	"subscriptions": [
+		{
+			"streamid": /* (number) Stream ID */,
+			"streamName": /* (string) Stream name */,
+			"userid": /* (number) User ID of stream owner */,
+			"userLogin": /* (string) Login of stream owner */,
+			"userName": /* (string) Display name of stream owner */
+		},
+		...
+	]
+}
+```
+
+### GET api/subscription/:streamid
+
+Get list of users subscribed to the specified stream.
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID
+
+#### Result
+
+The following response is sent:
+```javascript
+{
+	"success": true,
+	"subscriptions": [
+		{
+			"streamid": /* (number) Stream ID */,
+			"streamName": /* (string) Stream name */,
+			"userid": /* (number) User ID of subscriber */,
+			"userLogin": /* (string) Login of subscriber */,
+			"userName": /* (string) Display name of subscriber */
+		},
+		...
+	]
+}
+```
+
+### GET api/subscription/:streamid/state
+
+Get the state of a the specified user's subscription relative to the specified stream(s).
+
+Subscriptions may be 1 of 3 states (i.e. they are mutually exclusive):
+1. **active**: User is currently subscribed to stream
+2. **invited**: User has been invited to stream
+3. **requested**: User has requested invitation to stream
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID. May be a comma-delimited list of stream IDs
+- Query string:
+	- **userid**: User ID
+
+#### Result
+
+The following response is sent:
+```javascript
+{
+	"success": true,
+	"states": [
+		{
+			"streamid": /* (number) Stream ID */,
+			"userid": /* (number) User ID */,
+			"state": /* (string) Subscription state */
+		},
+		...
+	]
+}
+```
+
+### POST api/subscription/:streamid
+
+Subscribes the specified user to the specified stream. If the user has an invitation to the stream, or if the user had requested an invitation for the stream, those are consumed in the process of subscribing to the stream.
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID
+- Request body:
+	- **userid**: User ID
+
+#### Permissions
+
+Users can subscribe themselves to _Public_ streams.
+
+Users can subscribe themselves to _Needs Approval_ and _Hidden_ streams for which they have an invitation.
+
+#### Result
+
+If successful, the specified user is subscribed to the specified stream. Any existing invitation for the user to join that stream, or invite request from the user for that stream, is consumed and replaced by the subscription. The following response is sent:
+```javascript
+{
+	"success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- User is already subscribed to stream
+- User's ID does not match `userid`
+- Stream is not _Public_ and user doesn't have an invitation for the stream
+
+### DELETE api/subscription/:streamid
+
+Unsubscribes the specified user from the specified stream.
+
+#### Parameters
+
+- Path component:
+	- **streamid**: Stream ID
+- Query string:
+	- **userid**: User ID
+
+#### Permissions
+
+Users can unsubscribe themselves from a stream.
+
+A stream owner can unsubscribe other users from streams they own.
+
+#### Result
+
+If successful, the specified user is unsubscribed from the specified stream, and the following response is sent:
+```javascript
+{
+	"success": true
+}
+```
+
+If unsuccessful, no changes are made on the server and the following response is sent:
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- User is not subscribed to stream
+- User's ID does not match `userid`, and user is not the stream owner
 
 ## User
