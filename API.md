@@ -3,6 +3,7 @@
 ## Table of contents
 
 - [General notes](#general-notes)
+	- [Authorization](#authorization)
 	- [Parameter types](#parameter-types)
 	- [Stream permissions](#stream-permissions)
 	- [Failure conditions](#failure-conditions)
@@ -49,7 +50,7 @@
 
 ## General notes
 
-### Authentication
+### Authorization
 
 All API calls require a valid authorisation token. The token is provided by [POST api/user/login/:login](#post-apiuserloginlogin) in response to a successful sign-in attempt.
 
