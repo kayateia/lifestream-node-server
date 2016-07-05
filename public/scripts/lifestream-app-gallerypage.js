@@ -50,17 +50,18 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 	//
 	// Parameters:
 	//   userid - ID of user whose streams to load
-	//   callback - Called with an array of stream objects as the only parameter
-	//     once a response has been received
+	//   callback - Called once a response has been received.
+	//      Signature: callback(err, streams)
 	galleryPage.loadStreams = function(userid, callback) {
 		$http.get("api/stream/list?userid=" + userid).then(
 			function done(response) {
 				alerts.remove("loadStreams", "persistent");
 				if (response.data.success) {
-					callback(response.data.streams);
+					callback(null, response.data.streams);
 				}
 				else {
 					alerts.add("danger", "Streams could not be loaded: " + response.data.error);
+					callback(response.data.error);
 				}
 			},
 			function fail(response) {
@@ -188,8 +189,12 @@ angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$s
 			delete galleryPage.initLoadInterval;
 
 			// First, load streams owned by the current user
-			galleryPage.loadStreams(session.user.id, function(streams) {
+			galleryPage.loadStreams(session.user.id, function(err, streams) {
 				var streamIds = [];
+
+				if (err) {
+					return;
+				}
 
 				// Produce array of stream IDs belonging to user
 				streams.forEach(function(stream) {
@@ -197,11 +202,12 @@ angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$s
 				});
 
 				// Display all stream IDs belonging to user in a single
-				// gallery section
-				galleryPage.sections.push({
+				// gallery section. This section should always be first on the
+				// page
+				galleryPage.sections[0] = {
 					title: "Your uploads",
 					streamIds: streamIds
-				});
+				};
 			});
 
 			// Next, load the current user's subscriptions
@@ -214,19 +220,29 @@ angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$s
 				});
 
 				// Display aggregate gallery section of recent additions to any
-				// stream to which the user is subscribed
-				galleryPage.sections.push({
+				// stream to which the user is subscribed. This section should
+				// always be second on the page
+				galleryPage.sections[1] = {
 					title: "Recent additions to your subscriptions",
 					streamIds: streamIds
-				});
+				};
 
 				// Display a row for each gallery to which the user is
-				// subscribed
+				// subscribed. This section should always come after the prior
+				// two
 				subscriptions.forEach(function(subscription) {
-					galleryPage.sections.push({
-						title: subscription.streamName,
-						streamIds: [ subscription.streamid ]
-					});
+					if (galleryPage.sections.length < 2) {
+						galleryPage.sections[2] = {
+							title: subscription.streamName,
+							streamIds: [ subscription.streamid ]
+						};
+					}
+					else {
+						galleryPage.sections.push({
+							title: subscription.streamName,
+							streamIds: [ subscription.streamid ]
+						});
+					}
 				});
 			});
 		}
@@ -241,27 +257,40 @@ angular.module("LifeStreamWebApp").controller("UserGalleryPageController", [ "$s
 
 	// Load targetted user's info
 	galleryPage.getGalleryUserInfo($routeParams.userid, function() {
-		galleryPage.loadStreams(galleryPage.targetUser.id, function(streams) {
+		galleryPage.loadStreams(galleryPage.targetUser.id, function(err, streams) {
 			var streamIds = [];
+
+			if (err) {
+				return;
+			}
 
 			// Produce array of stream IDs belonging to user
 			streams.forEach(function(stream) {
 				streamIds.push(stream.id);
 			});
 
-			// Display aggregate gallery section containing all user activity
-			galleryPage.sections.push({
+			// Display aggregate gallery section containing all user activity.
+			// This section should always be first on the page
+			galleryPage.sections[0] = {
 				title: "Recent additions from " + galleryPage.targetUser.name,
 				streamIds: streamIds
-			});
+			};
 
 			// Display an additional gallery section for each stream belonging
-			// to the user
+			// to the user. This section should always come after the prior one
 			streams.forEach(function(stream) {
-				galleryPage.sections.push({
-					title: stream.name,
-					streamIds: [ stream.id ]
-				});
+				if (galleryPage.sections.length < 1 ) {
+					galleryPage.sections[1] = {
+						title: stream.name,
+						streamIds: [ stream.id ]
+					};
+				}
+				else {
+					galleryPage.sections.push({
+						title: stream.name,
+						streamIds: [ stream.id ]
+					});
+				}
 			});
 		});
 	});
