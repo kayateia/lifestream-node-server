@@ -177,14 +177,34 @@ router.put("/:id", function(req, res, next) {
 			return res.json(models.error("Permission denied"));
 		}
 
+		// If no new password was specified, proceed to update the user
+		if (!pwd || isAdmin) {
+			dbmod.userUpdate(id, pwdhash, name, email, admin, function(err) {
+				if (err) {
+					return res.json(err);
+				}
 
-		dbmod.userUpdate(id, pwdhash, name, email, admin, function(err) {
-			if (err) {
-				return res.json(err);
-			}
+				res.json(models.success());
+			});
+		}
+		// Otherwise, if the password was changed and the requestor is not an
+		// admin, validate the requestor's identity by requiring the old
+		// password
+		else {
+			dbmod.userLogin(login, pwhash, function(err, id) {
+				if (err) {
+					return res.json(err);
+				}
 
-			res.json(models.success());
-		});
+				dbmod.userUpdate(id, pwdhash, name, email, admin, function(err) {
+					if (err) {
+						return res.json(err);
+					}
+
+					res.json(models.success());
+				});
+			});
+		}
 	});
 });
 
