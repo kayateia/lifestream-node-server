@@ -2,7 +2,7 @@
 	<!-- Use ngInit to get a reference to the form.FormController instance
 		 (i.e. $scope[formCtrl.form.name]; in the template context,
 		  $scope === this) -->
-	<div ng-init="formCtrl.modelCtrl = this[formCtrl.form.name]" ng-repeat="field in formCtrl.fields">
+	<div ng-init="formCtrl.modelCtrl = this[formCtrl.form.name]" ng-repeat="field in formCtrl.fields" ng-if="!(session.user.isAdmin && field.hiddenFromAdmin)">
 		<div ng-class="[ 'form-group has-feedback', { 'has-success': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$valid, 'has-error': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$invalid } ]">
 			<label for="{{field.id}}" class="col-sm-3 control-label">{{field.label}}</label>
 			<div class="col-sm-9">
