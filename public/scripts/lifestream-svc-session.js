@@ -44,6 +44,16 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 			$window.location.replace("login?reason=logout");
 		};
 
+		// session.queryUserInfo()
+		//
+		//   Queries the server for information about the given user ID, then
+		//   stores that info in session.user, which is available to any object
+		//   that injects lsSession as a dependency.
+		//
+		// Parameters:
+		//   userid - User ID
+		//   callback (optional) - Function will be called once a response has
+		//     been received from the server. Signature: callback(err, user)
 		session.queryUserInfo = function(userid, callback) {
 			$http.get("api/user/" + userid)
 				.then(
@@ -58,11 +68,14 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 								isAdmin: response.data.isAdmin
 							};
 							if (callback) {
-								callback(session.user);
+								callback(null, session.user);
 							}
 						}
 						else {
 							alerts.add("warning", "Querying user info failed: " + response.data.error, "queryUserInfo", "persistent");
+							if (callback) {
+								callback(response.data.error);
+							}
 						}
 					},
 					function fail(response) {

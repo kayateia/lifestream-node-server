@@ -2,6 +2,7 @@ body {
 	background-color: #222222;
 	color: #eeeeee;
 	font-family: "Lucida Grande", Helvetica, Arial, sans-serif;
+	padding-right: 15px !important; /* this is modified by a script when the lightbox is open, causing the navbar to shift visibly */
 	padding-top: 15px;
 	padding-bottom: 15px;
 }
@@ -46,6 +47,12 @@ button.btn-link:active {
 .navbar-default .navbar-nav > .active > a:focus {
 	background-color: rgba(15, 15, 15, 0.5);
 	color: #eeeeee;
+}
+.navbar-default .navbar-nav > .open > a,
+.navbar-default .navbar-nav > .open > a:hover,
+.navbar-default .navbar-nav > .open > a:focus {
+	background-color: rgba(231, 231, 231, 0.5);
+	color: #555555;
 }
 .navbar-default .navbar-toggle:hover, .navbar-default .navbar-toggle:focus {
 	background-color: rgba(15, 15, 15, 0.1);

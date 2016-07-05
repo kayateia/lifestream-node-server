@@ -25,6 +25,24 @@ router.get("/", function(req, res, next) {
 		res.render("index", templateVars);
 	});
 });
+router.get("/account", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
+		var templateVars = {
+			webClient: config.webClient,
+			isAdmin: isAdmin ? true: false,
+			userid: tokenContents ? tokenContents.id : null,
+			userLogin: tokenContents ? tokenContents.login : null,
+			title: "LifeStream - Account"
+		}
+
+		// Not logged in; redirect to login page
+		if (!tokenContents) {
+			return res.redirect(302, "login?reason=session_timeout&fromUrl=" + encodeURIComponent(req.originalUrl));
+		}
+
+		res.render("account", templateVars);
+	});
+});
 router.get("/gallery", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents, isAdmin) {
 		var templateVars = {

@@ -3,8 +3,14 @@ angular.module("LifeStreamWebApp").controller("LifeStreamNavbarController", [ "$
 	navbar.loginLabel = serverData.userid ? "Logout " + serverData.userLogin : "Login";
 	navbar.page = ""; // name of the current page
 
+	// If user is currently logged in, query server for details
 	if (serverData.userid) {
-		session.queryUserInfo(serverData.userid);
+		session.queryUserInfo(serverData.userid, function(err, user) {
+			// Make those details available to the navbar template
+			if (!err) {
+				navbar.user = user;
+			}
+		});
 	}
 
 	navbar.toggleLogin = function() {

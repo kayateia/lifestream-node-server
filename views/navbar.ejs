@@ -26,7 +26,14 @@
 			</ul>
 		<% } %>
 		<ul class="nav navbar-nav navbar-right">
-			<li ng-class="{ active: navbar.page == '/login' }"><a ng-click="navbar.toggleLogin()" href="#">{{navbar.loginLabel}}</a></li>
+			<li ng-if="!navbar.user" ng-class="{ active: navbar.page == '/login' }"><a href="login">{{navbar.loginLabel}}</a></li>
+			<li ng-if="navbar.user" ng-class="[dropdown, { active: navbar.page == '/login' || navbar.page == '/account' }]">
+				<a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" ng-click="$event.preventDefault();">{{navbar.user.name}} <span class="caret"></span></a>
+				<ul class="dropdown-menu">
+					<li><a href="account">Account</a></li>
+					<li><a href="#" ng-click="navbar.toggleLogin()">Logout</a></li>
+				</ul>
+			</li>
 		</ul>
 	</div>
 </nav>
