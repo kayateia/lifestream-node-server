@@ -64,6 +64,33 @@ Once a token has been obtained, it can be used 2 ways:
 
 	> Bearer%20token\_content\_goes\_here
 
+If no authorisation token is included with a request, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": "Missing bearer token"
+}
+```
+
+If an invalid uthorisation token was included, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": "Token is invalid"
+}
+```
+
+If a valid authorisation token was included, but the token has expired, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": "Token has expired"
+}
+```
+
 ### Parameter types
 
 This document mentions 3 different kinds of parameters.
