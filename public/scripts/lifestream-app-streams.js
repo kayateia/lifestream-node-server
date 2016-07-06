@@ -149,7 +149,7 @@ angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", 
 	});
 }]);
 
-angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAlerts", "lsSession", "$timeout", "$window", function($scope, $http, $interval, alerts, session, $timeout, $window) {
+angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", "$timeout", "$window", function($scope, $http, $interval, alerts, api, session, $timeout, $window) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -315,50 +315,44 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	formCtrl.invite = function(streamId, userLogin, $index) {
 		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
-		$http.get("api/user/login/" + userLogin).then(
-			function done(response) {
-				alerts.remove("invite", "persistent");
-				if (response.data.success) {
-					$http.post("api/invite/" + stream.id,
-						{
-							userid: response.data.id
-						}
-					).then(
-						function done(response2) {
-							if (response2.data.success) {
-								// Remove from list of requests in model (in case
-								// this invite was created by accepting an
-								// invite request)
-								stream.requests.forEach(function(request, index) {
-									if (request.userid == response.data.id) {
-										removed = stream.requests.splice(index, 1);
-									}
-								});
+		api.getUserByLogin(userLogin, {
+			id: "invite",
+			error: "Couldn't invite " + userLogin + ":"
+		}).then(
+			function(data) {
+				$http.post("api/invite/" + stream.id,
+					{
+						userid: data.id
+					}
+				).then(
+					function done(response2) {
+						if (response2.data.success) {
+							// Remove from list of requests in model (in case
+							// this invite was created by accepting an
+							// invite request)
+							stream.requests.forEach(function(request, index) {
+								if (request.userid == data.id) {
+									removed = stream.requests.splice(index, 1);
+								}
+							});
 
-								// Update list of invites in model
-								stream.invites.push({
-									streamid: streamId,
-									userLogin: userLogin,
-									userName: response.data.name,
-									userid: response.data.id
-								});
-								alerts.add("success", "Invited " + response.data.name + " to " + stream.name);
-							}
-							else {
-								alerts.add("danger", "Could not invite " + userLogin + ": " + response2.data.error);
-							}
-						},
-						function fail(response2) {
-							alerts.add("danger", "Server error inviting user: " + response2.status + " " + response2.statusText, "invite", "persistent");
+							// Update list of invites in model
+							stream.invites.push({
+								streamid: streamId,
+								userLogin: userLogin,
+								userName: data.name,
+								userid: data.id
+							});
+							alerts.add("success", "Invited " + data.name + " to " + stream.name);
 						}
-					);
-				}
-				else {
-					alerts.add("danger", "Could not invite: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error inviting user: " + response.status + " " + response.statusText, "invite", "persistent");
+						else {
+							alerts.add("danger", "Could not invite " + userLogin + ": " + response2.data.error);
+						}
+					},
+					function fail(response2) {
+						alerts.add("danger", "Server error inviting user: " + response2.status + " " + response2.statusText, "invite", "persistent");
+					}
+				);
 			}
 		);
 	};
@@ -512,7 +506,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	}, 100);
 }]);
 
-angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scope", "$http", "$interval", "lsAlerts", "lsSession", function($scope, $http, $interval, alerts, session) {
+angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scope", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", function($scope, $http, $interval, alerts, api, session) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -748,23 +742,18 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		}*/
 
 		// Search user logins and user names for substring
-		$http.get("api/user/search?q=" + encodeURIComponent(terms)).then(
-			function done(response) {
-				alerts.remove("submitSearch", "persistent");
-				if (response.data.success) {
-					formCtrl.search.users = response.data.users;
-					if (formCtrl.search.users.length == 0) {
-						alerts.add("info", "No matching users");
-					}
+		api.findUser(terms, {
+			id: "submitSearch",
+			error: "Error searching users: "
+		}).then(
+			function(data) {
+				formCtrl.search.users = data.users;
+				if (formCtrl.search.users.length == 0) {
+					alerts.add("info", "No matching users");
 				}
-				else {
-					alerts.add("danger", "Error searching users: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error searching users: " + response.status + " " + response.statusText, "submitSearch", "persistent");
 			}
 		);
+
 		// Search stream names for substring
 		$http.get("api/stream/search?q=" + encodeURIComponent(terms)).then(
 			function done(response) {

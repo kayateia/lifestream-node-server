@@ -1,4 +1,4 @@
-angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "lsApi", "$location", "$http", "lsKeepAlive", function($scope, alerts, api, $location, $http, keepalive) {
+angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "lsApi", "$location", "lsKeepAlive", function($scope, alerts, api, $location, keepalive) {
 	var usermgr = this;
 
 	usermgr.operations = [
@@ -105,8 +105,8 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 		if (login.$viewValue) {
 			api.getUserByLogin(login.$viewValue, {
 				id: "validateLoginExists",
-				persistent: true,
-				error: "Couldn't validate user: "
+				error: "Couldn't validate user: ",
+				persistent: true
 			}).then(
 				function(data) {
 					// If we got a valid response from the server, the login
@@ -173,7 +173,7 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 	});
 }]);
 
-angular.module("LifeStreamWebApp").controller("UserAddController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
+angular.module("LifeStreamWebApp").controller("UserAddController", ["$scope", "lsAlerts", "lsApi", function($scope, alerts, api) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -231,29 +231,22 @@ angular.module("LifeStreamWebApp").controller("UserAddController", ["$scope", "l
 	];
 
 	formCtrl.submit = function() {
-		$http.post("api/user", {
+		api.createUser({
 			login: formCtrl.login,
 			password: formCtrl.password,
 			name: formCtrl.name,
 			email: formCtrl.email,
 			isAdmin: formCtrl.isAdmin
-		}).then(
-			function done(response) {
-				if (response.data.success) {
-					alerts.add("success", "User " + formCtrl.login + " successfully created", "submitFunc", "persistent");
-				}
-				else {
-					alerts.add("danger", "User " + formCtrl.login + " could not be created: " + response.data.error, "submitFunc", "persistent");
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error creating user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
-			}
-		);
+		}, {
+			id: "submitFunc",
+			success: "User " + formCtrl.login + " successfully created",
+			error: "User " + formCtrl.login + " could not be created: ",
+			persistent: true
+		});
 	};
 }]);
 
-angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
+angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "lsAlerts", "lsApi", function($scope, alerts, api) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -330,41 +323,29 @@ angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "
 	];
 
 	formCtrl.submit = function() {
-		$http.get("api/user/login/" + formCtrl.login).then(
-			function done(response) {
-				if (response.data.success) {
-					alerts.remove("submitFunc", "persistent");
-					$http.put("api/user/" + response.data.id, {
-						password: formCtrl.password,
-						name: formCtrl.name,
-						email: formCtrl.email,
-						isAdmin: formCtrl.isAdmin
-					}).then(
-						function done(response2) {
-							if (response2.data.success) {
-								alerts.add("success", "User " + formCtrl.login + " successfully updated", "submitFunc", "persistent");
-							}
-							else {
-								alerts.add("danger", "User " + formCtrl.login + " could not be updated: " + response2.data.error, "submitFunc", "persistent");
-							}
-						},
-						function fail(response2) {
-							alerts.add("danger", "Server error updating user: " + response2.status + " " + response2.statusText, "submitFunc", "persistent");
-						}
-					);
-				}
-				else {
-					alerts.add("danger", "User " + formCtrl.login + " could not be updated: " + response.data.error, "submitFunc", "persistent");
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error getting user ID: " + response.status + " " + response.statusText, "submitFunc", "persistent");
+		api.getUserByLogin(formCtrl.login, {
+			id: "submitFunc",
+			error: "User " + formCtrl.login + " could not be updated: ",
+			persistent: true
+		}).then(
+			function(data) {
+				api.updateUser(data.id, {
+					password: formCtrl.password,
+					name: formCtrl.name,
+					email: formCtrl.email,
+					isAdmin: formCtrl.isAdmin
+				}, {
+					id: "submitFunc",
+					success: "User " + formCtrl.login + " successfully updated",
+					error: "User " + formCtrl.login + " could not be updated: ",
+					persistent: true
+				});
 			}
 		);
 	};
 }]);
 
-angular.module("LifeStreamWebApp").controller("UserDelController", [ "$scope", "lsAlerts", "$http", function($scope, alerts, $http) {
+angular.module("LifeStreamWebApp").controller("UserDelController", [ "$scope", "lsAlerts", "lsApi", function($scope, alerts, api) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -395,30 +376,18 @@ angular.module("LifeStreamWebApp").controller("UserDelController", [ "$scope", "
 	];
 
 	formCtrl.submit = function() {
-		$http.get("api/user/login/" + formCtrl.login).then(
-			function done(response) {
-				if (response.data.success) {
-					alerts.remove("submitFunc", "persistent");
-					$http.delete("api/user/" + response.data.id).then(
-						function done(response) {
-							if (response.data.success) {
-								alerts.add("success", "User " + formCtrl.login + " successfully deleted", "submitFunc", "persistent");
-							}
-							else {
-								alerts.add("danger", "User " + formCtrl.login + " could not be deleted: " + response.data.error, "submitFunc", "persistent");
-							}
-						},
-						function fail(response) {
-							alerts.add("danger", "Server error deleting user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
-						}
-					);
-				}
-				else {
-					alerts.add("danger", "User " + formCtrl.login + " could not be deleted: " + response.data.error, "submitFunc", "persistent");
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error getting user ID: " + response.status + " " + response.statusText, "submitFunc", "persistent");
+		api.getUserByLogin(formCtrl.login, {
+			id: "submitFunc",
+			error: "User " + formCtrl.login + " could not be deleted: ",
+			persistent: true
+		}).then(
+			function(data) {
+				api.deleteUser(data.id, {
+					id: "submitFunc",
+					success: "User " + formCtrl.login + " successfully deleted",
+					error: "User " + formCtrl.login + " could not be deleted: ",
+					persistent: true
+				});
 			}
 		);
 	};

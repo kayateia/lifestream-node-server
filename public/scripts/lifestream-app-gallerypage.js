@@ -15,7 +15,7 @@ angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routePro
 		.otherwise("/.");
 }]);
 
-angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController", [ "$scope", "$http", "lsAlerts", "$routeParams", function($scope, $http, alerts, $routeParams) {
+angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController", [ "$scope", "$http", "lsAlerts", "lsApi", "$routeParams", function($scope, $http, alerts, api, $routeParams) {
 	var galleryPage = this;
 
 	// Expose $routeParams to template
@@ -106,28 +106,22 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 	//   callback (optional) - Called without parameters once stream info has
 	//     been received
 	galleryPage.getGalleryUserInfo = function(userid, callback) {
-		$http.get("/api/user/" + userid).then(
-			function done(response) {
-				alerts.remove("getGalleryUserInfo", "persistent");
-				if (response.data.success) {
-					galleryPage.targetUser = {
-						id: response.data.id,
-						login: response.data.login,
-						name: response.data.name,
-						email: response.data.email,
-						isAdmin: response.data.isAdmin
-					};
+		api.getUserById(userid, {
+			id: "getGalleryUserInfo",
+			error: "Error loading user info: "
+		}).then(
+			function(data) {
+				galleryPage.targetUser = {
+					id: data.id,
+					login: data.login,
+					name: data.name,
+					email: data.email,
+					isAdmin: data.isAdmin
+				};
 
-					if (callback) {
-						callback();
-					}
+				if (callback) {
+					callback();
 				}
-				else {
-					alerts.add("danger", "Error loading user info: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading user info: " + response.status + " " + response.statusText, "getGalleryUserInfo", "persistent");
 			}
 		);
 	};

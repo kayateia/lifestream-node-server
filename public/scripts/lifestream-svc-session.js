@@ -1,5 +1,5 @@
 angular.module("LifeStreamSession", [ "ngCookies", "LifeStreamAPI" ])
-	.factory("lsSession", [ "$cookies", "$http", "lsAlerts", "lsApi", "$window", function($cookies, $http, alerts, api, $window) {
+	.factory("lsSession", [ "$cookies", "lsAlerts", "lsApi", "$window", function($cookies, alerts, api, $window) {
 		var session = this;
 
 		// Keep track of information about the logged-in user
@@ -19,22 +19,19 @@ angular.module("LifeStreamSession", [ "ngCookies", "LifeStreamAPI" ])
 			// reaching the login page.
 			var fromUrlStr = fromUrl ? "&fromUrl=" + encodeURIComponent(fromUrl) : "";
 
-			$http.post("api/user/login/" + login, {
+			api.loginUser(login, {
 				password: password
+			},
+			{
+				id: "login"
 			}).then(
-				function done(response) {
-					alerts.remove("login", "persistent");
-					if (response.data.success) {
-						$cookies.put("authorization", "Bearer " + response.data.token);
-						$window.location.replace("login?reason=successful_login" + fromUrlStr);
-					}
-					else {
-						$cookies.remove("authorization");
+				function(data) {
+					$window.location.replace("login?reason=successful_login" + fromUrlStr);
+				},
+				function(err) {
+					if (err.data) {
 						$window.location.replace("login?reason=failed_login" + fromUrlStr + "&detail=" + encodeURIComponent(response.data.error));
 					}
-				},
-				function fail(response) {
-					alerts.add("danger", "Server error logging in: " + response.status + " " + response.statusText, "login", "persistent");
 				}
 			);
 		};
@@ -80,20 +77,11 @@ angular.module("LifeStreamSession", [ "ngCookies", "LifeStreamAPI" ])
 		};
 
 		session.refresh = function() {
-			$http.get("api/user/new-token").then(
-				function done(response) {
-					if (response.data.success) {
-						alerts.remove("refresh", "persistent");
-						$cookies.put("authorization", "Bearer " + response.data.token);
-					}
-					else {
-						alerts.add("warning", "Refreshing authorization token failed: " + response.data.error, "refresh", "persistent");
-					}
-				},
-				function fail(response) {
-					alerts.add("danger", "Server error refreshing authorization token: " + response.status + " " + response.statusText, "refresh", "persistent");
-				}
-			);
+			api.refreshToken({
+				id: "refresh",
+				error: "Refreshing authorization token failed: ",
+				persistent: true
+			});
 		};
 
 		return session;

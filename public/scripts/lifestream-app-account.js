@@ -1,4 +1,4 @@
-angular.module("LifeStreamWebApp").controller("LifeStreamAccountManager", [ "$scope", "$http", "$interval", "lsAlerts", "lsKeepAlive", "lsSession", function($scope, $http, $interval, alerts, keepalive, session) {
+angular.module("LifeStreamWebApp").controller("LifeStreamAccountManager", [ "$scope", "$interval", "lsAlerts", "lsApi", "lsKeepAlive", "lsSession", function($scope, $interval, alerts, api, keepalive, session) {
 	var formCtrl = this;
 
 	// Expose session object to scope
@@ -17,36 +17,28 @@ angular.module("LifeStreamWebApp").controller("LifeStreamAccountManager", [ "$sc
 		var valid = false;
 
 		// Seach for users with the same display name as that which was entered
-		$http.get("api/user/search?q=" + formCtrl.name).then(
-			function done(response) {
-				if (response.data.success) {
-					var matched = false;
+		api.findUser(formCtrl.name, {
+			id: "validateName"
+		}).then(
+			function(data) {
+				var matched = false;
 
-					response.data.users.forEach(function(user) {
-						// If exact match is found in a different user's name,
-						// form is invalid. Display name must be unique
-						if (user.name == formCtrl.name && user.id != session.user.id) {
-							matched = true;
-						}
-					});
-					valid = !matched;
-					field.$setValidity("exists", valid);
+				data.users.forEach(function(user) {
+					// If exact match is found in a different user's name,
+					// form is invalid. Display name must be unique
+					if (user.name == formCtrl.name && user.id != session.user.id) {
+						matched = true;
+					}
+				});
+				valid = !matched;
+				field.$setValidity("exists", valid);
 
-					if (valid) {
-						alerts.remove("validateName", "persistent");
-					}
-					else {
-						alerts.add("danger", "Display name must be unique", "validateName", "persistent");
-					}
+				if (valid) {
+					alerts.remove("validateName", "persistent");
 				}
 				else {
-					alerts.add("danger", "Server error validating display name: " + response.data.error);
-					field.$setValidity("exists", valid, "validateName", "persistent");
+					alerts.add("danger", "Display name must be unique", "validateName", "persistent");
 				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error validating display name: " + response.status + " " + response.statusText, "validateName", "persistent");
-				field.$setValidity("exists", valid);
 			}
 		);
 	};
@@ -74,26 +66,16 @@ angular.module("LifeStreamWebApp").controller("LifeStreamAccountManager", [ "$sc
 	};
 
 	formCtrl.submit = function() {
-		$http.put("api/user/" + session.user.id, {
+		api.updateUser(session.user.id, {
 			name: formCtrl.name,
 			email: formCtrl.email,
 			password: formCtrl.password,
 			oldPassword: formCtrl.oldPassword
-		}).then(
-			function done(response) {
-				if (response.data.success) {
-					alerts.add("success", "Changes saved");
-				}
-				else {
-					alerts.add("danger", "Server error updating user: " + response.data.error);
-					field.$setValidity("exists", valid, "submitFunc", "persistent");
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error updating user: " + response.status + " " + response.statusText, "submitFunc", "persistent");
-				field.$setValidity("exists", valid);
-			}
-		);
+		}, {
+			id: "submitFunc",
+			success: "Changes saved",
+			error: "Error updating user: "
+		});
 	};
 
 	// Form fields definition
