@@ -35,7 +35,7 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 		if (response.data.success) {
 			// If a success message was specified, show it
 			if (alertOpts.success) {
-				alerts.add("success", alertOpts.success, alertOpts.id, alertOpts.persistent ? "persistent" : undefined);
+				alerts.add("success", alertOpts.success, alertOpts.persistent ? alertOpts.id : undefined, alertOpts.persistent ? "persistent" : undefined);
 			}
 			// Resolve the calling function's promise with data from the
 			// server's response
@@ -49,7 +49,7 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 		else {
 			// If an error message was specified, show it
 			if (alertOpts.error) {
-				alerts.add("danger", alertOpts.error + response.data.error, alertOpts.id, alertOpts.persistent ? "persistent" : undefined);
+				alerts.add("danger", alertOpts.error + response.data.error, alertOpts.persistent ? alertOpts.id : undefined, alertOpts.persistent ? "persistent" : undefined);
 			}
 			// Reject the calling function's promise with the full response
 			// object, so the function awaiting that promise can distinguish
