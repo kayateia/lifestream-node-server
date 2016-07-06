@@ -1,5 +1,5 @@
-angular.module("LifeStreamSession", [ "ngCookies" ])
-	.factory("lsSession", [ "$cookies", "$http", "lsAlerts", "$window", function($cookies, $http, alerts, $window) {
+angular.module("LifeStreamSession", [ "ngCookies", "LifeStreamAPI" ])
+	.factory("lsSession", [ "$cookies", "$http", "lsAlerts", "lsApi", "$window", function($cookies, $http, alerts, api, $window) {
 		var session = this;
 
 		// Keep track of information about the logged-in user
@@ -55,33 +55,28 @@ angular.module("LifeStreamSession", [ "ngCookies" ])
 		//   callback (optional) - Function will be called once a response has
 		//     been received from the server. Signature: callback(err, user)
 		session.queryUserInfo = function(userid, callback) {
-			$http.get("api/user/" + userid)
-				.then(
-					function done(response) {
-						if (response.data.success) {
-							alerts.remove("queryUserInfo", "persistent");
-							session.user = {
-								id: response.data.id,
-								login: response.data.login,
-								name: response.data.name,
-								email: response.data.email,
-								isAdmin: response.data.isAdmin
-							};
-							if (callback) {
-								callback(null, session.user);
-							}
-						}
-						else {
-							alerts.add("warning", "Querying user info failed: " + response.data.error, "queryUserInfo", "persistent");
-							if (callback) {
-								callback(response.data.error);
-							}
-						}
-					},
-					function fail(response) {
-						alerts.add("danger", "Server error querying user info: " + response.status + " " + response.statusText, "queryUserInfo", "persistent");
+			api.getUserById(userid, {
+				id: "queryUserInfo",
+				error: "Couldn't get info for logged-in user: "
+			}).then(
+				function(data) {
+					session.user = {
+						id: data.id,
+						login: data.login,
+						name: data.name,
+						email: data.email,
+						isAdmin: data.isAdmin
+					};
+					if (callback) {
+						callback(null, session.user);
 					}
-				);
+				},
+				function(err) {
+					if (callback && err.data) {
+						callback(err.data.error);
+					}
+				}
+			);
 		};
 
 		session.refresh = function() {

@@ -1,4 +1,4 @@
-angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "$location", "$http", "lsKeepAlive", function($scope, alerts, $location, $http, keepalive) {
+angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope", "lsAlerts", "lsApi", "$location", "$http", "lsKeepAlive", function($scope, alerts, api, $location, $http, keepalive) {
 	var usermgr = this;
 
 	usermgr.operations = [
@@ -72,23 +72,24 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 		// If local validation passes, check whether the user already exists
 		// on the server side.
 		if (login.$viewValue) {
-			$http.get("api/user/login/" + login.$viewValue)
-				.then(
-					function done(response) {
-						if (response.data.success) {
-							alerts.add("danger", "User " + login.$viewValue + " already exists", "validateLoginIsNew", "persistent");
-							login.$setValidity("exists", false);
-						}
-						else {
-							alerts.remove("validateLoginIsNew", "persistent");
-							login.$setValidity("exists", true);
-						}
-					},
-					function fail(response) {
-						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginIsNew", "persistent");
-						login.$setValidity("server", false);
-					}
-				);
+			api.getUserByLogin(login.$viewValue, {
+				id: "validateLoginIsNew",
+				persistent: true
+			}).then(
+				function(data) {
+					// Validation is unsuccessful if user already exists
+					alerts.add("danger", "User " + login.$viewValue + " already exists", "validateLoginIsNew", "persistent")
+					login.$setValidity("exists", false);
+				},
+				function(err) {
+					// If request failed due to an application error, user
+					// doesn't exist and validation is successful.
+					//
+					// If the request failed due to a server error, validation
+					// is unsuccessful.
+					login.$setValidity("exists", err.data ? true : false);
+				}
+			);
 		}
 		else {
 			alerts.add("danger", "Login is required", "validateLoginIsNew", "persistent");
@@ -102,31 +103,31 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 		// If local validation passes, check whether the user already exists
 		// on the server side.
 		if (login.$viewValue) {
-			$http.get("api/user/login/" + login.$viewValue)
-				.then(
-					function done(response) {
-						if (response.data.success) {
-							alerts.remove("validateLoginExists", "persistent");
-							login.$setValidity("exists", true);
-
-							if (callback) {
-								callback(null, response.data);
-							}
-						}
-						else {
-							alerts.add("danger", "User " + login.$viewValue + " doesn't exist", "validateLoginExists", "persistent");
-							login.$setValidity("exists", false);
-
-							if (callback) {
-								callback(response.data.error);
-							}
-						}
-					},
-					function fail(response) {
-						alerts.add("danger", "Server error validating form: " + response.status + " " + response.statusText, "validateLoginExists", "persistent");
-						login.$setValidity("server", false);
+			api.getUserByLogin(login.$viewValue, {
+				id: "validateLoginExists",
+				persistent: true,
+				error: "Couldn't validate user: "
+			}).then(
+				function(data) {
+					// If we got a valid response from the server, the login
+					// corresponds to an existing user and validation is
+					// successful
+					login.$setValidity("exists", true);
+					if (callback) {
+						callback(null, data);
 					}
-				);
+				},
+				function(err) {
+					// If we received an invalid response from the server,
+					// validation is not succesful.
+					login.$setValidity("exists", false);
+					if (callback && err.data) {
+						// The callback is only interested in application
+						// errors, not server errors
+						callback(err.data.error);
+					}
+				}
+			);
 		}
 		else {
 			alerts.add("danger", "Login is required", "validateLoginExists", "persistent");
