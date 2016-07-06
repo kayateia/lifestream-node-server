@@ -245,7 +245,79 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 					api.httpResolveHandler(response, alertOpts, resolve, reject);
 				},
 				function(response) {
-					api.httpRejectHandler("Server error refreshing authorization token: ", response, alertOpts, resolve, reject);
+					api.httpRejectHandler("Server error searching users: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getImageStreams()
+	//
+	//   See API documentation for details:
+	//     GET api/image/:imageid/streams
+	api.getImageStreams = function(imageid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/image/" + imageid + "/streams").then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting streams containing image: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.addImageToStream()
+	//
+	//   See API documentation for details:
+	//     POST api/image/:imageid/streams
+	api.addImageToStream = function(imageid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.post("api/image/" + imageid + "/streams", {
+				streamid: streamid
+			}).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error associating image with stream: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.removeImageFromStream()
+	//
+	//   See API documentation for details:
+	//     POST api/image/:imageid/streams
+	api.removeImageFromStream = function(imageid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.delete("api/image/" + imageid + "/streams?streamid=" + streamid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error dissociating image from stream: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.setImageComment()
+	//
+	//   See API documentation for details:
+	//     PUT api/image/:imageid/comment
+	api.setImageComment = function(imageid, comment, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.put("api/image/" + imageid + "/comment", {
+				comment: comment
+			}).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error setting image comment: ", response, alertOpts, resolve, reject);
 				}
 			);
 		});

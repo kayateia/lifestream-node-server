@@ -66,7 +66,7 @@ angular.module("LifeStreamLightbox").factory("lsLightbox", [ "Lightbox", functio
 // This controller manages the custom template's behaviour. It uses properties
 // belonging to the service to communicate with both
 // LifeStreamGalleryController and angular-bootstrap-lightbox.
-angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "$http", "lsAlerts", "lsLightbox", "lsSession", "$timeout", function($scope, $http, alerts, lsLightbox, session, $timeout) {
+angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "$http", "lsAlerts", "lsApi", "lsLightbox", "lsSession", "$timeout", function($scope, $http, alerts, api, lsLightbox, session, $timeout) {
 	var lightboxCtrl = this;
 
 	// true when comment editor is shown
@@ -143,24 +143,16 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		var newComment = lightboxCtrl.newComment;
 
 		// Save new comment to the server
-		$http.put("api/image/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id + "/comment", {
-			comment: newComment
+		api.setImageComment(lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id, newComment, {
+			id: "saveComment",
+			error: "Comment update failed: "
 		}).then(
-			function done(response) {
-				alerts.remove("saveComment", "persistent");
-				if (response.data.success) {
-					// Update the local data model
-					lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].comment = newComment;
+			function(data) {
+				// Update the local data model
+				lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].comment = newComment;
 
-					// Only hide comment form if save is successful
-					lightboxCtrl.hideCommentForm();
-				}
-				else {
-					alerts.add("danger", "Comment update failed: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error updating comment: " + response.status + " " + response.statusText, "saveComment", "persistent");
+				// Only hide comment form if save is successful
+				lightboxCtrl.hideCommentForm();
 			}
 		);
 	};
@@ -263,9 +255,6 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 	};
 
 	lightboxCtrl.streamToggled = function(stream) {
-		// true if server-side update is successful
-		var successful = false;
-
 		// Check whether current image is associated with the toggled stream
 		var index = lightboxCtrl.findStreamIndex(stream.id, lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams);
 
@@ -278,53 +267,30 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 
 		// Otherwise, notify the server about the change in association
 		if (stream.associated) {
-			$http.post(
-				"api/image/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id + "/streams",
-				{
-					streamid: stream.id
-				}
-			).then(
-				function done(response) {
-					alerts.remove("streamToggled", "persistent");
-					if (response.data.success) {
-						successful = true;
-						lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams.push(stream);
-						alerts.add("success", "Added image to " + stream.name);
-					}
-					else {
-						alerts.add("danger", "Couldn't add image to stream: " + response.data.error);
-
-						// If server-side data couldn't be updated, revert model
-						stream.associated = false;
-					}
+			api.addImageToStream(lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id, stream.id, {
+				id: "streamToggled",
+				success: "Added image to " + stream.name,
+				error: "Couldn't add image to stream: "
+			}).then(
+				function done(data) {
+					lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams.push(stream);
 				},
-				function fail(response) {
-					alerts.add("danger", "Server error adding image to stream: " + response.status + " " + response.statusText, "streamToggled", "persistent");
-
+				function(err) {
 					// If server-side data couldn't be updated, revert model
 					stream.associated = false;
 				}
 			);
 		}
 		else {
-			$http.delete("api/image/" + lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id + "/streams?streamid=" + stream.id).then(
-				function done(response) {
-					alerts.remove("streamToggled", "persistent");
-					if (response.data.success) {
-						successful = true;
-						lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams.splice(index, 1);
-						alerts.add("success", "Removed image from " + stream.name);
-					}
-					else {
-						alerts.add("danger", "Couldn't remove image from stream: " + response.data.error);
-
-						// If server-side data couldn't be updated, revert model
-						stream.associated = true;
-					}
+			api.removeImageFromStream(lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].id, stream.id, {
+				id: "streamToggled",
+				success: "Removed image from " + stream.name,
+				error: "Couldn't remove image from stream: "
+			}).then(
+				function(data) {
+					lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams.splice(index, 1);
 				},
-				function fail(response) {
-					alerts.add("danger", "Server error removing image from stream: " + response.status + " " + response.statusText, "streamToggled", "persistent");
-
+				function(err) {
 					// If server-side data couldn't be updated, revert model
 					stream.associated = true;
 				}

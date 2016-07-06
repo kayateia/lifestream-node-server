@@ -1,7 +1,7 @@
 // Define the gallery controller
 angular.module("LifeStreamGallery", [ "LifeStreamAlerts", "LifeStreamLightbox", "LifeStreamKeepAlive" ]);
 
-angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "$interval", "lsAlerts", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $http, $interval, alerts, lsLightbox, keepalive, $timeout, $window) {
+angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "$interval", "lsAlerts", "lsApi", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $http, $interval, alerts, api, lsLightbox, keepalive, $timeout, $window) {
 	var gallery = this;
 
 	// streamid from directive. May be a comma-separated list. Split the list
@@ -61,18 +61,12 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// Parameters:
 	//   image - image object
 	gallery.loadImageStreams = function(image) {
-		$http.get("api/image/" + image.id + "/streams").then(
-			function done(response) {
-				alerts.remove("loadImageStreams", "persistent");
-				if (response.data.success) {
-					image.streams = response.data.streams;
-				}
-				else {
-					alerts.add("danger", "Couldn't get list of streams containing image");
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImageStreams", "persistent");
+		api.getImageStreams(image.id, {
+			id: "loadImageStreams",
+			error: "Couldn't get list of streams containing image: "
+		}).then(
+			function(data) {
+				image.streams = data.streams;
 			}
 		);
 	};

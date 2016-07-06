@@ -1,4 +1,4 @@
-angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$scope", "$filter", "$http", "$interval", "lsAlerts", "lsSession", "Upload", function($scope, $filter, $http, $interval, alerts, session, Upload) {
+angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$scope", "$filter", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", "Upload", function($scope, $filter, $http, $interval, alerts, api, session, Upload) {
 	var formCtrl = this;
 
 	// Maximum total file size: 9 MB
@@ -121,24 +121,13 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 						}
 
 						// Associate newly uploaded image with stream
-						$http.post(
-							"api/image/" + response.data.id + "/streams",
-							{
-								streamid: streamid
-							}
-						).then(
-							function done(response) {
-								alerts.remove("uploadStreamAssoc", "persistent");
-								if (!response.data.success) {
-									alerts.add("danger", "Couldn't add image to " +  streamName + ": " + response.data.error, "uploadStreamAssoc", "persistent");
-
-									// If server-side data couldn't be updated, revert model
-									stream.associated = false;
-								}
-							},
-							function fail(response) {
-								alerts.add("danger", "Server error adding image to " + streamName + ": " + response.status + " " + response.statusText, "uploadStreamAssoc", "persistent");
-
+						api.addImageToStream(response.data.id, streamid, {
+							id: "uploadStreamAssoc",
+							error: "Couldn't add image to " +  streamName + ": ",
+							persistent: true
+						}).then(
+							null,
+							function(err) {
 								// If server-side data couldn't be updated, revert model
 								stream.associated = false;
 							}
