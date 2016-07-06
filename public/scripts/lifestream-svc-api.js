@@ -1,7 +1,14 @@
 angular.module("LifeStreamAPI", [ "LifeStreamAlerts" ]);
 
-angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlerts", "$q", function($cookies, $http, alerts, $q) {
+angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlerts", "$q", "$window", function($cookies, $http, alerts, $q, $window) {
 	var api = this;
+
+	// Possible responses to authorisation token-related failure
+	var tokenErrors = [
+		"Missing bearer token",
+		"Token is invalid",
+		"Token has expired"
+	];
 
 	// api.httpResolveHandler()
 	//
@@ -33,6 +40,11 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 			// Resolve the calling function's promise with data from the
 			// server's response
 			resolve(response.data);
+		}
+		else if (tokenErrors.indexOf(response.data.error) != -1) {
+			// If the request failed due to a bad authorisation token, redirect
+			// the user to login page
+			$window.location.replace("login?reason=session_timeout&fromUrl=" + encodeURIComponent($window.location));
 		}
 		else {
 			// If an error message was specified, show it
