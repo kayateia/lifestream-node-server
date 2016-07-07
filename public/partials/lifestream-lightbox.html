@@ -1,8 +1,8 @@
 <div ng-controller="LifeStreamLightboxController as lightboxCtrl" class="modal-body">
 	<div class="lightbox-nav">
-		<button class="close" aria-hidden="true" ng-click="$dismiss()">×</button>
-		<button class="prev" aria-hidden="true" ng-click="Lightbox.prevImage()">&lt;</button>
-		<button class="next" aria-hidden="true" ng-click="Lightbox.nextImage()">&gt;</button>
+		<button type="button" class="close" aria-hidden="true" ng-click="$dismiss()">&times;</button>
+		<button type="button" class="prev" aria-hidden="true" ng-click="Lightbox.prevImage()">&lt;</button>
+		<button type="button" class="next" aria-hidden="true" ng-click="Lightbox.nextImage()">&gt;</button>
 	</div>
 	<div class="lightbox-image-container" ng-swipe-left="lightbox.nextImage()" ng-swipe-right="lightbox.prevImage()">
 		<a href="{{Lightbox.imageUrl}}" target="_blank"><img lightbox-src="{{Lightbox.imageUrl}}" /></a>
@@ -32,10 +32,10 @@
 		</div>
 		<div class="lightbox-edit" ng-if="lightboxCtrl.isMyImage" ng-hide="lightboxCtrl.commentFormShown || lightboxCtrl.streamsFormShown">
 			Edit:
-			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showCommentForm($event)" class="btn btn-link">
+			<button type="button" ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showCommentForm($event)" class="btn btn-link">
 				<span class="glyphicon glyphicon-comment" />
 				Comment
-			<button ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showStreamsForm($event)" class="btn btn-link">
+			<button type="button" ng-show="lightboxCtrl.isMyImage" ng-click="lightboxCtrl.showStreamsForm($event)" class="btn btn-link">
 				<span class="glyphicon glyphicon-tags" />
 				Streams
 			</button>

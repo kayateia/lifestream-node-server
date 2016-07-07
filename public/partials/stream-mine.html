@@ -68,11 +68,11 @@
 				Interested in subscribing:
 				<ul>
 					<li ng-repeat="request in stream.requests">
-						<label for="revokeInviteBtn-{{stream.id}}-{{request.userid}}" class="control-label">{{request.userName}}</label>
-						<button id="revokeInviteBtn-{{stream.id}}-{{request.userid}}" name="revokeInviteBtn-{{stream.id}}-{{request.userid}}" ng-click="formCtrl.invite(stream.id, request.userLogin, streamIndex)" class="btn btn-link">
+						<label for="acceptRequestBtn-{{stream.id}}-{{request.userid}}" class="control-label">{{request.userName}}</label>
+						<button id="acceptRequestBtn-{{stream.id}}-{{request.userid}}" name="revokeRequestBtn-{{stream.id}}-{{request.userid}}" type="button" ng-click="formCtrl.invite(stream.id, request.userLogin, streamIndex)" class="btn btn-link">
 							<span class="text-success glyphicon glyphicon-ok" />
 						</button>
-						<button id="revokeInviteBtn-{{stream.id}}-{{request.userid}}" name="revokeInviteBtn-{{stream.id}}-{{request.userid}}" ng-click="formCtrl.unrequest(stream.id, request.userid, streamIndex)" class="btn btn-link">
+						<button id="revokeRequestBtn-{{stream.id}}-{{request.userid}}" name="revokeRequestBtn-{{stream.id}}-{{request.userid}}" type="button" ng-click="formCtrl.unrequest(stream.id, request.userid, streamIndex)" class="btn btn-link">
 							<span class="text-danger glyphicon glyphicon-remove" />
 						</button>
 					</li>
@@ -83,7 +83,7 @@
 				<ul>
 					<li ng-repeat="invite in stream.invites">
 						<label for="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" class="control-label">{{invite.userName}}</label>
-						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" ng-click="formCtrl.uninvite(stream.id, invite.userid, streamIndex)" class="btn btn-link">
+						<button id="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" name="revokeInviteBtn-{{stream.id}}-{{invite.userid}}" type="button" ng-click="formCtrl.uninvite(stream.id, invite.userid, streamIndex)" class="btn btn-link">
 							<span class="text-danger glyphicon glyphicon-remove" />
 						</button>
 					</li>
@@ -91,7 +91,7 @@
 			</div>
 		</td>
 		<td class="col-sm-1">
-			<button id="streamDeleteBtn-{{stream.id}}" name="streamDeleteBtn-{{stream.id}}" ng-click="formCtrl.deleteStream(stream.id, $index)" class="btn btn-link">
+			<button id="streamDeleteBtn-{{stream.id}}" name="streamDeleteBtn-{{stream.id}}" type="button" ng-click="formCtrl.deleteStream(stream.id, $index)" class="btn btn-link">
 				<span class="glyphicon glyphicon-trash" />
 			</button>
 		</td>
