@@ -15,7 +15,7 @@ angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routePro
 		.otherwise("/.");
 }]);
 
-angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController", [ "$scope", "$http", "lsAlerts", "lsApi", "$routeParams", function($scope, $http, alerts, api, $routeParams) {
+angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController", [ "$scope", "lsAlerts", "lsApi", "$routeParams", function($scope, alerts, api, $routeParams) {
 	var galleryPage = this;
 
 	// Expose $routeParams to template
@@ -78,18 +78,12 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 	//   callback - Called with an array of subscription objects as the only
 	//     parameter once a response has been received
 	galleryPage.loadSubscriptions = function(userid, callback) {
-		$http.get("api/subscription/user/" + userid).then(
-			function done(response) {
-				alerts.remove("loadSubscriptions", "persistent");
-				if (response.data.success) {
-					callback(response.data.subscriptions);
-				}
-				else {
-					alerts.add("danger", "Subscriptions could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading subscriptions: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+		api.getSubscriptionsByUser(userid, {
+			id: "loadSubscriptions",
+			error: "Subscriptions could not be loaded: "
+		}).then(
+			function(data) {
+				callback(data.subscriptions);
 			}
 		);
 	};

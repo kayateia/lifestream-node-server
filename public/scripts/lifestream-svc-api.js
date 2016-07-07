@@ -480,5 +480,92 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 		});
 	};
 
+	// api.getSubscriptionsByStream()
+	//
+	//   See API documentation for details:
+	//     GET api/subscription/:streamid
+	api.getSubscriptionsByStream = function(streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/subscription/" + streamid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting subscriptions for stream: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getSubscriptionsByUser()
+	//
+	//   See API documentation for details:
+	//     GET api/subscription/user/:userid
+	api.getSubscriptionsByUser = function(userid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/subscription/user/" + userid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting subscriptions for user: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getSubscriptionState()
+	//
+	//   See API documentation for details:
+	//     GET api/subscription/user/:userid
+	api.getSubscriptionState = function(streamid, userid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/subscription/" + streamid + "/state?userid=" + userid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting subscription state: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getSubscriptionState()
+	//
+	//   See API documentation for details:
+	//     POST api/subscription/:streamid
+	api.subscribeUserToStream = function(userid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.post("api/subscription/" + streamid, {
+				userid: userid
+			}).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error creating subscription: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getSubscriptionState()
+	//
+	//   See API documentation for details:
+	//     POST api/subscription/:streamid
+	api.unsubscribeUserFromStream = function(userid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.delete("api/subscription/" + streamid + "?userid=" + userid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error deleting subscription: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
 	return api;
 }]);

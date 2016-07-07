@@ -653,21 +653,15 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		streamids = streamids.join(",");
 
 		// Request subscription state for all streams in list
-		$http.get("api/subscription/" + streamids + "/state?userid=" + session.user.id).then(
-			function done(response) {
-				alerts.remove("getSubscriptionState", "persistent");
-				if (response.data.success) {
-					response.data.states.forEach(function(state) {
-						var index = streams.findStreamIndex(state.streamid, arr);
-						formCtrl.setSubscriptionState(arr[index], state.state);
-					});
-				}
-				else {
-					alerts.add("danger", "Couldn't get subscription state: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error getting subscription state: " + response.status + " " + response.statusText, "getSubscriptionState", "persistent");
+		api.getSubscriptionState(streamids, session.user.id, {
+			id: "getSubscriptionState",
+			error: "Couldn't get subscription state: "
+		}).then(
+			function(data) {
+				data.states.forEach(function(state) {
+					var index = streams.findStreamIndex(state.streamid, arr);
+					formCtrl.setSubscriptionState(arr[index], state.state);
+				});
 			}
 		);
 	};
@@ -772,18 +766,12 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	};
 
 	formCtrl.loadSubscriptions = function() {
-		$http.get("api/subscription/user/" + session.user.id).then(
-			function done(response) {
-				alerts.remove("loadSubscriptions", "persistent");
-				if (response.data.success) {
-					formCtrl.subscriptions = response.data.subscriptions;
-				}
-				else {
-					alerts.add("danger", "Subscriptions could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading subscriptions: " + response.status + " " + response.statusText, "loadSubscriptions", "persistent");
+		api.getSubscriptionsByUser(session.user.id, {
+			id: "loadSubscriptions",
+			error: "Subscriptions could not be loaded: "
+		}).then(
+			function(data) {
+				formCtrl.subscriptions = data.subscriptions;
 			}
 		);
 	};
@@ -834,41 +822,25 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		// stream may be either a stream object or an invite object
 		var streamid = obj.id ? obj.id : obj.streamid;
 
-		$http.post("api/subscription/" + streamid,
-			{
-				userid: session.user.id
-			}
-		).then(
-			function done(response) {
-				alerts.remove("subscribe", "persistent");
-				if (response.data.success) {
-					formCtrl.setSubscriptionState(obj, "active");
-					alerts.add("success", "Subscribed to " + (obj.name ? obj.name : obj.streamName));
-				}
-				else {
-					alerts.add("danger", "Could not subscribe to stream: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error subscribing to stream: " + response.status + " " + response.statusText, "subscribe", "persistent");
+		api.subscribeUserToStream(session.user.id, streamid, {
+			id: "subscribe",
+			success: "Subscribed to " + (obj.name ? obj.name : obj.streamName),
+			error: "Could not subscribe to stream: "
+		}).then(
+			function(data) {
+				formCtrl.setSubscriptionState(obj, "active");
 			}
 		);
 	};
 
 	formCtrl.unsubscribe = function(subscription) {
-		$http.delete("api/subscription/" + subscription.streamid + "?userid=" + session.user.id).then(
-			function done(response) {
-				alerts.remove("unsubscribe", "persistent");
-				if (response.data.success) {
-					formCtrl.setSubscriptionState(subscription, "none");
-					alerts.add("success", "Unsubscribed from " + subscription.streamName);
-				}
-				else {
-					alerts.add("danger", "Could not unsubscribe from stream: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "unsubscribe", "persistent");
+		api.unsubscribeUserFromStream(session.user.id, subscription.streamid, {
+			id: "unsubscribe",
+			success: "Unsubscribed from " + subscription.streamName,
+			error: "Could not unsubscribe from stream: "
+		}).then(
+			function(data) {
+				formCtrl.setSubscriptionState(subscription, "none");
 			}
 		);
 	};
@@ -1002,18 +974,12 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 	//   Loads a list of subscribers for each stream.
 	formCtrl.loadSubscribers = function() {
 		formCtrl.streams.forEach(function(stream) {
-			$http.get("api/subscription/" + stream.id).then(
-				function done(response) {
-					alerts.remove("loadSubscribers", "persistent");
-					if (response.data.success) {
-						formCtrl.subscribers[stream.id] = response.data.subscriptions;
-					}
-					else {
-						alerts.add("danger", "Subscribers could not be loaded: " + response.data.error);
-					}
-				},
-				function fail(response) {
-					alerts.add("danger", "Server error loading subscribers: " + response.status + " " + response.statusText, "loadSubscribers", "persistent");
+			api.getSubscriptionsByStream(stream.id, {
+				id: "loadSubscribers",
+				error: "Subscribers could not be loaded: "
+			}).then(
+				function(data) {
+					formCtrl.subscribers[stream.id] = data.subscriptions;
 				}
 			);
 		});
@@ -1033,20 +999,14 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 		// Don't actually go anywhere
 		$event.preventDefault();
 
-		$http.delete("api/subscription/" + subscriber.streamid + "?userid=" + subscriber.userid).then(
-			function done(response) {
-				alerts.remove("unsubscribe", "persistent");
-				if (response.data.success) {
-					var index = formCtrl.findSubscriberObj(subscriber.streamid, subscriber.userid);
-					formCtrl.subscribers[subscriber.streamid].splice(index, 1);
-					alerts.add("success", "Unsubscribed " + subscriber.userName + " from " + stream.name);
-				}
-				else {
-					alerts.add("danger", "Could not unsubscribe from stream: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error unsubscribing from stream: " + response.status + " " + response.statusText, "unsubscribe", "persistent");
+		api.unsubscribeUserFromStream(subscriber.userid, subscriber.streamid, {
+			id: "unsubscribe",
+			success: "Unsubscribed " + subscriber.userName + " from " + stream.name,
+			error: "Could not unsubscribe from stream: "
+		}).then(
+			function(data) {
+				var index = formCtrl.findSubscriberObj(subscriber.streamid, subscriber.userid);
+				formCtrl.subscribers[subscriber.streamid].splice(index, 1);
 			}
 		);
 	};
