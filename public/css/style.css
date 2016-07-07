@@ -22,6 +22,10 @@ button.btn-link:active {
 	text-decoration: underline;
 }
 
+hr {
+	border: 1px dashed #444444;
+}
+
 #alerts-containers-container {
 	position: fixed;
 	bottom: 0;

@@ -140,3 +140,31 @@ angular.module("LifeStreamWebApp").controller("LifeStreamAccountManager", [ "$sc
 		keepalive.end();
 	});
 }]);
+
+angular.module("LifeStreamWebApp").controller("LifeStreamAccountDeletion", [ "$scope", "lsAlerts", "lsApi", "lsSession", "$timeout", function($scope, alerts, api, session, $timeout) {
+	var formCtrl = this;
+
+	// User must enter password to confirm deletion
+	formCtrl.deletePassword = "";
+
+	formCtrl.submit = function() {
+		api.loginUser(session.user.login, formCtrl.deletePassword, {
+			id: "submitFunc",
+			error: "Could not delete account: "
+		}).then(
+			function(data) {
+				api.deleteUser(session.user.id, {
+					id: "submitFunc",
+					success: "Your account has been deleted. You will now be logged out.",
+					error: "Could not delete account: "
+				}).then(
+					function(data2) {
+						$timeout(function() {
+							session.logout("account_deleted");
+						}, 5000);
+					}
+				);
+			}
+		);
+	}
+}]);

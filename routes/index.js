@@ -90,6 +90,12 @@ router.get("/login", function(req, res, next) {
 
 		if (req.query.reason) {
 			switch (req.query.reason) {
+				case "account_deleted":
+					templateVars.message = {
+						type: "success",
+						text: "Your account has been deleted. If other LifeStream clients were logged in to your account, their session is no longer valid."
+					};
+					break;
 				case "failed_login":
 					templateVars.message = {
 						type: "danger",

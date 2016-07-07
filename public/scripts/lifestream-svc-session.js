@@ -33,9 +33,9 @@ angular.module("LifeStreamSession", [ "ngCookies", "LifeStreamAPI" ])
 			);
 		};
 
-		session.logout = function() {
+		session.logout = function(reason) {
 			$cookies.remove("authorization");
-			$window.location.replace("login?reason=logout");
+			$window.location.replace("login?reason=" + (reason ? reason : "logout"));
 		};
 
 		// session.queryUserInfo()

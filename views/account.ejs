@@ -3,7 +3,40 @@
 <script src="scripts/lifestream-app-account.js"></script>
 
 <h1>Your account</h1>
-<div class="col-sm-11" ng-controller="LifeStreamAccountManager as formCtrl" ng-include="'partials/horizontal-form.html'">
+<div class="row">
+	<div class="col-sm-11" ng-controller="LifeStreamAccountManager as formCtrl" ng-include="'partials/horizontal-form.html'"></div>
 </div>
+<h2>Delete account</h2>
+<div class="row">
+	<div class="col-sm-12">
+		<p>You have the option of deleting your own account at any time. Deleting your account will:</p>
+		<ul>
+			<li>Unsubscribe everyone from your streams</li>
+			<li>Unsubscribe you from all streams</li>
+			<li>Delete all of your streams</li>
+			<li>Delete all images you have uploaded</li>
+			<li>Log out all LifeStream clients connected to your acccount</li>
+			<li>Make your login and display name available to future account sign-ups</li>
+		</ul>
+		<p>Deleting your account <em>will not</em>:</p>
+		<ul>
+			<li>Remove copies of any images that have already been downloaded to other people's devices</li>
+		</ul>
+		<hr />
+		<p class="text-center">This operation cannot be undone. Your data will be lost forever.</p>
+		<form ng-controller="LifeStreamAccountDeletion as formCtrl" ng-submit="formCtrl.submit()" class="form-horizontal">
+			<div class="form-group">
+				<label for="delete-password" class="control-label col-sm-4">Enter password to confirm</label>
+				<div class="col-sm-3">
+					<input id="delete-password" name="delete-password" ng-model="formCtrl.deletePassword" class="form-control" type="password" required="required" />
+				</div>
+				<div class="col-sm-3">
+					<button type="submit" class="btn btn-danger">Delete my account</button>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
 
 <% include footer %>

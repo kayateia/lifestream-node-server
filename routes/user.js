@@ -214,13 +214,16 @@ router.delete("/:id", function(req, res, next) {
 			return res.json(err);
 		}
 
-		if (!isAdmin) {
-			return res.json(models.error("Permission denied"));
-		}
-
+		// Validate user ID
 		var id = Number(req.params.id);
 		if (Number.isNaN(id) || id < 1)
 			return res.json(models.error("Invalid 'id'"));
+
+		// Users can delete their own account.
+		// Admins can delete anyone's account.
+		if (tokenContents.id != id && !isAdmin) {
+			return res.json(models.error("Permission denied"));
+		}
 
 		dbmod.userDelete(id, function(err) {
 			if (err) {
