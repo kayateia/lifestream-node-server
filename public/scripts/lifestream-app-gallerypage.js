@@ -53,19 +53,17 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 	//   callback - Called once a response has been received.
 	//      Signature: callback(err, streams)
 	galleryPage.loadStreams = function(userid, callback) {
-		$http.get("api/stream/list?userid=" + userid).then(
-			function done(response) {
-				alerts.remove("loadStreams", "persistent");
-				if (response.data.success) {
-					callback(null, response.data.streams);
-				}
-				else {
-					alerts.add("danger", "Streams could not be loaded: " + response.data.error);
-					callback(response.data.error);
-				}
+		api.getStreamsByUser(userid, {
+			id: "loadStreams",
+			error: "Streams could not be loaded: "
+		}).then(
+			function(data) {
+				callback(null, data.streams);
 			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "persistent");
+			function(err) {
+				if (err.data) {
+					callback(err.data.error);
+				}
 			}
 		);
 	};
@@ -136,30 +134,24 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 	//   callback (optional) - Called without parameters once stream info has
 	//     been received
 	galleryPage.getGalleryStreamInfo = function(streamid, callback) {
-		$http.get("/api/stream/" + streamid).then(
-			function done(response) {
-				alerts.remove("getGalleryStreamInfo", "persistent");
-				if (response.data.success) {
-					galleryPage.targetStream = {
-						id: response.data.id,
-						userid: response.data.userid,
-						name: response.data.name,
-						permission: response.data.permission,
-						userLogin: response.data.userLogin,
-						userName: response.data.userName
-					};
+		api.getStreamInfo(streamid, {
+			id: "getGalleryStreamInfo",
+			error: "Error loading stream info: "
+		}).then(
+			function(data) {
+				galleryPage.targetStream = {
+					id: data.id,
+					userid: data.userid,
+					name: data.name,
+					permission: data.permission,
+					userLogin: data.userLogin,
+					userName: data.userName
+				};
 
-					// If there's a function waiting to know when we're done...
-					if (callback) {
-						callback();
-					}
+				// If there's a function waiting to know when we're done...
+				if (callback) {
+					callback();
 				}
-				else {
-					alerts.add("danger", "Error loading stream info: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading stream info: " + response.status + " " + response.statusText, "getGalleryStreamInfo", "persistent");
 			}
 		);
 	};

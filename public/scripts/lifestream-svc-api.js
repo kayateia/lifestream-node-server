@@ -251,11 +251,11 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 		});
 	};
 
-	// api.getImageStreams()
+	// api.getStreamsByImage()
 	//
 	//   See API documentation for details:
 	//     GET api/image/:imageid/streams
-	api.getImageStreams = function(imageid, alertOpts) {
+	api.getStreamsByImage = function(imageid, alertOpts) {
 		return $q(function(resolve, reject) {
 			$http.get("api/image/" + imageid + "/streams").then(
 				function(response) {
@@ -318,6 +318,163 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 				},
 				function(response) {
 					api.httpRejectHandler("Server error setting image comment: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getStreams()
+	//
+	//   See API documentation for details:
+	//     GET api/stream/list
+	api.getStreams = function(alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/stream/list").then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting streams list: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getStreamsByUser()
+	//
+	//   See API documentation for details:
+	//     GET api/stream/list?userid=<userid>
+	api.getStreamsByUser = function(userid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/stream/list?userid=" + userid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting streams belonging to user: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getStreamInfo()
+	//
+	//   See API documentation for details:
+	//     GET api/stream/:streamid
+	api.getStreamInfo = function(streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/stream/" + streamid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting stream info: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getStreamContents()
+	//
+	//   See API documentation for details:
+	//     GET api/stream/:streamid/contents
+	api.getStreamContents = function(streamid, args, alertOpts) {
+		var reqArgs = {
+			count: args.count,
+			olderThan: args.olderThan,
+			olderThanId: args.olderThanId
+		};
+
+		return $q(function(resolve, reject) {
+			$http.get("api/stream/" + streamid + "/contents?" +
+				(reqArgs.count ? "&count=" + reqArgs.count : "") +
+				(reqArgs.olderThan ? "&olderThan=" + reqArgs.olderThan : "") +
+				(reqArgs.olderThanId ? "&olderThanId=" + reqArgs.olderThanId : "")
+			).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting stream contents: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.findStream()
+	//
+	//   See API documentation for details:
+	//     GET api/stream/search
+	api.findStream = function(query, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/stream/search?q=" + encodeURIComponent(query)).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error searching streams: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.createStream()
+	//
+	//   See API documentation for details:
+	//     POST api/stream
+	api.createStream = function(args, alertOpts) {
+		var reqArgs = {
+			userid: args.userid,
+			name: args.name,
+			permission: args.permission
+		};
+
+		return $q(function(resolve, reject) {
+			$http.post("api/stream", reqArgs).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error creating stream: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.updateStream()
+	//
+	//   See API documentation for details:
+	//     PUT api/stream/:streamid
+	api.updateStream = function(streamid, args, alertOpts) {
+		var reqArgs = {
+			name: args.name,
+			permission: args.permission
+		};
+
+		return $q(function(resolve, reject) {
+			$http.put("api/stream/" + streamid, reqArgs).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error updating stream: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.deleteStream()
+	//
+	//   See API documentation for details:
+	//     DELETE api/stream/:streamid
+	api.deleteStream = function(streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.delete("api/stream/" + streamid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error deleting stream: ", response, alertOpts, resolve, reject);
 				}
 			);
 		});

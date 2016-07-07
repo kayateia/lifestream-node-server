@@ -205,43 +205,37 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	};
 
 	formCtrl.loadStreams = function() {
-		$http.get("api/stream/list?userid=" + session.user.id).then(
-			function done(response) {
-				alerts.remove("loadStreams", "persistent");
-				if (response.data.success) {
-					formCtrl.streams = []; // repopulate streams from scratch
-					response.data.streams.forEach(function(data) {
-						var stream = {
-							id: data.id,
-							name: data.name,
-							permission: data.permission.toString(),
-							newInvite: ""
-						};
-						formCtrl.streams.push(stream);
+		api.getStreamsByUser(session.user.id, {
+			id: "loadStreams",
+			error: "Streams could not be loaded: "
+		}).then(
+			function(data) {
+				formCtrl.streams = []; // repopulate streams from scratch
+				data.streams.forEach(function(data) {
+					var stream = {
+						id: data.id,
+						name: data.name,
+						permission: data.permission.toString(),
+						newInvite: ""
+					};
+					formCtrl.streams.push(stream);
 
-						// Keep track of the permission that used to be set for
-						// this stream, for prcessing by setStreamPermission()
-						stream.oldPermission = stream.permission;
+					// Keep track of the permission that used to be set for
+					// this stream, for prcessing by setStreamPermission()
+					stream.oldPermission = stream.permission;
 
-						// Make separate API call to load invites for this
-						// stream.
-						formCtrl.loadInvites(stream.id, function(invites) {
-							stream.invites = invites;
-						});
-
-						// Make separate API call to load invite requests for this
-						// stream.
-						formCtrl.loadInviteRequests(stream.id, function(requests) {
-							stream.requests = requests;
-						});
+					// Make separate API call to load invites for this
+					// stream.
+					formCtrl.loadInvites(stream.id, function(invites) {
+						stream.invites = invites;
 					});
-				}
-				else {
-					alerts.add("danger", "Streams could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "persistent");
+
+					// Make separate API call to load invite requests for this
+					// stream.
+					formCtrl.loadInviteRequests(stream.id, function(requests) {
+						stream.requests = requests;
+					});
+				});
 			}
 		);
 	};
@@ -252,34 +246,24 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 			return;
 		}
 
-		$http.post("api/stream",
-			{
-				userid: session.user.id,
-				name: name,
-				permission: permission
-			}
-		).then(
-			function done(response) {
-				alerts.remove("createStream", "persistent");
-				if (response.data.success) {
-					alerts.add("success", name + " created");
-
-					// Append stream to the list
-					formCtrl.streams.push({
-						id: response.data.id,
-						name: name,
-						permission: permission,
-						newInvite: "",
-						invites: []
-					});
-					console.log(formCtrl.streams);
-				}
-				else {
-					alerts.add("danger", "Could not create stream: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error creating stream: " + response.status + " " + response.statusText, "createStream", "persistent");
+		api.createStream({
+			userid: session.user.id,
+			name: name,
+			permission: permission
+		}, {
+			id: "createStream",
+			success: name + " created",
+			error: "Could not create stream: "
+		}).then(
+			function(data) {
+				// Append stream to the list
+				formCtrl.streams.push({
+					id: data.id,
+					name: name,
+					permission: permission,
+					newInvite: "",
+					invites: []
+				});
 			}
 		);
 	};
@@ -293,21 +277,14 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 			return;
 		}
 
-		$http.delete("api/stream/" + streamId).then(
-			function done(response) {
-				alerts.remove("deleteStream", "persistent");
-				if (response.data.success) {
-					alerts.add("success", stream.name + " was deleted");
-
-					// Remove stream from list
-					formCtrl.streams.splice(index, 1);
-				}
-				else {
-					alerts.add("danger", "Could not delete stream: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error deleting stream: " + response.status + " " + response.statusText, "deleteStream", "persistent");
+		api.deleteStream(streamId, {
+			id: "deleteStream",
+			success: stream.name + " was deleted",
+			error: "Could not delete stream: "
+		}).then(
+			function(data) {
+				// Remove stream from list
+				formCtrl.streams.splice(index, 1);
 			}
 		);
 	};
@@ -424,23 +401,15 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 			return;
 		}
 
-		$http.put("api/stream/" + streamId,
-			{
-				name: name
-			}
-		).then(
-			function done(response) {
-				alerts.remove("renameStream", "persistent");
-				if (response.data.success) {
-					stream.name = name
-					formCtrl.hideRenameStreamForm(stream.id, $index);
-				}
-				else {
-					alerts.add("danger", "Could not rename stream: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error renaming stream: " + response.status + " " + response.statusText, "renameStream", "persistent");
+		api.updateStream(streamId, {
+			name: name
+		}, {
+			id: "renameStream",
+			error: "Could not rename stream: "
+		}).then(
+			function(data) {
+				stream.name = name
+				formCtrl.hideRenameStreamForm(stream.id, $index);
 			}
 		);
 	};
@@ -464,31 +433,22 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	formCtrl.setStreamPermission = function(streamId, permission, $index) {
 		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
-		$http.put("api/stream/" + streamId,
-			{
-				permission: stream.permission
-			}
-		).then(
-			function done(response) {
-				if (response.data.success) {
-					alerts.remove("setStreamPermission", "persistent");
-					// Update oldPermission for future runs of
-					// setStreamPermission()
-					stream.oldPermission = stream.permission;
-					alerts.add("success", stream.name + " permission changed");
-				}
-				else {
-					// If change couldn't be confirmed by server, revert to
-					// previous setting in the model
-					stream.permission = stream.oldPermission;
-					alerts.add("danger", "Could not set permission: " + response.data.error);
-				}
+		api.updateStream(streamId, {
+			permission: stream.permission
+		}, {
+			id: "setStreamPermission",
+			success: stream.name + " permission changed",
+			error: "Could not set permission: "
+		}).then(
+			function(data) {
+				// Update oldPermission for future runs of
+				// setStreamPermission()
+				stream.oldPermission = stream.permission;
 			},
-			function fail(response) {
-				// If change couldn't be confirmed by server, revert to previous
-				// setting in the model
+			function(err) {
+				// If change couldn't be confirmed by server, revert to
+				// previous setting in the model
 				stream.permission = stream.oldPermission;
-				alerts.add("danger", "Server error setting stream permission: " + response.status + " " + response.statusText, "setStreamPermission", "persistent");
 			}
 		);
 	}
@@ -755,24 +715,18 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		);
 
 		// Search stream names for substring
-		$http.get("api/stream/search?q=" + encodeURIComponent(terms)).then(
-			function done(response) {
-				alerts.remove("submitSearch", "persistent");
-				if (response.data.success) {
-					if (response.data.streams.length > 0) {
-						formCtrl.search.streams = response.data.streams;
-						formCtrl.getSubscriptionState(formCtrl.search.streams);
-					}
-					else {
-						alerts.add("info", "No matching streams");
-					}
+		api.findStream(terms, {
+			id: "submitSearch",
+			error: "Error searching streams: "
+		}).then(
+			function(data) {
+				if (data.streams.length > 0) {
+					formCtrl.search.streams = data.streams;
+					formCtrl.getSubscriptionState(formCtrl.search.streams);
 				}
 				else {
-					alerts.add("danger", "Error searching streams: " + response.data.error);
+					alerts.add("info", "No matching streams");
 				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error searching streams: " + response.status + " " + response.statusText, "submitSearch", "persistent");
 			}
 		);
 	};
@@ -839,24 +793,18 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	};
 
 	formCtrl.expandUser = function(id, $event) {
-		$http.get("api/stream/list?userid=" + id).then(
-			function done(response) {
-				alerts.remove("expandUser", "persistent");
-				if (response.data.success) {
-					if (response.data.streams.length > 0) {
-						formCtrl.search.userStreams[id] = response.data.streams;
-						formCtrl.getSubscriptionState(formCtrl.search.userStreams[id]);
-					}
-					else {
-						alerts.add("info", "User doesn't have any streams");
-					}
+		api.getStreamsByUser(id, {
+			id: "expandUser",
+			error: "Could not list streams from user: "
+		}).then(
+			function(data) {
+				if (data.streams.length > 0) {
+					formCtrl.search.userStreams[id] = data.streams;
+					formCtrl.getSubscriptionState(formCtrl.search.userStreams[id]);
 				}
 				else {
-					alerts.add("danger", "Could not list streams from user: " + response.data.error);
+					alerts.add("info", "User doesn't have any streams");
 				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error listing streams from user: " + response.status + " " + response.statusText, "expandUser", "persistent");
 			}
 		);
 	};
@@ -1009,7 +957,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	}, 100);
 }]);
 
-angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$http", "$interval", "lsAlerts", "lsSession", function($scope, $http, $interval, alerts, session) {
+angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", function($scope, $http, $interval, alerts, api, session) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -1025,29 +973,23 @@ angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope
 	formCtrl.subscribers = {};
 
 	formCtrl.loadStreams = function(callback) {
-		$http.get("api/stream/list?userid=" + session.user.id).then(
-			function done(response) {
-				alerts.remove("loadStreams", "persistent");
-				if (response.data.success) {
-					formCtrl.streams = []; // repopulate streams from scratch
-					response.data.streams.forEach(function(data) {
-						var stream = {};
-						stream.id = data.id;
-						stream.name = data.name;
-						stream.permission = streams.permissionName(data.permission);
-						formCtrl.streams.push(stream);
-					});
+		api.getStreamsByUser(session.user.id, {
+			id: "loadStreams",
+			error: "Streams could not be loaded: "
+		}).then(
+			function(data) {
+				formCtrl.streams = []; // repopulate streams from scratch
+				data.streams.forEach(function(data) {
+					var stream = {};
+					stream.id = data.id;
+					stream.name = data.name;
+					stream.permission = streams.permissionName(data.permission);
+					formCtrl.streams.push(stream);
+				});
 
-					if (callback) {
-						callback();
-					}
+				if (callback) {
+					callback();
 				}
-				else {
-					alerts.add("danger", "Streams could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "persistent");
 			}
 		);
 	};

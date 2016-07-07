@@ -1,7 +1,7 @@
 // Define the gallery controller
 angular.module("LifeStreamGallery", [ "LifeStreamAlerts", "LifeStreamLightbox", "LifeStreamKeepAlive" ]);
 
-angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$http", "$interval", "lsAlerts", "lsApi", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $http, $interval, alerts, api, lsLightbox, keepalive, $timeout, $window) {
+angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$interval", "lsAlerts", "lsApi", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $interval, alerts, api, lsLightbox, keepalive, $timeout, $window) {
 	var gallery = this;
 
 	// streamid from directive. May be a comma-separated list. Split the list
@@ -61,7 +61,7 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// Parameters:
 	//   image - image object
 	gallery.loadImageStreams = function(image) {
-		api.getImageStreams(image.id, {
+		api.getStreamsByImage(image.id, {
 			id: "loadImageStreams",
 			error: "Couldn't get list of streams containing image: "
 		}).then(
@@ -85,40 +85,36 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	//   callback - (optional) Function to be called when server response has
 	//      been successfully processed.
 	gallery.loadImages = function(count, olderThanId, callback) {
-		$http.get("api/stream/" +  gallery.streams.join(",") + "/contents?"
-			+ (count ? "&count=" + count : "")
-			+ (olderThanId ? "&olderThanId=" + olderThanId : "")
-		).then(
-			function done(response) {
-				alerts.remove("loadImages", "persistent");
-				if (response.data.success) {
-					response.data.images.forEach(function(image) {
-						var image = {
-							id: image.id,
-							thumbUrl: "api/image/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
-							url: "api/image/" + image.id,
-							userid: image.userid,
-							userLogin: image.userLogin,
-							userName: image.userName,
-							uploadTime: image.uploadTime,
-							comment: image.comment
-						};
+		api.getStreamContents(gallery.streams.join(","), {
+			count: count,
+			olderThanId: olderThanId
+		}, {
+			id: "loadImages"
+		}).then(
+			function(data) {
+				data.images.forEach(function(image) {
+					var image = {
+						id: image.id,
+						thumbUrl: "api/image/" + image.id + "?scaleTo=" + gallery.thumbSize + "&scaleMode=cover",
+						url: "api/image/" + image.id,
+						userid: image.userid,
+						userLogin: image.userLogin,
+						userName: image.userName,
+						uploadTime: image.uploadTime,
+						comment: image.comment
+					};
 
-						// Find out which streams contain this image
-						gallery.loadImageStreams(image);
+					// Find out which streams contain this image
+					gallery.loadImageStreams(image);
 
-						// Add this image's info to the model
-						gallery.images.push(image);
-					});
+					// Add this image's info to the model
+					gallery.images.push(image);
+				});
 
-					// If a callback function was specified, call it
-					if (callback) {
-						callback();
-					}
+				// If a callback function was specified, call it
+				if (callback) {
+					callback();
 				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading images: " + response.status + " " + response.statusText, "loadImages", "persistent");
 			}
 		);
 	};

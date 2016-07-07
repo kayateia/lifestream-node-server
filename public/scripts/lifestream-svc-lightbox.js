@@ -66,7 +66,7 @@ angular.module("LifeStreamLightbox").factory("lsLightbox", [ "Lightbox", functio
 // This controller manages the custom template's behaviour. It uses properties
 // belonging to the service to communicate with both
 // LifeStreamGalleryController and angular-bootstrap-lightbox.
-angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "$http", "lsAlerts", "lsApi", "lsLightbox", "lsSession", "$timeout", function($scope, $http, alerts, api, lsLightbox, session, $timeout) {
+angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", [ "$scope", "lsAlerts", "lsApi", "lsLightbox", "lsSession", "$timeout", function($scope, alerts, api, lsLightbox, session, $timeout) {
 	var lightboxCtrl = this;
 
 	// true when comment editor is shown
@@ -204,49 +204,41 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		if (lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].userLogin == session.user.login) {
 			lightboxCtrl.streamsFormShown = true;
 
-			$http.get("api/stream/list?userid=" + session.user.id).then(
-				function done(response) {
-					alerts.remove("showStreamsForm", "persistent");
-					if (response.data.success) {
-						// Clear userStreams array before repopulating it, or
-						// there'll be duplicate streams each time the user
-						// hides and reshows the form
-						lightboxCtrl.userStreams = [];
+			api.getStreamsByUser(session.user.id, {
+				id: "showStreamsForm",
+				error: "Couldn't list available streams: "
+			}).then(
+				function(data) {
+					// Clear userStreams array before repopulating it, or
+					// there'll be duplicate streams each time the user
+					// hides and reshows the form
+					lightboxCtrl.userStreams = [];
 
-						// For each stream in response...
-						response.data.streams.forEach(function(stream) {
-							// Check whether the current image is associated
-							// with the stream
-							var index = lightboxCtrl.findStreamIndex(stream.id, lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams);
+					// For each stream in response...
+					data.streams.forEach(function(stream) {
+						// Check whether the current image is associated
+						// with the stream
+						var index = lightboxCtrl.findStreamIndex(stream.id, lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].streams);
 
-							lightboxCtrl.userStreams.push({
-								id: stream.id,
-								name: stream.name,
-								permission: stream.permission,
-								associated: index != -1
-							});
+						lightboxCtrl.userStreams.push({
+							id: stream.id,
+							name: stream.name,
+							permission: stream.permission,
+							associated: index != -1
 						});
+					});
 
-						// Clicking anywhere outside of the streams form will
-						// close it, but prevent clicking INSIDE the streams
-						// form from triggering a close
-						$("#streamsForm").on("click.stopPropagation", function(event) {
-							event.stopPropagation();
-						});
-						$(document).on("click.hideStreamsForm", function() {
-							lightboxCtrl.hideStreamsForm();
-						});
-					}
-					else {
-						alerts.add("danger", "Couldn't list available streams: " + response.data.error);
-
-						// Don't show streams form if listing is unsuccessful
+					// Clicking anywhere outside of the streams form will
+					// close it, but prevent clicking INSIDE the streams
+					// form from triggering a close
+					$("#streamsForm").on("click.stopPropagation", function(event) {
+						event.stopPropagation();
+					});
+					$(document).on("click.hideStreamsForm", function() {
 						lightboxCtrl.hideStreamsForm();
-					}
+					});
 				},
-				function fail(response) {
-					alerts.add("danger", "Server error listing available streams: " + response.status + " " + response.statusText, "showStreamsForm", "persistent");
-
+				function(err) {
 					// Don't show streams form if listing is unsuccessful
 					lightboxCtrl.hideStreamsForm();
 				}

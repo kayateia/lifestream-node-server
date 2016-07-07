@@ -1,4 +1,4 @@
-angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$scope", "$filter", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", "Upload", function($scope, $filter, $http, $interval, alerts, api, session, Upload) {
+angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$scope", "$filter", "$interval", "lsAlerts", "lsApi", "lsSession", "Upload", function($scope, $filter, $interval, alerts, api, session, Upload) {
 	var formCtrl = this;
 
 	// Maximum total file size: 9 MB
@@ -149,18 +149,12 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 	};
 
 	formCtrl.loadStreams = function(userid) {
-		$http.get("api/stream/list?userid=" + userid).then(
-			function done(response) {
-				alerts.remove("loadStreams", "persistent");
-				if (response.data.success) {
-					formCtrl.streams = response.data.streams;
-				}
-				else {
-					alerts.add("danger", "Streams could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading streams: " + response.status + " " + response.statusText, "loadStreams", "persistent");
+		api.getStreamsByUser(userid, {
+			id: "loadStreams",
+			error: "Streams could not be loaded: "
+		}).then(
+			function(data) {
+				formCtrl.streams = data.streams;
 			}
 		);
 	};
