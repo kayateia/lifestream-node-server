@@ -30,7 +30,7 @@ angular.module("LifeStreamSession", [ "ngCookies", "LifeStreamAPI" ])
 				},
 				function(err) {
 					if (err.data) {
-						$window.location.replace("login?reason=failed_login" + fromUrlStr + "&detail=" + encodeURIComponent(response.data.error));
+						$window.location.replace("login?reason=failed_login" + fromUrlStr + "&detail=" + encodeURIComponent(data.error));
 					}
 				}
 			);
