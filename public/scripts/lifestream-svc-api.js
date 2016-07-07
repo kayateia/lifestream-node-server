@@ -567,5 +567,145 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 		});
 	};
 
+	// api.getInvitesByStream()
+	//
+	//   See API documentation for details:
+	//     GET api/invite/:streamid
+	api.getInvitesByStream = function(streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/invite/" + streamid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting invites for stream: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getInvitesByStream()
+	//
+	//   See API documentation for details:
+	//     GET api/invite/user/:userid
+	api.getInvitesByUser = function(userid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/invite/user/" + userid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting invites for user: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.inviteUserToStream()
+	//
+	//   See API documentation for details:
+	//     POST api/invite/:streamid
+	api.inviteUserToStream = function(userid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.post("api/invite/" + streamid, {
+				userid: userid
+			}).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error creating invitation: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.uninviteUserFromStream()
+	//
+	//   See API documentation for details:
+	//     DELETE api/invite/:streamid
+	api.uninviteUserFromStream = function(userid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.delete("api/invite/" + streamid + "?userid=" + userid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error deleting invitation: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getInviteRequestsByStream()
+	//
+	//   See API documentation for details:
+	//     GET api/invite/:streamid/request
+	api.getInviteRequestsByStream = function(streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/invite/" + streamid + "/request").then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting invite requests for stream: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.getInvitesByStream()
+	//
+	//   See API documentation for details:
+	//     GET api/invite/user/:userid/request
+	api.getInviteRequestsByUser = function(userid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.get("api/invite/user/" + userid + "/request").then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error getting invite requests for user: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.requestInviteUserToStream()
+	//
+	//   See API documentation for details:
+	//     POST api/invite/:streamid/request
+	api.requestInviteUserToStream = function(userid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.post("api/invite/" + streamid + "/request", {
+				userid: userid
+			}).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error creating invite request: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
+	// api.unrequestInviteUserToStream()
+	//
+	//   See API documentation for details:
+	//     DELETE api/invite/:streamid/request
+	api.unrequestInviteUserToStream = function(userid, streamid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.delete("api/invite/" + streamid + "/request?userid=" + userid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error deleting invite request: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
 	return api;
 }]);

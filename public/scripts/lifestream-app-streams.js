@@ -15,7 +15,7 @@ angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routePro
 		.otherwise("/mine");
 }]);
 
-angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", "$location", "$http", "lsAlerts", "lsKeepAlive", "$timeout", function($scope, $location, $http, alerts, keepalive, $timeout) {
+angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", "$location", "lsAlerts", "lsKeepAlive", "$timeout", function($scope, $location, alerts, keepalive, $timeout) {
 	var streams = this;
 
 	streams.operations = [
@@ -149,7 +149,7 @@ angular.module("LifeStreamWebApp").controller("LifeStreamsManager", [ "$scope", 
 	});
 }]);
 
-angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", "$timeout", "$window", function($scope, $http, $interval, alerts, api, session, $timeout, $window) {
+angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", "$interval", "lsAlerts", "lsApi", "lsSession", "$timeout", "$window", function($scope, $interval, alerts, api, session, $timeout, $window) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -171,35 +171,23 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	formCtrl.streams = [];
 
 	formCtrl.loadInvites = function(streamId, callback) {
-		$http.get("api/invite/" + streamId).then(
-			function done(response) {
-				alerts.remove("loadInvites", "persistent");
-				if (response.data.success) {
-					callback(response.data.invites);
-				}
-				else {
-					alerts.add("danger", "Invites could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading invites: " + response.status + " " + response.statusText, "loadInvites", "persistent");
+		api.getInvitesByStream(streamId, {
+			id: "loadInvites",
+			error: "Invites could not be loaded: "
+		}).then(
+			function(data) {
+				callback(data.invites);
 			}
 		);
 	};
 
 	formCtrl.loadInviteRequests = function(streamId, callback) {
-		$http.get("api/invite/" + streamId + "/request").then(
-			function done(response) {
-				alerts.remove("loadInviteRequests", "persistent");
-				if (response.data.success) {
-					callback(response.data.requests);
-				}
-				else {
-					alerts.add("danger", "Invite requests could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading invite requests: " + response.status + " " + response.statusText, "loadInviteRequests", "persistent");
+		api.getInviteRequestsByStream(streamId, {
+			id: "loadInviteRequests",
+			error: "Invite requests could not be loaded: "
+		}).then(
+			function(data) {
+				callback(data.requests);
 			}
 		);
 	};
@@ -294,40 +282,31 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 
 		api.getUserByLogin(userLogin, {
 			id: "invite",
-			error: "Couldn't invite " + userLogin + ":"
+			error: "Couldn't invite " + userLogin + ": "
 		}).then(
 			function(data) {
-				$http.post("api/invite/" + stream.id,
-					{
-						userid: data.id
-					}
-				).then(
-					function done(response2) {
-						if (response2.data.success) {
-							// Remove from list of requests in model (in case
-							// this invite was created by accepting an
-							// invite request)
-							stream.requests.forEach(function(request, index) {
-								if (request.userid == data.id) {
-									removed = stream.requests.splice(index, 1);
-								}
-							});
+				api.inviteUserToStream(data.id, stream.id, {
+					id: "invite",
+					success: "Invited " + data.name + " to " + stream.name,
+					error: "Couldn't invite " + userLogin + ": "
+				}).then(
+					function(data2) {
+						// Remove from list of requests in model (in case
+						// this invite was created by accepting an
+						// invite request)
+						stream.requests.forEach(function(request, index) {
+							if (request.userid == data.id) {
+								removed = stream.requests.splice(index, 1);
+							}
+						});
 
-							// Update list of invites in model
-							stream.invites.push({
-								streamid: streamId,
-								userLogin: userLogin,
-								userName: data.name,
-								userid: data.id
-							});
-							alerts.add("success", "Invited " + data.name + " to " + stream.name);
-						}
-						else {
-							alerts.add("danger", "Could not invite " + userLogin + ": " + response2.data.error);
-						}
-					},
-					function fail(response2) {
-						alerts.add("danger", "Server error inviting user: " + response2.status + " " + response2.statusText, "invite", "persistent");
+						// Update list of invites in model
+						stream.invites.push({
+							streamid: streamId,
+							userLogin: userLogin,
+							userName: data.name,
+							userid: data.id
+						});
 					}
 				);
 			}
@@ -337,25 +316,19 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	formCtrl.uninvite = function(streamId, userId, $index) {
 		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
-		$http.delete("api/invite/" + streamId + "?userid=" + userId).then(
-			function done(response) {
-				alerts.remove("uninvite", "persistent");
-				if (response.data.success) {
-					// Remove invite from list in model
-					var removed = undefined;
-					stream.invites.forEach(function(invite, index) {
-						if (invite.userid == userId) {
-							removed = stream.invites.splice(index, 1);
-						}
-					});
-					alerts.add("success", "Revoked " + removed[0].userName + "'s invitation to " + stream.name);
-				}
-				else {
-					alerts.add("danger", "Could not revoke invitation: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error revoking invite: " + response.status + " " + response.statusText, "uninvite", "persistent");
+		api.uninviteUserFromStream(userId, streamId, {
+			id: "uninvite",
+			error: "Could not revoke invitation: "
+		}).then(
+			function(data) {
+				// Remove invite from list in model
+				var removed = undefined;
+				stream.invites.forEach(function(invite, index) {
+					if (invite.userid == userId) {
+						removed = stream.invites.splice(index, 1);
+					}
+				});
+				alerts.add("success", "Revoked " + removed[0].userName + "'s invitation to " + stream.name);
 			}
 		);
 	};
@@ -363,25 +336,19 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	formCtrl.unrequest = function(streamId, userId, $index) {
 		var stream = formCtrl.streams[$index === undefined ? streams.findStreamIndex(streamId, formCtrl.streams) : $index];
 
-		$http.delete("api/invite/" + streamId + "/request?userid=" + userId).then(
-			function done(response) {
-				alerts.remove("unrequest", "persistent");
-				if (response.data.success) {
-					// Remove from request from list in model
-					var removed = undefined;
-					stream.requests.forEach(function(request, index) {
-						if (request.userid == userId) {
-							removed = stream.requests.splice(index, 1);
-						}
-					});
-					alerts.add("success", "Rejected " + removed[0].userName + "'s request for an invite to " + stream.name);
-				}
-				else {
-					alerts.add("danger", "Could not reject invite request: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error rejecting invite request: " + response.status + " " + response.statusText, "unrequest", "persistent");
+		api.unrequestInviteUserToStream(userId, streamId, {
+			id: "unrequest",
+			error: "Could not reject invite request: "
+		}).then(
+			function(data) {
+				// Remove from request from list in model
+				var removed = undefined;
+				stream.requests.forEach(function(request, index) {
+					if (request.userid == userId) {
+						removed = stream.requests.splice(index, 1);
+					}
+				});
+				alerts.add("success", "Rejected " + removed[0].userName + "'s request for an invite to " + stream.name);
 			}
 		);
 	};
@@ -466,7 +433,7 @@ angular.module("LifeStreamWebApp").controller("MyStreamsController", ["$scope", 
 	}, 100);
 }]);
 
-angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scope", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", function($scope, $http, $interval, alerts, api, session) {
+angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scope", "$interval", "lsAlerts", "lsApi", "lsSession", function($scope, $interval, alerts, api, session) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -726,41 +693,29 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	};
 
 	formCtrl.loadInvites = function() {
-		$http.get("api/invite/user/" + session.user.id).then(
-			function done(response) {
-				alerts.remove("loadInvites", "persistent");
-				if (response.data.success) {
-					formCtrl.invites = response.data.invites;
-					// No need to setSubscriptionState() here since this
-					// function is only invoked once at page load; there won't
-					// be updates coming from here
-				}
-				else {
-					alerts.add("danger", "Invites could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading invites: " + response.status + " " + response.statusText, "loadInvites", "persistent");
+		api.getInvitesByUser(session.user.id, {
+			id: "loadInvites",
+			error: "Invites could not be loaded: "
+		}).then(
+			function (data) {
+				formCtrl.invites = data.invites;
+				// No need to setSubscriptionState() here since this
+				// function is only invoked once at page load; there won't
+				// be updates coming from here
 			}
 		);
 	};
 
 	formCtrl.loadInviteRequests = function() {
-		$http.get("api/invite/user/" + session.user.id + "/request").then(
-			function done(response) {
-				alerts.remove("loadInviteRequests", "persistent");
-				if (response.data.success) {
-					formCtrl.requests = response.data.requests;
-					// No need to setSubscriptionState() here since this
-					// function is only invoked once at page load; there won't
-					// be updates coming from here
-				}
-				else {
-					alerts.add("danger", "Invite requests could not be loaded: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error loading invites requests: " + response.status + " " + response.statusText, "loadInviteRequests", "persistent");
+		api.getInviteRequestsByUser(session.user.id, {
+			id: "loadInviteRequests",
+			error: "Invite requests could not be loaded: "
+		}).then(
+			function(data) {
+				formCtrl.requests = data.requests;
+				// No need to setSubscriptionState() here since this
+				// function is only invoked once at page load; there won't
+				// be updates coming from here
 			}
 		);
 	};
@@ -846,23 +801,13 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	};
 
 	formCtrl.requestInvite = function(stream) {
-		$http.post("api/invite/" + stream.id + "/request",
-			{
-				userid: session.user.id
-			}
-		).then(
-			function done(response) {
-				alerts.remove("requestInvite", "persistent");
-				if (response.data.success) {
-					formCtrl.setSubscriptionState(stream, "requested");
-					alerts.add("success", "Requested invite to " + stream.name);
-				}
-				else {
-					alerts.add("danger", "Could not request invite: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error requesting invite: " + response.status + " " + response.statusText, "requestInvite", "persistent");
+		api.requestInviteUserToStream(session.user.id, stream.id, {
+			id: "requestInvite",
+			success: "Requested invite to " + stream.name,
+			error: "Could not request invite: "
+		}).then(
+			function(data) {
+				formCtrl.setSubscriptionState(stream, "requested");
 			}
 		);
 	};
@@ -870,19 +815,13 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	formCtrl.unrequestInvite = function(obj) {
 		var streamid = obj.id ? obj.id : obj.streamid;
 
-		$http.delete("api/invite/" + streamid + "/request?userid=" + session.user.id).then(
-			function done(response) {
-				alerts.remove("unrequestInvite", "persistent");
-				if (response.data.success) {
-					formCtrl.setSubscriptionState(obj, "none");
-					alerts.add("success", "Cancelled invite request to " + (obj.name ? obj.name : obj.streamName));
-				}
-				else {
-					alerts.add("danger", "Could not request invite: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error requesting invite: " + response.status + " " + response.statusText, "unrequestInvite", "persistent");
+		api.unrequestInviteUserToStream(session.user.id, streamid, {
+			id: "unrequestInvite",
+			success: "Cancelled invite request to " + (obj.name ? obj.name : obj.streamName),
+			error: "Could not cancel invite request: "
+		}).then(
+			function(data) {
+				formCtrl.setSubscriptionState(obj, "none");
 			}
 		);
 	};
@@ -897,19 +836,13 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 		// stream may be either a stream object or an invite object
 		var streamid = obj.id ? obj.id : obj.streamid;
 
-		$http.delete("api/invite/" + streamid + "?userid=" + session.user.id).then(
-			function done(response) {
-				alerts.remove("uninvite", "persistent");
-				if (response.data.success) {
-					formCtrl.setSubscriptionState(obj, "none");
-					alerts.add("success", "Rejected invitation to " + (obj.name ? obj.name : obj.streamName) + " from " + obj.userName);
-				}
-				else {
-					alerts.add("danger", "Could not reject invitation: " + response.data.error);
-				}
-			},
-			function fail(response) {
-				alerts.add("danger", "Server error rejecting invite: " + response.status + " " + response.statusText, "uninvite", "persistent");
+		api.uninviteUesrFromStream(session.user.id, streamid, {
+			id: "uninvite",
+			success: "Rejected invitation to " + (obj.name ? obj.name : obj.streamName) + " from " + obj.userName,
+			error: "Could not reject invitation: "
+		}).then(
+			function(data) {
+				formCtrl.setSubscriptionState(obj, "none");
 			}
 		);
 	};
@@ -929,7 +862,7 @@ angular.module("LifeStreamWebApp").controller("SubscriptionsController", ["$scop
 	}, 100);
 }]);
 
-angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$http", "$interval", "lsAlerts", "lsApi", "lsSession", function($scope, $http, $interval, alerts, api, session) {
+angular.module("LifeStreamWebApp").controller("SubscribersController", [ "$scope", "$interval", "lsAlerts", "lsApi", "lsSession", function($scope, $interval, alerts, api, session) {
 	var streams = $scope.streams;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
