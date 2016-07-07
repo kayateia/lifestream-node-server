@@ -198,10 +198,6 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 						// Save authorisation token
 						$cookies.put("authorization", "Bearer " + response.data.token);
 					}
-					else {
-						// Delete saved authorisation token
-						$cookies.remove("authorization");
-					}
 					api.httpResolveHandler(response, alertOpts, resolve, reject);
 				},
 				function(response) {
