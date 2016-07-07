@@ -19,10 +19,7 @@ angular.module("LifeStreamSession", [ "ngCookies", "LifeStreamAPI" ])
 			// reaching the login page.
 			var fromUrlStr = fromUrl ? "&fromUrl=" + encodeURIComponent(fromUrl) : "";
 
-			api.loginUser(login, {
-				password: password
-			},
-			{
+			api.loginUser(login, password, {
 				id: "login"
 			}).then(
 				function(data) {

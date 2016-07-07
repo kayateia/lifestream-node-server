@@ -188,13 +188,11 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 	//
 	//   See API documentation for details:
 	//     POST api/user/login/:login
-	api.loginUser = function(login, args, alertOpts) {
-		var reqArgs = {
-			password: args.password
-		};
-
+	api.loginUser = function(login, password, alertOpts) {
 		return $q(function(resolve, reject) {
-			$http.post("api/user/login/" + login, reqArgs).then(
+			$http.post("api/user/login/" + login, {
+				password: password
+			}).then(
 				function(response) {
 					if (response.data.success) {
 						// Save authorisation token
