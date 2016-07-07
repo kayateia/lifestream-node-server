@@ -6,7 +6,15 @@
 <script src="scripts/lifestream-app-login.js"></script>
 <% if (message) { %>
 	<div class="alert alert-<%= message.type %>">
-		<span class="glyphicon glyphicon-exclamation-sign"></span>
+		<% if (message.type == "danger") { %>
+			<span class="glyphicon glyphicon-remove-sign"></span>
+		<% } else if (message.type == "info") { %>
+			<span class="glyphicon glyphicon-info-sign"></span>
+		<% } else if (message.type == "success") { %>
+			<span class="glyphicon glyphicon-ok-sign"></span>
+		<% } else if (message.type == "warning") { %>
+			<span class="glyphicon glyphicon-exclamation-sign"></span>
+		<% } %>
 		<span class="sr-only">Notification:</span>
 		<%= message.text %>
 	</div>
