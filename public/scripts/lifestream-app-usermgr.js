@@ -242,7 +242,21 @@ angular.module("LifeStreamWebApp").controller("UserAddController", ["$scope", "l
 			success: "User " + formCtrl.login + " successfully created",
 			error: "User " + formCtrl.login + " could not be created: ",
 			persistent: true
-		});
+		}).then(
+			function(data) {
+				// If user creation is successful, also create a stream for the
+				// new user
+				api.createStream({
+					userid: data.id,
+					name: formCtrl.name + "'s Stream",
+					permission: 1
+				}, {
+					id: "submitFunc2",
+					success: "Created stream for " + formCtrl.login,
+					error: "Could not create stream for " + formCtrl.login
+				});
+			}
+		);
 	};
 }]);
 
