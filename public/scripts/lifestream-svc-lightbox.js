@@ -290,6 +290,37 @@ angular.module("LifeStreamLightbox").controller("LifeStreamLightboxController", 
 		}
 	}
 
+	lightboxCtrl.hideDeleteForm = function() {
+		lightboxCtrl.deleteFormShown = false;
+	}
+
+	lightboxCtrl.showDeleteForm = function() {
+		if (lsLightbox.Lightbox.images[lsLightbox.Lightbox.index].userLogin == session.user.login) {
+			lightboxCtrl.deleteFormShown = true;
+		}
+	}
+
+	lightboxCtrl.deleteImage = function() {
+		var image = lsLightbox.Lightbox.images[lsLightbox.Lightbox.index];
+
+		api.deleteImage(image.id, {
+			id: "deleteImage",
+			success: "Image was deleted",
+			error: "Image could not be deleted: "
+		}).then(
+			function(data) {
+				// Update galleries to not show the deleted image
+				lsLightbox.gallery.$scope.$emit("deleteImage", image);
+
+				// On successful delete, hide the delete form
+				lightboxCtrl.hideDeleteForm();
+
+				// Dismiss the lightbox
+				$scope.$dismiss();
+			}
+		);
+	}
+
 	// Watch which image is currently focused in the Lightbox. By defaut, the
 	// Lightbox wraps around to the first image when advancing past the last
 	// image. This doesn't play nice with our infinitely scrolling gallery

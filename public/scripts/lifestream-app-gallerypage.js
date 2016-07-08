@@ -149,6 +149,15 @@ angular.module("LifeStreamWebApp").controller("LifeStreamGalleryPageController",
 			}
 		);
 	};
+
+	// When an image is deleted, an event will bubble up from the gallery from
+	// which the event took place
+	$scope.$on("deleteImage", function(event, image) {
+		// Rebroadcast this event to all galleries on the the page
+		if (event.targetScope !== event.currentScope) {
+			$scope.$broadcast("deleteImage", image);
+		}
+	});
 }]);
 
 angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$scope", "$interval", "lsSession", function($scope, $interval, session) {

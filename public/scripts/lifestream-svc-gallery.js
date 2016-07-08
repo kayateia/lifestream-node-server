@@ -4,6 +4,13 @@ angular.module("LifeStreamGallery", [ "LifeStreamAlerts", "LifeStreamLightbox", 
 angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["$scope", "$element", "$interval", "lsAlerts", "lsApi", "lsLightbox", "lsKeepAlive", "$timeout", "$window", function($scope, $element, $interval, alerts, api, lsLightbox, keepalive, $timeout, $window) {
 	var gallery = this;
 
+	// Expose scope to modules referencing this gallery object. This is needed
+	// in order for evens emitted from lsLightbox to become known to the scope
+	// hierarchy in the rest of the application, as angular-bootstrap-lightbox
+	// spawns a lightbox independent of any other scope hierarchy in the
+	// application
+	gallery.$scope = $scope;
+
 	// streamid from directive. May be a comma-separated list. Split the list
 	// into an array, and keep only numeric IDs
 	gallery.streams = [];
@@ -46,6 +53,10 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	// True when the gallery is expanded
 	gallery.expanded = false;
 
+	// True when gallery.loadImages() has been called, but hasn't yet received
+	// a response
+	gallery.loadInProgress = false;
+
 	// gallery.keepAlivePing()
 	//
 	//   Should be called whenever user activity is detected.
@@ -85,6 +96,10 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 	//   callback - (optional) Function to be called when server response has
 	//      been successfully processed.
 	gallery.loadImages = function(count, olderThanId, callback) {
+		// Indicate that gallery.loadImages() has been called, but hasn't yet
+		// received a response
+		gallery.loadInProgress = true;
+
 		api.getStreamContents(gallery.streams.join(","), {
 			count: count,
 			olderThanId: olderThanId
@@ -110,6 +125,9 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 					// Add this image's info to the model
 					gallery.images.push(image);
 				});
+
+				// Indicate that response has been received and processed
+				gallery.loadInProgress = false;
 
 				// If a callback function was specified, call it
 				if (callback) {
@@ -302,6 +320,30 @@ angular.module("LifeStreamGallery").controller("LifeStreamGalleryController", ["
 		gallery.adjustAffixPosition();
 	}, 10000);
 
+	$scope.$on("deleteImage", function(event, image) {
+		// Remove the deleted image from this gallery
+		gallery.images.forEach(function(value, index, arr) {
+			if (value.id == image.id) {
+				arr.splice(index, 1);
+			}
+		});
+
+		// Try to fill space left by deleted image, but only do so if loading
+		// more images isn't already in progress. Due to the
+		// emit->bubble up-> broadcast down cycle of the deleteImage event, it's
+		// possible that the gallery from which the deleteImage event was
+		// originally emitted will receive a second copy of that event.
+		//
+		// Both copies of the event will be received in rapid succession, before
+		// the server has a chance to respond to gallery.loadImages().
+		// Consequently, if gallery.adjustImageRows() is called again for the
+		// second copy of the event, it will see that there is a blank space
+		// that hasn't yet been filled by the in-progress gallery.loadImages(),
+		// and call gallery.loadImages() again, resulting in a duplicated image.
+		if (!gallery.loadInProgress) {
+			gallery.adjustImageRows();
+		}
+	});
 
 	// Cancel keepalive timers when the app closes.
 	$scope.$on("$destroy", function() {

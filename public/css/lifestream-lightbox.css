@@ -147,6 +147,7 @@
 	background-color: rgba(34, 34, 34, 0.67);
 	color: #eeeeee;
 }
+.lightbox-image-details form#deleteForm,
 .lightbox-image-details form#streamsForm {
 	background-color: rgba(34, 34, 34, 0.67);
 	border-radius: 5px;

@@ -317,6 +317,23 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 		});
 	};
 
+	// api.deleteImage()
+	//
+	//   See API documentation for details:
+	//     DELETE api/image/:imageid
+	api.deleteImage = function(imageid, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.delete("api/image/" + imageid).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error deleting image: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	};
+
 	// api.getStreams()
 	//
 	//   See API documentation for details:
