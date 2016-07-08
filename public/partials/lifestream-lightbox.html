@@ -10,21 +10,26 @@
 	<div class="lightbox-image-details">
 		<div ng-hide="lightboxCtrl.commentFormShown || lightboxCtrl.streamsFormShown" class="lightbox-image-caption">
 			<div class="streams">
-				<div class="collapsed" ng-hide="lightboxCtrl.streamsExpanded">
-					<a href="#" ng-click="lightboxCtrl.expandStreams($event)">
-						{{Lightbox.images[Lightbox.index].streams.length}}
-						<span ng-if="Lightbox.images[Lightbox.index].streams.length == 1">stream contains</span>
-						<span ng-if="Lightbox.images[Lightbox.index].streams.length != 1">streams contain</span>
-						this image »
-					</a>
+				<div ng-if="Lightbox.images[Lightbox.index].streams.length == 0">
+					<span class="text-danger">This image is not in any streams</span>
 				</div>
-				<div class="expanded" ng-show="lightboxCtrl.streamsExpanded">
-					<a href="#" ng-click="lightboxCtrl.collapseStreams($event)">
-						Streams containing this image «
-					</a>
-					<ul>
-						<li ng-repeat="stream in Lightbox.images[Lightbox.index].streams"><a href="gallery#/stream/{{stream.id}}" ng-click="lightboxCtrl.delayedDismiss()">{{stream.name}}</a></li>
-					</ul>
+				<div ng-if="Lightbox.images[Lightbox.index].streams.length > 0">
+					<div class="collapsed" ng-hide="lightboxCtrl.streamsExpanded">
+						<a href="#" ng-click="lightboxCtrl.expandStreams($event)">
+							{{Lightbox.images[Lightbox.index].streams.length}}
+							<span ng-if="Lightbox.images[Lightbox.index].streams.length == 1">stream contains</span>
+							<span ng-if="Lightbox.images[Lightbox.index].streams.length != 1">streams contain</span>
+							this image »
+						</a>
+					</div>
+					<div class="expanded" ng-show="lightboxCtrl.streamsExpanded">
+						<a href="#" ng-click="lightboxCtrl.collapseStreams($event)">
+							Streams containing this image «
+						</a>
+						<ul>
+							<li ng-repeat="stream in Lightbox.images[Lightbox.index].streams"><a href="gallery#/stream/{{stream.id}}" ng-click="lightboxCtrl.delayedDismiss()">{{stream.name}}</a></li>
+						</ul>
+					</div>
 				</div>
 			</div>
 			<div class="comment">{{Lightbox.images[Lightbox.index].comment}}</div>

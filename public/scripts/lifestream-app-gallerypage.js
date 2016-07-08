@@ -170,7 +170,10 @@ angular.module("LifeStreamWebApp").controller("MainGalleryPageController", [ "$s
 
 			// First, load streams owned by the current user
 			galleryPage.loadStreams(session.user.id, function(err, streams) {
-				var streamIds = [];
+				// Your Uploads gallery should be a history of every image the
+				// user has ever uploaded, so also include images that aren't
+				// currently associated with any stream
+				var streamIds = [ 0 ];
 
 				if (err) {
 					return;

@@ -131,6 +131,13 @@
 	color: #7FDAFF;
 	text-decoration: underline;
 }
+.lightbox-image-caption.text-danger,
+.lightbox-image-caption .text-danger,
+.lightbox-edit.text-danger,
+.lightbox-edit .text-danger {
+	color: #f4aaa8;
+	text-shadow: 0 0 0.2em #222222, 0 0 0.4em #222222, 0 0 0.6em #444444, 0 0 0.8em #444444;
+}
 
 .lightbox-image-details form {
 	position: relative;
