@@ -224,6 +224,29 @@ router.get("/:id", function(req, res, next) {
 	});
 });
 
+router.delete("/:id", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		// Validate image ID
+		var imageid = Number(req.params.id);
+		if (Number.isNaN(imageid) || imageid < 1) {
+			return res.json(models.error("Invalid 'imageid'"));
+		}
+
+		dbmod.imageDelete(imageid, tokenContents.id, function(err) {
+			if (err) {
+				res.json(err);
+			}
+			else {
+				res.json(models.success());
+			}
+		});
+	});
+});
+
 router.put("/:id/comment", function(req, res, next) {
 	security.validateLogin(req, res, function(err, tokenContents) {
 		if (err) {

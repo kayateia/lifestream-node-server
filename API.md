@@ -10,6 +10,7 @@
 - [Image](#image)
 	- [POST api/image](#post-apiimage)
 	- [GET api/image/:imageid](#get-apiimageimageid)
+	- [DELETE api/image/:imageid](#delete-apiimageimageid)
 	- [PUT api/image/:imageid/comment](#put-apiimageimageidcomment)
 	- [GET api/image/:imageid/streams](#get-apiimageimageidstreams)
 	- [POST api/image/:imageid/streams](#post-apiimageimageidstreams)
@@ -205,6 +206,48 @@ If unsuccessful, the following response is sent:
 - Image could not be read from disk.
 - Image could not be scaled as requested.
 - User does not have permission to view the image.
+
+### DELETE api/image/:imageid
+
+Deletes the specified image from the server. Has no effect on images that may already have been downloaded by mobile clients.
+
+#### Parameters
+
+- Path component:
+	- **imageid**: Image ID
+
+#### Permissions
+
+A user can delete images they uploaded.
+
+#### Result
+
+If successful, the image is:
+
+- Dissociated from all streams
+- Removed from the database
+- Removed from the server's storage
+
+The following response is sent:
+
+```javascript
+{
+	"success": true,
+}
+```
+If unsuccessful, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- Requestor is not the uploader of the image
+- Image was successfully removed from database, but could not be deleted from disk
 
 ### PUT api/image/:imageid/comment
 
