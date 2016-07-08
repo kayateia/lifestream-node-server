@@ -886,6 +886,7 @@ If unsuccessful, no changes are made on the server and the following response is
 #### Failure conditions
 
 - The user is not the stream owner and is not an admin
+- A database error during at least one operation involved in the deletion caused the transaction to be rolled back
 
 ## Subscription
 
@@ -1332,7 +1333,9 @@ Deletes a user.
 
 #### Permissions
 
-Admins can delete users.
+Users can delete their own account.
+
+Admins can delete any user's account.
 
 #### Result
 
@@ -1361,6 +1364,12 @@ If unsuccessful, no changes are made on the server and the following response is
 	"error": /* (string) Error message */
 }
 ```
+
+#### Failure conditions
+
+- User is trying to delete someone else's account, but isn't an admin
+- Database error encountered during at least one operation involved in the deletion forced transaction to be rolled back
+- Changes to database were successful and committed, but image files were not removed from disk
 
 ### POST api/user/register-device
 
