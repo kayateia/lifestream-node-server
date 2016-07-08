@@ -22,7 +22,7 @@
 </div>
 <!-- lsAlerts: list of temporarily-shown alerts when container is collapsible and collapseOnTimeout is set  -->
 <div class="alerts-container" ng-if="collapseOnTimeout && alertsCtrl.collapsed[container]">
-	<uib-alert type="{{alert.type}}" dismiss-on-timeout="{{collapseOnTimeout}}" close="alertsCtrl.remove(index, container, true)" ng-repeat="(index, alert) in alertsCtrl.pendingCollapse[container]" ng-if="alert.shown">
+	<uib-alert type="{{alert.type}}" dismiss-on-timeout="{{collapseOnTimeout}}" close="alertsCtrl.remove(index, container, true)" ng-repeat="(index, alert) in alertsCtrl.pendingCollapse[container]">
 		<span ng-if="alert.type == 'success'" class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
 		<span ng-if="alert.type == 'info'" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
 		<span ng-if="alert.type == 'warning'" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
@@ -32,7 +32,7 @@
 </div>
 <!-- lsAlerts: list of alerts -->
 <div class="alerts-container" ng-class="{ doNotAnimate: alertsCtrl.pendingCollapseInView }" ng-hide="alertsCtrl.collapsed[container]">
-	<uib-alert ng-repeat="(index, alert) in alertsCtrl.lists[container]" type="{{alert.type}}" close="alertsCtrl.remove(index, container)" dismiss-on-timeout="{{dismissOnTimeout}}" ng-if="alert.shown">
+	<uib-alert ng-repeat="(index, alert) in alertsCtrl.lists[container]" type="{{alert.type}}" close="alertsCtrl.remove(index, container)" dismiss-on-timeout="{{dismissOnTimeout}}">
 		<span ng-if="alert.type == 'success'" class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
 		<span ng-if="alert.type == 'info'" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span>
 		<span ng-if="alert.type == 'warning'" class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>

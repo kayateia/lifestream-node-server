@@ -11,8 +11,7 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 	//   [
 	//     {
 	//       type: "danger",
-	//       msg: "Message text",
-	//       shown: true
+	//       msg: "Message text"
 	//     },
 	//     ...
 	//   ]
@@ -23,8 +22,7 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 	//   {
 	//     keyName: {
 	//       type: "danger",
-	//       msg: "Message text",
-	//       shown: true
+	//       msg: "Message text"
 	//     },
 	//     ...
 	//   }
@@ -129,8 +127,7 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 			// a keyed alert
 			arr[container].push({
 				type: type,
-				msg: msg,
-				shown: true
+				msg: msg
 			});
 
 			// Array index for latest alert
@@ -162,8 +159,7 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 			//arr[container].set(key, {
 			arr[container][key] = {
 				type: type,
-				msg: msg,
-				shown: true
+				msg: msg
 			//});
 			};
 		}
@@ -190,8 +186,7 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 			//arr[container].set(key, {
 			arr[container][key] = {
 				type: type,
-				msg: msg,
-				shown: true
+				msg: msg
 			//});
 			};
 		}
@@ -214,8 +209,7 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 			//arr[container].set(newKey, {
 			arr[container][newKey] = {
 				type: type,
-				msg: msg,
-				shown: true
+				msg: msg
 			//});
 			};
 			//alerts.size[container] = arr[container].size;
@@ -262,20 +256,15 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 				alerts.size[container][arr[container][index].type]--;
 			}
 
-			// Remove alert from view (start animating)
-			arr[container][index].shown = false;
-
 			// Delete alert after animation finishes.
-			$timeout(function() {
-				if (arr[container] instanceof Array) {
-					// Remove element from array
-					arr[container].splice(index, 1);
-				}
-				else {
-					// Delete object property
-					delete arr[container][index];
-				}
-			}, 1000);
+			if (arr[container] instanceof Array) {
+				// Remove element from array
+				arr[container].splice(index, 1);
+			}
+			else {
+				// Delete object property
+				delete arr[container][index];
+			}
 		}
 	};
 
@@ -342,6 +331,9 @@ angular.module("LifeStreamAlerts").factory("lsAlerts", [ "$timeout", function($t
 		}
 
 		alerts.collapsed[container] = false;
+
+		// Clear alerts from the pendingCollapse stack when the regular stack
+		// is expanded
 		alerts.clear(container, true);
 	}
 
