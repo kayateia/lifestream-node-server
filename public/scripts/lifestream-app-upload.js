@@ -128,8 +128,7 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 						}).then(
 							null,
 							function(err) {
-								// If server-side data couldn't be updated, revert model
-								stream.associated = false;
+								console.log("Invalid image ID was " + response.data.id + ", full respost data object follows: " + JSON.stringify(response.data));
 							}
 						);
 					});
