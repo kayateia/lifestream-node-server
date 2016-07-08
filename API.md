@@ -712,6 +712,7 @@ Get list of images in the specified stream. Images are sorted in reverse chronol
 
 - Path component:
 	- **streamid**: Stream ID. May be a comma-delimited list of stream IDs
+		- If stream ID 0 is present, the result set will include orphaned images (that are not associated with any stream)
 - Query string:
 	- **olderThan** _(optional)_: Number of seconds since the UNIX epoch. Only images whose upload time is older than this will be included in the result set
 	- **olderThanId** _(optional)_: Image ID. Only images whose image ID is lower than this will be included in the result set
@@ -720,6 +721,8 @@ Get list of images in the specified stream. Images are sorted in reverse chronol
 #### Permissions
 
 Any user may request a list of contents from any stream, but the actual image will not be displayable unless it passes permission checks in [GET api/image/:imageid](#get-apiimageimageid).
+
+If stream ID 0 is included in the request, the only orphaned images that will appear in the result set are those that are owned by the user making the request.
 
 #### Result
 

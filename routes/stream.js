@@ -89,16 +89,25 @@ router.get("/:id/contents", function(req, res, next) {
 		// Supposing the :id parameter is a comma-delimited string, convert it
 		// into an array, and keep only the numbers
 		var ids = [];
+		var includeOrphans = false;
 		req.params.id.split(",").forEach(function(value) {
 			value = Number(value);
-			if (!Number.isNaN(value) && value > 0) {
-				ids.push(value);
+			if (!Number.isNaN(value)) {
+				if (value > 0) {
+					ids.push(value);
+				}
+				else if (value == 0) {
+					includeOrphans = true;
+				}
 			}
 		});
+		if (ids.length == 0 && includeOrphans == false) {
+			return res.json(models.error("No streams specified"));
+		}
 		// Rejoin numeric IDs into sanitised comma-delimited string
 		req.params.id = ids.join(",");
 
-		dbmod.streamContents(req.params.id, count, olderThan, olderThanId, function(err, rows) {
+		dbmod.streamContents(req.params.id, includeOrphans, count, olderThan, olderThanId, tokenContents.id, function(err, rows) {
 			if (err) {
 				return res.json(err);
 			}
