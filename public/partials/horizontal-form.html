@@ -8,7 +8,7 @@
 			<div class="col-sm-9">
 				<input id="{{field.id}}" name="{{field.id}}" ng-model="formCtrl[field.id]" ng-blur="field.validator(formCtrl.modelCtrl[field.id])" type="{{field.type}}" class="form-control" ng-required="field.required" aria-describedby="{{field.id}}Help" />
 				<span ng-class="[ 'form-control-feedback glyphicon', { 'glyphicon-ok': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$valid, 'glyphicon-remove': formCtrl.modelCtrl[field.id].$touched && formCtrl.modelCtrl[field.id].$invalid } ]" aria-hidden="true" />
-				<span ng-show="field.help" id="{{field.id}}Help" class="help-block">{{field.help}}</span>
+				<span ng-if="field.help" id="{{field.id}}Help" class="help-block">{{field.help}}</span>
 			</div>
 		</div>
 	</div>

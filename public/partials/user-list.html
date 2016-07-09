@@ -1,0 +1,23 @@
+<table class="user-list col-xs-12">
+	<thead>
+		<tr>
+			<th class="sortable" ng-click="formCtrl.setSortOrder('id')">ID <span class="glyphicon glyphicon-sort"></span></th>
+			<th class="sortable" ng-click="formCtrl.setSortOrder('login')">Login <span class="glyphicon glyphicon-sort"></span></a></th>
+			<th class="sortable" ng-click="formCtrl.setSortOrder('name')">Display name <span class="glyphicon glyphicon-sort"></span></th>
+			<th>Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr class="user-list" ng-repeat="user in formCtrl.users">
+			<td class="col-xs-1"><div>{{user.id}}</div></td>
+			<td class="col-sx-2"><div>{{user.login}}</div></td>
+			<td class="col-xs-4"><div>{{user.name}}</div></td>
+			<td class="col-xs-4">
+					<div>
+					<button type="button" class="btn btn-link" ng-click="usermgr.activateTab('edit', user.login)">edit</button>
+					<button type="button" class="btn btn-link" ng-click="usermgr.activateTab('del', user.login)">delete</button>
+				</div>
+			</td>
+		</tr>
+	</tbody>
+</table>

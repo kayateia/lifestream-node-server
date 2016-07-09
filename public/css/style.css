@@ -200,3 +200,23 @@ table.streams-editor tr.ng-leave.ng-leave-active,
 .upload-form .checkbox {
 	margin-left: 20px;
 }
+
+.user-list .sortable {
+	cursor: pointer;
+}
+.user-list.ng-move,
+.user-list.ng-move div {
+	transition: all 0.5s;
+}
+.user-list.ng-move {
+	opacity: 0;
+}
+.user-list.ng-move div {
+	max-height: 0;
+}
+.user-list.ng-move.ng-move-active div {
+	max-height: 36px;
+}
+.user-list.ng-move.ng-move-active {
+	opacity: 1;
+}

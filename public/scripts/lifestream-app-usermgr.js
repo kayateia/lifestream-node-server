@@ -3,10 +3,16 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 
 	usermgr.operations = [
 		{
+			name: "list",
+			desc: "List",
+			url: "/user/list",
+			active: true
+		},
+		{
 			name: "add",
 			desc: "Add",
 			url: "/user/add",
-			active: true
+			active: false
 		},
 		{
 			name: "edit",
@@ -28,13 +34,13 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 		keepalive.ping();
 	};
 
-	usermgr.activateTab = function(name) {
+	usermgr.activateTab = function(name, args) {
 		usermgr.operations.forEach(function(item) {
 			if (item.name == name) {
 				item.active = true;
 
-				if ($location.path() != item.url) {
-					$location.path(item.url);
+				if (!$location.path().startsWith(item.url)) {
+					$location.path(item.url + (args ? "/" + args : ""));
 				}
 			}
 			else {
@@ -163,14 +169,81 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUserManager", [ "$scope
 		return email.$valid;
 	};
 
-	// Default to the add user tab if one wasn't specified in the URL.
-	if (!$location.path()) {
-		usermgr.activateTab("add");
-	}
-
 	$scope.$on("$destroy", function() {
 		keepalive.end();
 	});
+}]);
+
+angular.module("LifeStreamWebApp").controller("UserListController", [ "$scope", "lsAlerts", "lsApi", function($scope, alerts, api) {
+	var usermgr = $scope.usermgr;
+	var formCtrl = this;
+
+	// Make this controller instance available to the template.
+	$scope.formCtrl = formCtrl;
+
+	// List of users
+	formCtrl.users = [];
+
+	// Property by which to sort the user list
+	formCtrl.sortProperty = "id";
+
+	// Direction by which to sort the user list
+	formCtrl.reverseSort = false;
+
+	usermgr.activateTab("list");
+
+	formCtrl.sort = function() {
+		formCtrl.users.sort(function(a, b) {
+			if (a[formCtrl.sortProperty] < b[formCtrl.sortProperty]) {
+				return formCtrl.reverseSort ? 1 : -1;
+			}
+			else if (a[formCtrl.sortProperty] > b[formCtrl.sortProperty]) {
+				return formCtrl.reverseSort ? -1 : 1;
+			}
+			else {
+				return 0;
+			}
+		});
+	}
+
+	formCtrl.loadUsers = function() {
+		api.findUser("%", {
+			id: "loadUsers",
+			error: "Error retrieving list of users: "
+		}).then(
+			function(data) {
+				formCtrl.users = data.users;
+
+				// Sort the user list
+				formCtrl.sort();
+			}
+		);
+	};
+
+	formCtrl.setSortOrder = function(property) {
+		if (formCtrl.sortProperty == property) {
+			formCtrl.reverseSort = !formCtrl.reverseSort;
+		}
+		else {
+			formCtrl.reverseSort = false;
+			formCtrl.sortProperty = property;
+		}
+	};
+
+	$scope.$watch("formCtrl.sortProperty", function(newValue, oldValue) {
+		if (newValue !== oldValue) {
+			formCtrl.sort();
+		}
+	});
+
+	$scope.$watch("formCtrl.reverseSort", function(newValue, oldValue) {
+		if (newValue !== oldValue) {
+			formCtrl.sort();
+		}
+	});
+
+	// Initialise page by loading list of users
+	formCtrl.loadUsers();
 }]);
 
 angular.module("LifeStreamWebApp").controller("UserAddController", ["$scope", "lsAlerts", "lsApi", function($scope, alerts, api) {
@@ -260,7 +333,7 @@ angular.module("LifeStreamWebApp").controller("UserAddController", ["$scope", "l
 	};
 }]);
 
-angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "lsAlerts", "lsApi", function($scope, alerts, api) {
+angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "lsAlerts", "lsApi", "$routeParams", "$timeout", function($scope, alerts, api, $routeParams, $timeout) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -357,9 +430,20 @@ angular.module("LifeStreamWebApp").controller("UserEditController", ["$scope", "
 			}
 		);
 	};
+
+	// If login was specified in path, pre-fill the form
+	if ($routeParams.login) {
+		formCtrl.login = $routeParams.login;
+
+		// Execute the form auto-fill function after ngInit has had a chance to
+		// associate formCtrl.modelCtrl with the form object
+		$timeout(function() {
+			formCtrl.autofillForm(formCtrl.modelCtrl.login);
+		}, 0);
+	}
 }]);
 
-angular.module("LifeStreamWebApp").controller("UserDelController", [ "$scope", "lsAlerts", "lsApi", function($scope, alerts, api) {
+angular.module("LifeStreamWebApp").controller("UserDelController", [ "$scope", "lsAlerts", "lsApi", "$routeParams", function($scope, alerts, api, $routeParams) {
 	var usermgr = $scope.usermgr;
 	var formCtrl = this;
 	// Make this controller instance available to the template.
@@ -405,10 +489,17 @@ angular.module("LifeStreamWebApp").controller("UserDelController", [ "$scope", "
 			}
 		);
 	};
+
+	// If login was specified in path, pre-fill the form
+	formCtrl.login = $routeParams.login ? $routeParams.login : "";
 }]);
 
 angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routeProvider) {
 	$routeProvider
+		.when("/user/list", {
+			controller: "UserListController",
+			templateUrl: "./partials/user-list.html"
+		})
 		.when("/user/add", {
 			controller: "UserAddController",
 			templateUrl: "./partials/horizontal-form.html"
@@ -417,9 +508,17 @@ angular.module("LifeStreamWebApp").config([ "$routeProvider", function($routePro
 			controller: "UserEditController",
 			templateUrl: "./partials/horizontal-form.html"
 		})
+		.when("/user/edit/:login", {
+			controller: "UserEditController",
+			templateUrl: "./partials/horizontal-form.html"
+		})
 		.when("/user/del", {
 			controller: "UserDelController",
 			templateUrl: "./partials/horizontal-form.html"
 		})
-		.otherwise("/user/add");
+		.when("/user/del/:login", {
+			controller: "UserDelController",
+			templateUrl: "./partials/horizontal-form.html"
+		})
+		.otherwise("/user/list");
 }]);
