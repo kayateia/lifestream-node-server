@@ -749,7 +749,7 @@ The above response is sent even if no matching streams are found; in that case, 
 
 ### GET api/stream/:streamid/contents
 
-Get list of images in the specified stream. Images are sorted in reverse chronological order of upload time.
+Get list of images in the specified stream. By default, images are sorted in reverse chronological order of upload time (newer images first). However, if `newerThan` or `newerThanId` is specified, images will be sorted in chronological order (older images first).
 
 #### Parameters
 
@@ -757,9 +757,11 @@ Get list of images in the specified stream. Images are sorted in reverse chronol
 	- **streamid**: Stream ID. May be a comma-delimited list of stream IDs
 		- If stream ID 0 is present, the result set will include orphaned images (that are not associated with any stream)
 - Query string:
-	- **olderThan** _(optional)_: Number of seconds since the UNIX epoch. Only images whose upload time is older than this will be included in the result set
-	- **olderThanId** _(optional)_: Image ID. Only images whose image ID is lower than this will be included in the result set
-	- **count** _(optional)_: Number of images to include in the result set. The result set contains newer images first.
+	- **olderThan** _(optional)_: Number of seconds since the UNIX epoch. Only images whose upload time is older than this will be included in the result set. Mutually exclusive with `newerThan`
+	- **newerThan** _(optional)_: Number of seconds since the UNIX epoch. Only images whose upload time is newer than this will be included in the result set. Mutually exclusive with `olderThan`
+	- **olderThanId** _(optional)_: Image ID. Only images whose image ID is lower than this will be included in the result set. Mutually exclusive with `newerThanId`
+	- **newerThanId** _(optional)_: Image ID. Only images whose image ID is lower than this will be included in the result set. Mutually exclusive with `olderThanId`
+	- **count** _(optional)_: Number of images to include in the result set. The result set contains newer images first. _Default: 10; Maximum: 1000_
 
 #### Permissions
 

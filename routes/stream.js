@@ -73,17 +73,43 @@ router.get("/:id/contents", function(req, res, next) {
 			count = 1000;
 		}
 
+		// Sort order of results. Defauls to putting newer images first
+		var direction = "-1";
+
 		// Return images starting from the specified time. Images newer than
 		// the specified time will be ignored.
-		var olderThan = Number(req.query.olderThan);
-		if (!Number.isInteger(olderThan) || olderThan < 1) {
-			olderThan = null;
+		var fromTime = Number(req.query.olderThan);
+		if (!Number.isInteger(fromTime) || fromTime < 1) {
+			fromTime = null;
+		}
+		// Alternatively, return images starting from the specified time. Images
+		// older than the specified time will be ignored.
+		if (!fromTime) {
+			fromTime = Number(req.query.olderThan);
+			if (!Number.isInteger(fromTime) || fromTime < 1) {
+				fromTime = null;
+			}
+			else {
+				// Results put older images first
+				direction = "1";
+			}
 		}
 
 		// Return images with IDs lower than the specfied ID
-		var olderThanId = Number(req.query.olderThanId);
-		if (!Number.isInteger(olderThanId) || olderThanId < 1) {
-			olderThanId = null;
+		var fromId = Number(req.query.olderThanId);
+		if (!Number.isInteger(fromId) || fromId < 1) {
+			fromId = null;
+		}
+		// Alternatively, return images with IDs higher than the specfied ID
+		if (!fromId) {
+			fromId = Number(req.query.newerThanId);
+			if (!Number.isInteger(fromId) || fromId < 1) {
+				fromId = null;
+			}
+			else {
+				// Results put older images first
+				direction = "1";
+			}
 		}
 
 		// Supposing the :id parameter is a comma-delimited string, convert it
@@ -107,7 +133,7 @@ router.get("/:id/contents", function(req, res, next) {
 		// Rejoin numeric IDs into sanitised comma-delimited string
 		req.params.id = ids.join(",");
 
-		dbmod.streamContents(req.params.id, includeOrphans, count, olderThan, olderThanId, tokenContents.id, function(err, rows) {
+		dbmod.streamContents(req.params.id, includeOrphans, count, fromTime, fromId, direction, tokenContents.id, function(err, rows) {
 			if (err) {
 				return res.json(err);
 			}
