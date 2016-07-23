@@ -85,8 +85,8 @@ router.get("/:id/contents", function(req, res, next) {
 		// Alternatively, return images starting from the specified time. Images
 		// older than the specified time will be ignored.
 		if (!fromTime) {
-			fromTime = Number(req.query.olderThan);
-			if (!Number.isInteger(fromTime) || fromTime < 1) {
+			fromTime = Number(req.query.newerThan);
+			if (!Number.isInteger(fromTime) || fromTime < 0) {
 				fromTime = null;
 			}
 			else {
@@ -103,7 +103,7 @@ router.get("/:id/contents", function(req, res, next) {
 		// Alternatively, return images with IDs higher than the specfied ID
 		if (!fromId) {
 			fromId = Number(req.query.newerThanId);
-			if (!Number.isInteger(fromId) || fromId < 1) {
+			if (!Number.isInteger(fromId) || fromId < 0) {
 				fromId = null;
 			}
 			else {
