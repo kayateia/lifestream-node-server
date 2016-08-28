@@ -9,6 +9,7 @@
 	- [Failure conditions](#failure-conditions)
 - [Image](#image)
 	- [POST api/image](#post-apiimage)
+	- [POST api/image/check-duplicates](#post-apiimagecheckduplicates)
 	- [GET api/image/:imageid](#get-apiimageimageid)
 	- [DELETE api/image/:imageid](#delete-apiimageimageid)
 	- [PUT api/image/:imageid/comment](#put-apiimageimageidcomment)
@@ -164,6 +165,58 @@ If unsuccessful, no changes are made on the server and the following response is
 #### Failure conditions
 
 - Image could not be written to disk.
+
+### POST api/image/check-duplicates
+
+Given a list of filenames, return a list of filenames for images that already exist on the server that belong to the current user.
+
+The server does not accept an uploaded image whose filename is the same as that of an image file that already exists in a user's upload directory. This API call provides a way to test for whether an upload would fail due to a filename conflict without actually having to upload the entire file first.
+
+#### Parameters
+
+- Request body:
+	- **filenames**: Array of filenames.
+
+#### Permissions
+
+A user can check whether an image with a given filename already exists in their own upload directory. It is not possible to use this function to check whether a given filename exists in a different user's upload directory.
+
+#### Result
+
+If one or more filenames in the list already exists in the user's upload directory, the following response is sent:
+
+```javascript
+{
+	"success": true,
+	"filenames": [
+		/* (string) Filename of existing file*/,
+		...
+	]
+}
+```
+
+If no filenames in the list already exist in the user's upload directory, the following response is sent:
+
+```javascript
+{
+	"success": true,
+	"filenames": []
+}
+```
+
+If unsuccessful, the following response is sent:
+
+```javascript
+{
+	"success": false,
+	"error": /* (string) Error message */
+}
+```
+
+#### Failure conditions
+
+- An array of file names was not provided as input.
+- At least one file name in the array was considered invalid by the server.
 
 ### GET api/image/:imageid
 

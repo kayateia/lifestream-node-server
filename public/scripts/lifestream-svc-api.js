@@ -298,6 +298,25 @@ angular.module("LifeStreamAPI").factory("lsApi", [ "$cookies", "$http", "lsAlert
 		});
 	};
 
+	// api.checkDuplicateFilenames()
+	//
+	//   See API documentation for details:
+	//     POST api/image/check-duplicates
+	api.checkDuplicateFilenames = function(filenames, alertOpts) {
+		return $q(function(resolve, reject) {
+			$http.post("api/image/check-duplicates", {
+				filenames: filenames
+			}).then(
+				function(response) {
+					api.httpResolveHandler(response, alertOpts, resolve, reject);
+				},
+				function(response) {
+					api.httpRejectHandler("Server error setting image comment: ", response, alertOpts, resolve, reject);
+				}
+			);
+		});
+	}
+
 	// api.setImageComment()
 	//
 	//   See API documentation for details:

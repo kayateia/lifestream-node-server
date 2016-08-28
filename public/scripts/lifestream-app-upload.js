@@ -77,74 +77,98 @@ angular.module("LifeStreamWebApp").controller("LifeStreamUploadController", [ "$
 		});
 
 		formCtrl.isUploading = true;
-		Upload.upload({
-			url: "api/image",
-			method: "POST",
-			data: {
-				files: files,
-				// TODO: Currently, POST /api/image only supports a single
-				//       stream ID even though the backend code can handle an
-				//       array of IDs
-				streamid: streamIds[0]
-			}
+
+		// Test whether filename already exists on the server.
+		var filenames = [];
+		files.forEach(function(file) {
+			filenames.push(file.name);
+		});
+		api.checkDuplicateFilenames(filenames, {
+			id: "upload",
+			error: "Couldn't check for duplicate file names on server: ",
+			persistent: true
 		}).then(
-			function done(response) {
-				formCtrl.isUploading = false;
-				formCtrl.progress = 0;
-				if (response.data.success) {
-					alerts.remove("upload", "persistent");
-					alerts.add("success", files[0].name + ": uploaded successfully");
-
-					// On successful upload, reset upload form
-					formCtrl.fileInputs = [ null ];
-
-					// If more than one stream was selected, the upload
-					// operation would only have associated the image with the
-					// first seleted stream.
-					//
-					// Make additional queries to associate the image with each
-					// additional selected stream.
-					streamIds.forEach(function(streamid, index) {
-						// Image was already associated with the first selected
-						// stream during the upload process.
-						if (index == 0) {
-							return;
-						}
-
-						// Get name of this stream, for error reporting
-						var i, streamName;
-						for (i = 0; i < formCtrl.streams.length; i++) {
-							if (formCtrl.streams[i].id == streamid) {
-								streamName = formCtrl.streams[i].name;
-								break;
-							}
-						}
-
-						// Associate newly uploaded image with stream
-						api.addImageToStream(response.data.id, streamid, {
-							id: "uploadStreamAssoc",
-							error: "Couldn't add image to " +  streamName + ": ",
-							persistent: true
-						}).then(
-							null,
-							function(err) {
-								console.log("Invalid image ID was " + response.data.id + ", full respost data object follows: " + JSON.stringify(response.data));
-							}
-						);
-					});
+			function(data) {
+				if (data.filenames.length) {
+					// Since the form only supports uploading one file at a
+					// time, any conflicting filename means that the whole
+					// upload should fail.
+					formCtrl.isUploading = false;
+					alerts.add("danger", "Upload failed: File already exists on server.");
+					return;
 				}
-				else {
-					alerts.add("danger", "Upload failed: " + response.data.error, "upload", "persistent");
-				}
-			},
-			function fail(response) {
-				formCtrl.isUploading = false;
-				formCtrl.progress = 0;
-			},
-			function progress(evt) {
-				formCtrl.progress = parseInt(100.0 * evt.loaded / evt.total) + "%";
+
+				Upload.upload({
+					url: "api/image",
+					method: "POST",
+					data: {
+						files: files,
+						// TODO: Currently, POST /api/image only supports a single
+						//       stream ID even though the backend code can handle an
+						//       array of IDs
+						streamid: streamIds[0]
+					}
+				}).then(
+					function done(response) {
+						formCtrl.isUploading = false;
+						formCtrl.progress = 0;
+						if (response.data.success) {
+							alerts.remove("upload", "persistent");
+							alerts.add("success", files[0].name + ": uploaded successfully");
+
+							// On successful upload, reset upload form
+							formCtrl.fileInputs = [ null ];
+
+							// If more than one stream was selected, the upload
+							// operation would only have associated the image with the
+							// first seleted stream.
+							//
+							// Make additional queries to associate the image with each
+							// additional selected stream.
+							streamIds.forEach(function(streamid, index) {
+								// Image was already associated with the first selected
+								// stream during the upload process.
+								if (index == 0) {
+									return;
+								}
+
+								// Get name of this stream, for error reporting
+								var i, streamName;
+								for (i = 0; i < formCtrl.streams.length; i++) {
+									if (formCtrl.streams[i].id == streamid) {
+										streamName = formCtrl.streams[i].name;
+										break;
+									}
+								}
+
+								// Associate newly uploaded image with stream
+								api.addImageToStream(response.data.id, streamid, {
+									id: "uploadStreamAssoc",
+									error: "Couldn't add image to " +  streamName + ": ",
+									persistent: true
+								}).then(
+									null,
+									function(err) {
+										console.log("Invalid image ID was " + response.data.id + ", full respost data object follows: " + JSON.stringify(response.data));
+									}
+								);
+							});
+						}
+						else {
+							alerts.add("danger", "Upload failed: " + response.data.error, "upload", "persistent");
+						}
+					},
+					function fail(response) {
+						formCtrl.isUploading = false;
+						formCtrl.progress = 0;
+					},
+					function progress(evt) {
+						formCtrl.progress = parseInt(100.0 * evt.loaded / evt.total) + "%";
+					}
+				);
 			}
 		);
+
 	};
 
 	formCtrl.loadStreams = function(userid) {

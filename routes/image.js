@@ -19,6 +19,8 @@ var lscrypto = require("./../lib/lscrypto");
 var security = require("./../lib/security");
 var device = require("./../lib/device");
 
+const VALID_FILENAME = /^([A-Za-z0-9_-\s]+\.)+[A-Za-z]+$/;
+
 /*var storage = multer.diskStorage({
 	destination: function(req, file, callback) {
 		callback(null, "./uploads");
@@ -75,8 +77,8 @@ router.post("/", function(req, res, next) {
 					return res.json(models.error("Permission denied"));
 				}
 
-				if (!(/^([A-Za-z0-9_-\s]+\.)+[A-Za-z]+$/.test(req.files[0].originalname))) {
-					return res.json(models.error("File name was invalid"));
+				if (!(VALID_FILENAME.test(req.files[0].originalname))) {
+					return res.json(models.error("File name was invalid: " + req.files[0].originalname));
 				}
 
 				var fullFilename = "./uploads/" + tokenContents.id + "/" + req.files[0].originalname;
@@ -119,6 +121,39 @@ router.post("/", function(req, res, next) {
 				);
 			});
 		});
+	});
+});
+
+router.post("/check-duplicates", function(req, res, next) {
+	security.validateLogin(req, res, function(err, tokenContents) {
+		if (err) {
+			return res.json(err);
+		}
+
+		var filenames = req.body.filenames;
+		if (typeof filenames !== "object" || !(filenames instanceof Array)) {
+			return res.json(models.error("'filenames' must be an array."));
+		}
+
+		var duplicates = [];
+		var fullFilename = "";
+		for (let i = 0; i < filenames.length; i++) {
+			if (!(VALID_FILENAME.test(filenames[i]))) {
+				return res.json(models.error("File name was invalid: " + filenames[i]));
+			}
+
+			fullFilename = "./uploads/" + tokenContents.id + "/" + filenames[i];
+
+			try {
+				fs.accessSync(fullFilename, fs.F_OK);
+
+				// If we got here, then the file already exists
+				duplicates.push(filenames[i]);
+			} catch (e) {
+			}
+		}
+
+		return res.json(models.filenameList(duplicates));
 	});
 });
 
